@@ -1,8 +1,6 @@
 import Patrol from "../models/Patrol.js";
 
-// @desc    Create a new patrol
-// @route   POST /api/patrols
-// @access  Private (Admin/Officer)
+//Create a new patrol
 export const createPatrol = async (req, res) => {
     try {
         const patrol = new Patrol(req.body);
@@ -13,9 +11,7 @@ export const createPatrol = async (req, res) => {
     }
 };
 
-// @desc    Get all patrols
-// @route   GET /api/patrols
-// @access  Private (Admin/Ranger)
+// Get all patrols
 export const getPatrols = async (req, res) => {
     try {
         const { protectedAreaId, from, to, rangerId } = req.query;
@@ -38,9 +34,7 @@ export const getPatrols = async (req, res) => {
     }
 };
 
-// @desc    Get single patrol details
-// @route   GET /api/patrols/:id
-// @access  Private (Admin/Ranger)
+// Get single patrol details
 export const getPatrolById = async (req, res) => {
     try {
         const patrol = await Patrol.findById(req.params.id)
@@ -52,9 +46,7 @@ export const getPatrolById = async (req, res) => {
     }
 };
 
-// @desc    Update patrol
-// @route   PUT /api/patrols/:id
-// @access  Private (Admin/Officer)
+// Update patrol
 export const updatePatrol = async (req, res) => {
     try {
         const updatedPatrol = await Patrol.findByIdAndUpdate(
@@ -69,9 +61,7 @@ export const updatePatrol = async (req, res) => {
     }
 };
 
-// @desc    Delete patrol (Soft delete recommended, but this performs hard delete)
-// @route   DELETE /api/patrols/:id
-// @access  Private (Admin/Officer)
+// Delete patrol (this performs hard delete)
 export const deletePatrol = async (req, res) => {
     try {
         const deletedPatrol = await Patrol.findByIdAndDelete(req.params.id);
@@ -82,9 +72,7 @@ export const deletePatrol = async (req, res) => {
     }
 };
 
-// @desc    Add check-in to patrol
-// @route   POST /api/patrols/:id/check-ins
-// @access  Private (Ranger)
+//Add check-in to patrol
 export const addCheckIn = async (req, res) => {
     try {
         const patrol = await Patrol.findById(req.params.id);
@@ -102,9 +90,7 @@ export const addCheckIn = async (req, res) => {
     }
 };
 
-// @desc    Get check-ins for a patrol
-// @route   GET /api/patrols/:id/check-ins
-// @access  Private (Admin/Ranger)
+// Get check-ins for a patrol
 export const getCheckIns = async (req, res) => {
     try {
         const patrol = await Patrol.findById(req.params.id).select("checkIns");
