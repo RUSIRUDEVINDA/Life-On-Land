@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser"
 import express from "express"
 import cors from "cors"
 import authRoutes from "./routes/auth.route.js"
+import patrolRoutes from "./routes/patrol.route.js"
 import dotenv from "dotenv"
 
 dotenv.config()
@@ -17,13 +18,17 @@ app.use(cors())
 app.use(express.json())
 
 // Middleware to parse cookies
-app.use(cookieParser()); 
+app.use(cookieParser());
 
 // Auth routes
 app.use("/api/auth", authRoutes)
 
-const PORT = process.env.PORT || 5001 
+
+// Patrol routes
+app.use("/api/patrols", patrolRoutes)
+
+const PORT = process.env.PORT || 5001
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
-
