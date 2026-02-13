@@ -1,11 +1,11 @@
 import express from "express";
-import { register, login, logout } from "../controllers/auth.controller.js";
+import { registerUser, loginUser, logoutUser } from "../controllers/auth.controller.js";
+import { validateRegister, validateLogin, } from "../validators/auth.validator.js";
 
 const router = express.Router();
 
-// Public routes - no authentication required
-router.post("/register", register);
-router.post("/login", login);
-router.post("/logout", logout);
+router.post("/register", validateRegister, registerUser);
+router.post("/login", validateLogin, loginUser);
+router.post("/logout", logoutUser);
 
 export default router;
