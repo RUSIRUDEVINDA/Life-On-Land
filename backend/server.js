@@ -1,29 +1,42 @@
-import { connectDB } from "./config/db.js"
-import cookieParser from "cookie-parser"
-import express from "express"
-import cors from "cors"
-import authRoutes from "./routes/auth.route.js"
-import dotenv from "dotenv"
+import express from "express";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 
-dotenv.config()
+// Import database connection
+import { connectDB } from "./src/config/db.js";
 
-const app = express()
-connectDB()
+// Import routes
+import authRoutes from "./src/routes/auth.route.js";
+import areaRoutes from "./src/routes/protectedAreas.routes.js";
+import zoneRoutes from "./src/routes/zones.routes.js";
 
-// Enable CORS for all routes
-app.use(cors())
+// Load environment variables
+dotenv.config();
 
-// Middleware to parse JSON bodies
-app.use(express.json())
+// Initialize Express app
+const app = express();
 
-// Middleware to parse cookies
-app.use(cookieParser()); 
+// Connect to the database
+connectDB();
 
-// Auth routes
-app.use("/api/auth", authRoutes)
+// Middleware
+app.use(cors()); // Enable CORS for all routes
+app.use(express.json()); // Parse JSON bodies
+app.use(cookieParser()); // Parse cookies
 
-const PORT = process.env.PORT || 5001 
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/areas", areaRoutes);
+app.use("/api/zones", zoneRoutes);
+
+// Root route (optional, for testing)
+app.get("/", (req, res) => {
+  res.send("API is running");
+});
+
+// Start server
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-})
-
+  console.log(`Server is running on port ${PORT}`);
+});
