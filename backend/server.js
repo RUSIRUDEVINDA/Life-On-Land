@@ -3,6 +3,8 @@ import cookieParser from "cookie-parser"
 import express from "express"
 import cors from "cors"
 import authRoutes from "./routes/auth.route.js"
+import animalRoutes from "./routes/animal.route.js"
+import { notFound, errorHandler } from "./middleware/error.middleware.js"
 import dotenv from "dotenv"
 
 dotenv.config()
@@ -12,17 +14,22 @@ connectDB()
 
 // Enable CORS for all routes
 app.use(cors())
-
 // Middleware to parse JSON bodies
 app.use(express.json())
-
 // Middleware to parse cookies
-app.use(cookieParser()); 
+app.use(cookieParser());
 
 // Auth routes
 app.use("/api/auth", authRoutes)
+// Animal routes
+app.use("/api/animals", animalRoutes)
 
-const PORT = process.env.PORT || 5001 
+// 404 handler
+app.use(notFound)
+// Error handler
+app.use(errorHandler)
+
+const PORT = process.env.PORT || 5001
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
