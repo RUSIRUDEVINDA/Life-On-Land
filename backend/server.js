@@ -4,7 +4,7 @@ import express from "express"
 import cors from "cors"
 import authRoutes from "./routes/auth.route.js"
 import animalRoutes from "./routes/animal.route.js"
-import { notFound, errorHandler } from "./middleware/error.middleware.js"
+import patrolRoutes from "./routes/patrol.route.js"
 import dotenv from "dotenv"
 
 dotenv.config()
@@ -23,14 +23,11 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes)
 // Animal routes
 app.use("/api/animals", animalRoutes)
+// Patrol routes
+app.use("/api/patrols", patrolRoutes)
 
-// 404 handler
-app.use(notFound)
-// Error handler
-app.use(errorHandler)
 
 const PORT = process.env.PORT || 5001
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
-
