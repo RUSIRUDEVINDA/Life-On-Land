@@ -1,102 +1,144 @@
-import Patrol from "../models/Patrol.js";
+import mongoose from "mongoose";
+import * as service from "../services/patrol.service.js";
+import * as repo from "../repositories/patrol.repository.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-//Create a new patrol
-export const createPatrol = async (req, res) => {
-    try {
-        const patrol = new Patrol(req.body);
-        const savedPatrol = await patrol.save();
-        res.status(201).json(savedPatrol);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+// Build Mongol Query for Patrols
+const buildPatrolQuery = (queryParams) => {
+    const { protectedAreaId, from, to, rangerId, status } = queryParams;
+    const query = {};
+
+    if (protectedAreaId) {
+        query.protectedAreaId = new mongoose.Types.ObjectId(protectedAreaId);
     }
+
+    if (rangerId) {
+        query.assignedRangerIds = new mongoose.Types.ObjectId(rangerId);
+    }
+
+    if (status) query.status = status;
+
+    if (from || to) {
+        query.plannedStart = {};
+        if (from) query.plannedStart.$gte = new Date(from);
+        if (to) query.plannedStart.$lte = new Date(to);
+    }
+
+    return query;
 };
+
+// Create a new patrol
+export const createPatrol = asyncHandler(async (req, res) => {
+    const patrol = await service.createPatrol(req.body);
+    res.status(201).json({ message: "Patrol created successfully", patrol });
+});
 
 // Get all patrols
-export const getPatrols = async (req, res) => {
-    try {
-        const { protectedAreaId, from, to, rangerId } = req.query;
-        let query = {};
+export const getPatrols = asyncHandler(async (req, res) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const sort = { plannedStart: -1 };
 
-        if (protectedAreaId) query.protectedAreaId = protectedAreaId;
-        if (rangerId) query.assignedRangerIds = rangerId;
-        if (from || to) {
-            query.plannedStart = {};
-            if (from) query.plannedStart.$gte = new Date(from);
-            if (to) query.plannedStart.$lte = new Date(to);
+    const query = buildPatrolQuery(req.query);
+    const skip = (page - 1) * limit;
+
+    const [total, patrols] = await Promise.all([
+        repo.count(query),
+        repo.findWithPagination(query, sort, skip, limit)
+    ]);
+
+    res.json({
+        data: patrols,
+        pagination: {
+            total,
+            page,
+            limit,
+            pages: Math.ceil(total / limit) || 1
         }
-
-        const patrols = await Patrol.find(query)
-            .populate("assignedRangerIds", "name email")
-            .sort({ plannedStart: -1 });
-        res.status(200).json(patrols);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+    });
+});
 
 // Get single patrol details
-export const getPatrolById = async (req, res) => {
-    try {
-        const patrol = await Patrol.findById(req.params.id)
-            .populate("assignedRangerIds", "name email");
-        if (!patrol) return res.status(404).json({ message: "Patrol not found" });
-        res.status(200).json(patrol);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+export const getPatrolById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const error = new Error("Invalid patrol id");
+        error.statusCode = 400;
+        throw error;
     }
-};
+
+    const patrol = await repo.findById(id);
+    if (!patrol) {
+        const error = new Error("Patrol not found");
+        error.statusCode = 404;
+        throw error;
+    }
+
+    res.json({ patrol });
+});
 
 // Update patrol
-export const updatePatrol = async (req, res) => {
-    try {
-        const updatedPatrol = await Patrol.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        );
-        if (!updatedPatrol) return res.status(404).json({ message: "Patrol not found" });
-        res.status(200).json(updatedPatrol);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+export const updatePatrol = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const error = new Error("Invalid patrol id");
+        error.statusCode = 400;
+        throw error;
     }
-};
 
-// Delete patrol (this performs hard delete)
-export const deletePatrol = async (req, res) => {
-    try {
-        const deletedPatrol = await Patrol.findByIdAndDelete(req.params.id);
-        if (!deletedPatrol) return res.status(404).json({ message: "Patrol not found" });
-        res.status(200).json({ message: "Patrol deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    const patrol = await service.updatePatrol(id, req.body);
+    res.json({ message: "Patrol updated successfully", patrol });
+});
+
+// Delete patrol
+export const deletePatrol = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const error = new Error("Invalid patrol id");
+        error.statusCode = 400;
+        throw error;
     }
-};
 
-//Add check-in to patrol
-export const addCheckIn = async (req, res) => {
-    try {
-        const patrol = await Patrol.findById(req.params.id);
-        if (!patrol) return res.status(404).json({ message: "Patrol not found" });
+    const patrol = await service.deletePatrol(id);
+    res.json({
+        message: "Patrol deleted successfully",
+        patrol
+    });
+});
 
-        patrol.checkIns.push(req.body);
-        if (patrol.status === "PLANNED") {
-            patrol.status = "IN_PROGRESS";
-        }
+// Add check-in to patrol
+export const addCheckIn = asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
-        const savedPatrol = await patrol.save();
-        res.status(201).json(savedPatrol);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const error = new Error("Invalid patrol id");
+        error.statusCode = 400;
+        throw error;
     }
-};
+
+    const patrol = await service.addCheckIn(id, req.body);
+    res.status(201).json({ message: "Check-in added successfully", patrol });
+});
 
 // Get check-ins for a patrol
-export const getCheckIns = async (req, res) => {
-    try {
-        const patrol = await Patrol.findById(req.params.id).select("checkIns");
-        if (!patrol) return res.status(404).json({ message: "Patrol not found" });
-        res.status(200).json(patrol.checkIns);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+export const getCheckIns = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const error = new Error("Invalid patrol id");
+        error.statusCode = 400;
+        throw error;
     }
-};
+
+    const checkIns = await repo.getCheckIns(id);
+    if (!checkIns) {
+        const error = new Error("Patrol not found");
+        error.statusCode = 404;
+        throw error;
+    }
+
+    res.json({ checkIns });
+});
