@@ -1,8 +1,4 @@
-import Incident from '../models/Incident.models.js';
-import Zone from '../models/Zone.models.js';
-import ProtectedArea from '../models/ProtectedArea.models.js';
-
-import User from '../models/User.models.js';
+import * as incidentRepository from '../repositories/incident.repositories.js';
 
 /**
  * Create a new incident
@@ -12,12 +8,14 @@ import User from '../models/User.models.js';
  */
 export const createIncident = async (incidentData, user) => {
   // Verify zone and protected area exist
-  const zone = await Zone.findById(incidentData.zoneId);
+  const zone = await incidentRepository.findZoneById(incidentData.zoneId);
   if (!zone || !zone.isActive) {
     throw new Error('Zone not found or inactive');
   }
 
-  const protectedArea = await ProtectedArea.findById(incidentData.protectedAreaId);
+  const protectedArea = await incidentRepository.findProtectedAreaById(
+    incidentData.protectedAreaId
+  );
   if (!protectedArea || !protectedArea.isActive) {
     throw new Error('Protected area not found or inactive');
   }
@@ -31,17 +29,9 @@ export const createIncident = async (incidentData, user) => {
   let reportingUser = user;
   if (!user) {
     // Create or find anonymous public user for unauthenticated reports
-    let anonymousUser = await User.findOne({ username: 'anonymous_public', role: 'PUBLIC' });
+    let anonymousUser = await incidentRepository.findAnonymousPublicUser();
     if (!anonymousUser) {
-      anonymousUser = new User({
-        username: 'anonymous_public',
-        email: 'anonymous@public.local',
-        password: 'anonymous', // Will be hashed
-        role: 'PUBLIC',
-        fullName: 'Anonymous Public User',
-        isActive: true
-      });
-      await anonymousUser.save();
+      anonymousUser = await incidentRepository.createAnonymousPublicUser();
     }
     reportingUser = anonymousUser;
   }
@@ -52,7 +42,7 @@ export const createIncident = async (incidentData, user) => {
     status = 'UNVERIFIED';
   }
 
-  const incident = new Incident({
+  const incidentToCreate = {
     ...incidentData,
     status,
     reportedBy: reportingUser._id,
@@ -60,13 +50,10 @@ export const createIncident = async (incidentData, user) => {
       type: 'Point',
       coordinates: incidentData.location.coordinates
     }
-  });
+  };
 
-  await incident.save();
-  return await Incident.findById(incident._id)
-    .populate('reportedBy', 'username email fullName role')
-    .populate('zoneId', 'name')
-    .populate('protectedAreaId', 'name');
+  const incident = await incidentRepository.createIncident(incidentToCreate);
+  return await incidentRepository.getIncidentWithRelationsById(incident._id);
 };
 
 /**
@@ -117,8 +104,19 @@ export const getIncidents = async (filters = {}, pagination = {}) => {
     ]
   };
 
-  const result = await Incident.paginate(query, options);
-  return result;
+  const result = await incidentRepository.paginateIncidents(query, options);
+
+  return {
+    data: result.docs,
+    pagination: {
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      totalDocs: result.totalDocs,
+      hasNextPage: result.hasNextPage,
+      hasPrevPage: result.hasPrevPage
+    }
+  };
 };
 
 /**
@@ -127,20 +125,13 @@ export const getIncidents = async (filters = {}, pagination = {}) => {
  * @returns {Promise<Object>} Incident
  */
 export const getIncidentById = async (incidentId) => {
-  const incident = await Incident.findOne({
-    _id: incidentId,
-    isDeleted: false
-  })
-    .populate('reportedBy', 'username email fullName role')
-    .populate('verifiedBy', 'username email fullName role')
-    .populate('zoneId', 'name')
-    .populate('protectedAreaId', 'name');
+  const incident = await incidentRepository.findActiveIncidentById(incidentId);
 
   if (!incident) {
     throw new Error('Incident not found');
   }
 
-  return incident;
+  return await incidentRepository.getIncidentWithRelationsById(incident._id);
 };
 
 /**
@@ -151,10 +142,7 @@ export const getIncidentById = async (incidentId) => {
  * @returns {Promise<Object>} Updated incident
  */
 export const updateIncident = async (incidentId, updateData, user) => {
-  const incident = await Incident.findOne({
-    _id: incidentId,
-    isDeleted: false
-  });
+  const incident = await incidentRepository.findActiveIncidentById(incidentId);
 
   if (!incident) {
     throw new Error('Incident not found');
@@ -178,7 +166,7 @@ export const updateIncident = async (incidentId, updateData, user) => {
 
   // If updating zone, verify it exists and belongs to the same protected area
   if (updateData.zoneId) {
-    const zone = await Zone.findById(updateData.zoneId);
+    const zone = await incidentRepository.findZoneById(updateData.zoneId);
     if (!zone || !zone.isActive) {
       throw new Error('Zone not found or inactive');
     }
@@ -196,13 +184,9 @@ export const updateIncident = async (incidentId, updateData, user) => {
   }
 
   Object.assign(incident, updateData);
-  await incident.save();
+  await incidentRepository.saveIncident(incident);
 
-  return await Incident.findById(incident._id)
-    .populate('reportedBy', 'username email fullName role')
-    .populate('verifiedBy', 'username email fullName role')
-    .populate('zoneId', 'name')
-    .populate('protectedAreaId', 'name');
+  return await incidentRepository.getIncidentWithRelationsById(incident._id);
 };
 
 /**
@@ -212,10 +196,7 @@ export const updateIncident = async (incidentId, updateData, user) => {
  * @returns {Promise<Object>} Deleted incident
  */
 export const deleteIncident = async (incidentId, user) => {
-  const incident = await Incident.findOne({
-    _id: incidentId,
-    isDeleted: false
-  });
+  const incident = await incidentRepository.findActiveIncidentById(incidentId);
 
   if (!incident) {
     throw new Error('Incident not found');
@@ -230,6 +211,6 @@ export const deleteIncident = async (incidentId, user) => {
   incident.deletedAt = new Date();
   incident.deletedBy = user._id;
 
-  await incident.save();
+  await incidentRepository.saveIncident(incident);
   return incident;
 };

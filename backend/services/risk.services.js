@@ -135,3 +135,26 @@ export const generateRiskMap = async (protectedAreaId, fromDate = null, toDate =
     throw error;
   }
 };
+
+export const getRiskMapSummary = async (protectedAreaId, from, to) => {
+  const fromDate = from ? new Date(from) : null;
+  const toDate = to ? new Date(to) : null;
+
+  const riskMap = await generateRiskMap(protectedAreaId, fromDate, toDate);
+
+  return {
+    protectedAreaId,
+    dateRange: {
+      from: from || null,
+      to: to || null
+    },
+    zones: riskMap,
+    summary: {
+      totalZones: riskMap.length,
+      criticalZones: riskMap.filter(z => z.riskLevel === 'CRITICAL').length,
+      highRiskZones: riskMap.filter(z => z.riskLevel === 'HIGH').length,
+      mediumRiskZones: riskMap.filter(z => z.riskLevel === 'MEDIUM').length,
+      lowRiskZones: riskMap.filter(z => z.riskLevel === 'LOW').length
+    }
+  };
+};
