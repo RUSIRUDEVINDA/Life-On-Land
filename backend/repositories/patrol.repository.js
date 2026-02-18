@@ -41,3 +41,27 @@ export const getCheckIns = async (id) => {
     const patrol = await Patrol.findById(id).select("checkIns");
     return patrol ? patrol.checkIns : null;
 };
+
+export const updateCheckIn = async (patrolId, checkInId, checkInData) => {
+    return Patrol.findOneAndUpdate(
+        { _id: patrolId, "checkIns._id": checkInId },
+        {
+            $set: {
+                "checkIns.$.location": checkInData.location,
+                "checkIns.$.note": checkInData.note,
+                "checkIns.$.timestamp": checkInData.timestamp || new Date()
+            }
+        },
+        { new: true, runValidators: true }
+    );
+};
+
+export const deleteCheckIn = async (patrolId, checkInId) => {
+    return Patrol.findByIdAndUpdate(
+        patrolId,
+        {
+            $pull: { checkIns: { _id: checkInId } }
+        },
+        { new: true }
+    );
+};
