@@ -1,9 +1,3 @@
 /backend/node_modules
 /backend/.env
-/backend/config
-/backend/middleware
-/backend/utils
-/backend/controllers/auth.controller.js
-/backend/models/User.js
-/backend/routes/auth.route.js
-/backend/validators/auth.validator.js
+/backend/.env.example
