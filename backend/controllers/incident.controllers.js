@@ -25,7 +25,6 @@ export const getIncidents = async (req, res, next) => {
     next(error);
   }
 };
-
 export const getIncidentById = async (req, res, next) => {
   try {
     const incident = await incidentService.getIncidentById(req.params.id);
