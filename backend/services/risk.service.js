@@ -1,6 +1,6 @@
 import Incident from '../models/Incident.model.js';
 import Zone from '../models/Zone.model.js';
-import { getWeatherData } from './weather.services.js';
+import { getWeatherData } from './weather.service.js';
 
 /**
  * Calculates risk score for a zone based on incidents and weather
