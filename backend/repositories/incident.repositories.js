@@ -1,7 +1,7 @@
-import Incident from '../models/Incident.models.js';
+import Incident from '../models/Incident.model.js';
 import Zone from '../models/Zone.models.js';
 import ProtectedArea from '../models/ProtectedArea.models.js';
-import User from '../models/User.models.js';
+import User from '../models/User.js';
 
 // Zone & Protected Area lookups
 export const findZoneById = (zoneId) => Zone.findById(zoneId);
