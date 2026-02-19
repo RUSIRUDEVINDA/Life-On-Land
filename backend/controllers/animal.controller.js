@@ -4,31 +4,9 @@ import * as repo from "../repositories/animal.repository.js";
 import { buildAnimalQuery } from "../utils/queryBuilder.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-const handleAnimalServiceError = (res, error) => {
-    if (error.message === "TAG_EXISTS") {
-        return res.status(409).json({ error: "Animal tagId already exists" });
-    }
-
-    if (error.message === "NOT_FOUND") {
-        return res.status(404).json({ error: "Animal not found" });
-    }
-
-    throw error;
-};
-
 export const createAnimal = asyncHandler(async (req, res) => {
-    let animal;
-
-    try {
-        animal = await service.createAnimal(req.body);
-    } catch (error) {
-        return handleAnimalServiceError(res, error);
-    }
-
-    res.status(201).json({
-        message: "Animal registered",
-        animal
-    });
+    const animal = await service.createAnimal(req.body);
+    res.status(201).json({ message: "Animal registered", animal });
 });
 
 export const getAnimals = asyncHandler(async (req, res) => {
@@ -50,12 +28,18 @@ export const getAnimals = asyncHandler(async (req, res) => {
 export const getAnimalById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id))
-        return res.status(400).json({ error: "Invalid animal id" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const error = new Error("Invalid animal id");
+        error.statusCode = 400;
+        throw error;
+    }
 
     const animal = await repo.findById(id);
-    if (!animal)
-        return res.status(404).json({ error: "Animal not found" });
+    if (!animal) {
+        const error = new Error("Animal not found");
+        error.statusCode = 404;
+        throw error;
+    }
 
     res.json({ animal });
 });
@@ -63,34 +47,26 @@ export const getAnimalById = asyncHandler(async (req, res) => {
 export const updateAnimal = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id))
-        return res.status(400).json({ error: "Invalid animal id" });
-
-    let animal;
-
-    try {
-        animal = await service.updateAnimal(id, req.body);
-    } catch (error) {
-        return handleAnimalServiceError(res, error);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const error = new Error("Invalid animal id");
+        error.statusCode = 400;
+        throw error;
     }
 
+    const animal = await service.updateAnimal(id, req.body);
     res.json({ message: "Animal updated", animal });
 });
 
 export const deleteAnimal = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id))
-        return res.status(400).json({ error: "Invalid animal id" });
-
-    let animal;
-
-    try {
-        animal = await service.deleteAnimal(id);
-    } catch (error) {
-        return handleAnimalServiceError(res, error);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        const error = new Error("Invalid animal id");
+        error.statusCode = 400;
+        throw error;
     }
 
+    const animal = await service.deleteAnimal(id);
     res.json({
         message: "Animal deleted permanently",
         animal
