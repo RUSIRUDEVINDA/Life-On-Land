@@ -1,5 +1,5 @@
 import express from 'express';
-import * as incidentController from '../controllers/incident.controllers.js';
+import * as incidentController from '../controllers/incident.controller.js';
 import { authenticate, authorize, optionalAuth } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import {
