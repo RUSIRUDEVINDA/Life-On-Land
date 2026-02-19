@@ -1,13 +1,11 @@
 import express from 'express';
-import * as incidentController from '../controllers/incident.controller.js';
+import * as incidentController from '../controllers/incident.controllers.js';
 import { authenticate, authorize, optionalAuth } from '../middleware/auth.middleware.js';
-import { validate } from '../middleware/validate.middleware.js';
 import {
-  createIncidentSchema,
-  updateIncidentSchema,
-  getIncidentsQuerySchema,
-  riskMapQuerySchema
-} from '../validators/incident.validators.js';
+  validateCreateIncident,
+  validateUpdateIncident,
+  validateGetIncidentsQuery
+} from '../validators/incident.validator.js';
 
 const router = express.Router();
 
@@ -74,7 +72,7 @@ const router = express.Router();
 router.post(
   '/',
   optionalAuth,
-  validate(createIncidentSchema),
+  validateCreateIncident,
   incidentController.createIncident
 );
 
@@ -132,7 +130,7 @@ router.post(
 router.get(
   '/',
   authenticate,
-  validate(getIncidentsQuerySchema, 'query'),
+  validateGetIncidentsQuery,
   incidentController.getIncidents
 );
 
@@ -205,7 +203,7 @@ router.put(
   '/:id',
   authenticate,
   authorize('RANGER', 'OFFICER', 'Admin'),
-  validate(updateIncidentSchema),
+  validateUpdateIncident,
   incidentController.updateIncident
 );
 

@@ -1,5 +1,5 @@
-import * as incidentService from '../services/incident.services.js';
-import * as riskService from '../services/risk.services.js';
+import * as incidentService from '../services/incident.service.js';
+import * as riskService from '../services/risk.service.js';
 
 export const createIncident = async (req, res, next) => {
   try {
