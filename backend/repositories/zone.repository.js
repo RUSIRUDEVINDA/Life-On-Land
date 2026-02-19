@@ -1,0 +1,52 @@
+import Zone from "../models/Zone.models.js";
+import ProtectedArea from "../models/ProtectedArea.models.js";
+
+// Check if protected area exists and is active
+const ensureProtectedAreaActive = async (protectedAreaId) => {
+  return await ProtectedArea.findOne({
+    _id: protectedAreaId,
+    isDeleted: false,
+  });
+};
+
+// List zones by protected area
+const listZonesByProtectedAreaId = async (protectedAreaId) => {
+  return await Zone.find({
+    protectedArea: protectedAreaId,
+    isDeleted: false,
+  });
+};
+
+// Create zone
+const createZone = async (protectedAreaId, data) => {
+  return await Zone.create({
+    ...data,
+    protectedArea: protectedAreaId,
+  });
+};
+
+// Update zone
+const updateZone = async (zoneId, payload) => {
+  return await Zone.findOneAndUpdate(
+    { _id: zoneId, isDeleted: false },
+    payload,
+    { new: true }
+  );
+};
+
+// Soft delete zone
+const softDeleteZone = async (zoneId) => {
+  return await Zone.findOneAndUpdate(
+    { _id: zoneId, isDeleted: false },
+    { isDeleted: true },
+    { new: true }
+  );
+};
+
+export {
+  ensureProtectedAreaActive,
+  listZonesByProtectedAreaId,
+  createZone,
+  updateZone,
+  softDeleteZone,
+};
