@@ -1,5 +1,5 @@
 import express from 'express';
-import * as incidentController from '../controllers/incidentController.controllers.js';
+import * as incidentController from '../controllers/incident.controllers.js';
 import { authenticate, authorize, optionalAuth } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import {
@@ -7,7 +7,7 @@ import {
   updateIncidentSchema,
   getIncidentsQuerySchema,
   riskMapQuerySchema
-} from '../validators/incident.validator.validators.js';
+} from '../validators/incident.validators.js';
 
 const router = express.Router();
 
@@ -132,7 +132,7 @@ router.post(
 router.get(
   '/',
   authenticate,
-  validate(getIncidentsQuerySchema),
+  validate(getIncidentsQuerySchema, 'query'),
   incidentController.getIncidents
 );
 
