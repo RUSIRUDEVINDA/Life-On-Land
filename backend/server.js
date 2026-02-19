@@ -4,6 +4,8 @@ import express from "express"
 import cors from "cors"
 import authRoutes from "./routes/auth.route.js"
 import patrolRoutes from "./routes/patrol.route.js"
+import incidentRoutes from "./routes/incident.routes.js"
+import riskRoutes from "./routes/risk.routes.js"
 import dotenv from "dotenv"
 
 dotenv.config()
@@ -26,6 +28,10 @@ app.use("/api/auth", authRoutes)
 
 // Patrol routes
 app.use("/api/patrols", patrolRoutes)
+// Incident routes
+app.use("/api/incidents", incidentRoutes)
+// Risk map routes
+app.use("/api/risk-map", riskRoutes)
 
 const PORT = process.env.PORT || 5001
 
