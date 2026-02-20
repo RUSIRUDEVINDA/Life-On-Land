@@ -17,12 +17,15 @@ export const findWithPagination = (query, sort, skip, limit) =>
 export const count = (query) =>
     Animal.countDocuments(query);
 
-export const updateById = (id, update) =>
-    Animal.findByIdAndUpdate(
-        id,
+export const updateByTagId = (tagId, update) =>
+    Animal.findOneAndUpdate(
+        { tagId },
         update,
         { new: true, runValidators: true }
     );
+
+export const deleteByTagId = (tagId) =>
+    Animal.findOneAndDelete({ tagId });
 
 export const deleteById = (id) =>
     Animal.findByIdAndDelete(id);
