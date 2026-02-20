@@ -43,10 +43,25 @@ const softDeleteZone = async (zoneId) => {
   );
 };
 
+const findZoneByCoordinates = async (lng, lat) => {
+  return await Zone.findOne({
+    status: "ACTIVE",
+    geometry: {
+      $geoIntersects: {
+        $geometry: {
+          type: "Point",
+          coordinates: [lng, lat],
+        },
+      },
+    },
+  });
+};
+
 export {
   ensureProtectedAreaActive,
   listZonesByProtectedAreaId,
   createZone,
   updateZone,
   softDeleteZone,
+  findZoneByCoordinates,
 };
