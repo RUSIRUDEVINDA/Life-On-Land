@@ -11,8 +11,8 @@ export const createAnimal = async (data) => {
     return repo.create(data);
 };
 
-export const updateAnimal = async (id, data) => {
-    const currentAnimal = await repo.findById(id);
+export const updateAnimal = async (tagId, data) => {
+    const currentAnimal = await repo.findByTagId(tagId);
     if (!currentAnimal) {
         const error = new Error("Animal not found");
         error.statusCode = 404;
@@ -28,7 +28,7 @@ export const updateAnimal = async (id, data) => {
         }
     }
 
-    const updatedAnimal = await repo.updateById(id, { $set: data });
+    const updatedAnimal = await repo.updateByTagId(tagId, { $set: data });
     if (!updatedAnimal) {
         const error = new Error("Animal not found");
         error.statusCode = 404;
@@ -39,8 +39,8 @@ export const updateAnimal = async (id, data) => {
 };
 
 
-export const deleteAnimal = async (id) => {
-    const animal = await repo.deleteById(id);
+export const deleteAnimal = async (tagId) => {
+    const animal = await repo.deleteByTagId(tagId);
 
     if (!animal) {
         const error = new Error("Animal not found");

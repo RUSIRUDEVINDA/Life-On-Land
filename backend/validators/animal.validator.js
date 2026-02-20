@@ -17,13 +17,14 @@ const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(value);
 
 export const validateCreateAnimal = (req, res, next) => {
     const errors = [];
-    const { tagId, species, sex, ageClass, protectedAreaId, status } = req.body || {};
+    const { tagId, species, sex, ageClass, protectedAreaId, zoneId, status } = req.body || {};
 
     if (!isNonEmptyString(tagId)) errors.push("tagId is required");
     if (!isNonEmptyString(species)) errors.push("species is required");
     if (!isNonEmptyString(sex)) errors.push("sex is required");
     if (!isNonEmptyString(ageClass)) errors.push("ageClass is required");
     if (!isNonEmptyString(protectedAreaId)) errors.push("protectedAreaId is required");
+    if (!isNonEmptyString(zoneId)) errors.push("zoneId is required");
     if (!isNonEmptyString(status)) errors.push("status is required");
 
     const normalizedSex = normalizeUpper(sex);
@@ -42,6 +43,9 @@ export const validateCreateAnimal = (req, res, next) => {
     if (protectedAreaId && !isValidObjectId(protectedAreaId)) {
         errors.push("protectedAreaId must be a valid ObjectId");
     }
+    if (zoneId && !isValidObjectId(zoneId)) {
+        errors.push("zoneId must be a valid ObjectId");
+    }
 
     if (errors.length > 0) {
         return res.status(400).json({ error: "Validation failed", details: errors });
@@ -53,6 +57,7 @@ export const validateCreateAnimal = (req, res, next) => {
         sex: normalizedSex,
         ageClass: normalizedAgeClass,
         protectedAreaId: normalizeTrim(protectedAreaId),
+        zoneId: normalizeTrim(zoneId),
         status: normalizedStatus
     };
 
@@ -61,7 +66,7 @@ export const validateCreateAnimal = (req, res, next) => {
 
 export const validateUpdateAnimal = (req, res, next) => {
     const errors = [];
-    const { tagId, species, sex, ageClass, protectedAreaId, status } = req.body || {};
+    const { tagId, species, sex, ageClass, protectedAreaId, zoneId, status } = req.body || {};
 
     if (!req.body || Object.keys(req.body).length === 0) {
         return res.status(400).json({ error: "No fields provided to update" });
@@ -102,6 +107,14 @@ export const validateUpdateAnimal = (req, res, next) => {
             errors.push("protectedAreaId must be a valid ObjectId");
         } else {
             updates.protectedAreaId = normalizeTrim(protectedAreaId);
+        }
+    }
+
+    if (zoneId !== undefined) {
+        if (!isNonEmptyString(zoneId) || !isValidObjectId(zoneId)) {
+            errors.push("zoneId must be a valid ObjectId");
+        } else {
+            updates.zoneId = normalizeTrim(zoneId);
         }
     }
 
