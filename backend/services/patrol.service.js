@@ -43,3 +43,23 @@ export const addCheckIn = async (id, checkInData) => {
     }
     return updatedPatrol;
 };
+
+export const updateCheckIn = async (patrolId, checkInId, checkInData) => {
+    const updatedPatrol = await repo.updateCheckIn(patrolId, checkInId, checkInData);
+    if (!updatedPatrol) {
+        const error = new Error("Patrol or Check-in not found");
+        error.statusCode = 404;
+        throw error;
+    }
+    return updatedPatrol;
+};
+
+export const deleteCheckIn = async (patrolId, checkInId) => {
+    const updatedPatrol = await repo.deleteCheckIn(patrolId, checkInId);
+    if (!updatedPatrol) {
+        const error = new Error("Patrol not found");
+        error.statusCode = 404;
+        throw error;
+    }
+    return updatedPatrol;
+};

@@ -1,8 +1,7 @@
 import express from 'express';
-import * as incidentController from '../controllers/incidentController.controllers.js';
+import * as incidentController from '../controllers/incident.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { validate } from '../middleware/validate.middleware.js';
-import { riskMapQuerySchema } from '../validators/incident.validator.validators.js';
+import { validateRiskMapQuery } from '../validators/incident.validator.js';
 
 const router = express.Router();
 
@@ -37,7 +36,7 @@ const router = express.Router();
 router.get(
   '/',
   authenticate,
-  validate(riskMapQuerySchema),
+  validateRiskMapQuery,
   incidentController.getRiskMap
 );
 
