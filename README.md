@@ -108,36 +108,57 @@ npm run simulate
 | `GET` | `/api/animals` | List animals (Paginated + Filters) | RANGER, ADMIN |
 | `POST` | `/api/animals` | Register a new animal with TagId | ADMIN |
 | `GET` | `/api/animals/:tagId` | Get detailed animal profile | RANGER, ADMIN |
+| `GET` | `/api/animals/:tagId/movements` | Get movement history for specific animal | RANGER, ADMIN |
 | `PUT` | `/api/animals/:tagId` | Update animal status/details | ADMIN |
 | `DELETE` | `/api/animals/:tagId` | Soft delete an animal | ADMIN |
 
-### 📍 Movement Tracking (Real-time)
+### 📍 Movement Tracking
 | Method | Endpoint | Description | Auth Req. |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/movements` | Ingest bulk/single GPS data | None (IoT Device) |
-| `GET` | `/api/movements/:tagId` | Get movement history for animal | JWT |
+| `POST` | `/api/movements` | Ingest movement data (GPS/Manual) | None (IoT) |
+| `GET` | `/api/movements` | Search movement logs (with filters) | JWT |
 | `GET` | `/api/movements/summary` | Get latest location for all animals | JWT |
+| `GET` | `/api/movements/:tagId` | Get movement history by Tag ID | JWT |
 
 ### 🛡️ Patrol Management
 | Method | Endpoint | Description | Roles |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/patrols` | Schedule a new patrol route | ADMIN |
 | `GET` | `/api/patrols` | List active/past patrols | RANGER, ADMIN |
-| `POST` | `/api/patrols/:id/check-ins` | Log a location check-in | RANGER |
+| `GET` | `/api/patrols/:id` | Get specific patrol details | RANGER, ADMIN |
+| `PUT` | `/api/patrols/:id` | Update patrol schedule/route | ADMIN |
+| `DELETE` | `/api/patrols/:id` | Remove a patrol record | ADMIN |
+| `POST` | `/api/patrols/:id/check-ins` | Record a ranger check-in point | RANGER |
+| `GET` | `/api/patrols/:id/check-ins` | View check-in history for a patrol | RANGER, ADMIN |
+| `PUT` | `/api/patrols/:id/check-ins/:checkInId` | Update an existing check-in | RANGER |
+| `DELETE` | `/api/patrols/:id/check-ins/:checkInId` | Remove a check-in record | RANGER |
 
 ### 🚨 Incident Reporting
 | Method | Endpoint | Description | Roles |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/incidents` | Report a poaching/habitat threat | ANY (Verified) |
 | `GET` | `/api/incidents` | Search and filter incidents | RANGER, ADMIN |
-| `PUT` | `/api/incidents/:id` | Update severity/status | RANGER, ADMIN |
+| `GET` | `/api/incidents/:id` | Get full incident investigation report | RANGER, ADMIN |
+| `PUT` | `/api/incidents/:id` | Update severity, status, or notes | RANGER, ADMIN |
+| `DELETE` | `/api/incidents/:id` | Soft delete an incident record | ADMIN |
 
-### 🌍 Risk Assessment & Zones
+### 🗺️ Conservation Areas & Zones
 | Method | Endpoint | Description | Roles |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/risk-map` | Get risk scores based on history | ADMIN |
-| `GET` | `/api/protected-areas` | List conservation areas | ALL |
-| `POST` | `/api/protected-areas` | Create new area/boundary | ADMIN |
+| `GET` | `/api/protected-areas` | List all conservation areas | ALL |
+| `POST` | `/api/protected-areas` | Create new area boundary | ADMIN |
+| `GET` | `/api/protected-areas/:id` | Get specific area details | ALL |
+| `PUT` | `/api/protected-areas/:id` | Update area data | ADMIN |
+| `DELETE` | `/api/protected-areas/:id` | Remove an area | ADMIN |
+| `GET` | `/api/protected-areas/:id/zones` | List zones within an area | ALL |
+| `POST` | `/api/protected-areas/:id/zones` | Create a new zone in an area | ADMIN |
+| `PUT` | `/api/zones/:zoneId` | Update zone properties (e.g. Risk Level) | ADMIN |
+| `DELETE` | `/api/zones/:zoneId` | Remove a zone permanently | ADMIN |
+
+### 📊 Risk Assessment
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/risk-map` | Generate risk map data (Heatmap) | ADMIN |
 
 ---
 
