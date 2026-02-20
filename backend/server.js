@@ -7,8 +7,9 @@ import patrolRoutes from "./routes/patrol.route.js"
 import incidentRoutes from "./routes/incident.route.js"
 import riskRoutes from "./routes/risk.route.js"
 import animalRoutes from "./routes/animal.route.js"
+import movementRoutes from "./routes/movement.route.js"
+import { notFound, errorHandler } from "./middleware/error.middleware.js"
 import dotenv from "dotenv"
-
 
 dotenv.config()
 
@@ -32,6 +33,12 @@ app.use("/api/incidents", incidentRoutes)
 app.use("/api/risk-map", riskRoutes)
 // Animal routes
 app.use("/api/animals", animalRoutes)
+// Movement routes
+app.use("/api/movements", movementRoutes)
+
+// Error handling middleware
+app.use(notFound);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5001
 app.listen(PORT, () => {
