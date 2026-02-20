@@ -18,5 +18,7 @@ router.delete("/:id", authorizeRoles("ADMIN"), deletePatrol);
 
 router.post("/:id/check-ins", authorizeRoles("RANGER"), validateCheckIn, addCheckIn);
 router.get("/:id/check-ins", authorizeRoles("ADMIN", "RANGER"), getCheckIns);
+router.put("/:id/check-ins/:checkInId", authorizeRoles("RANGER"), validateCheckIn, updateCheckIn);
+router.delete("/:id/check-ins/:checkInId", authorizeRoles("RANGER"), deleteCheckIn);
 
 export default router;

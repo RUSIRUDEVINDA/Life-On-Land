@@ -142,3 +142,31 @@ export const getCheckIns = asyncHandler(async (req, res) => {
 
     res.json({ checkIns });
 });
+
+// Update a check-in
+export const updateCheckIn = asyncHandler(async (req, res) => {
+    const { id, checkInId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(checkInId)) {
+        const error = new Error("Invalid patrol or check-in id");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const patrol = await service.updateCheckIn(id, checkInId, req.body);
+    res.json({ message: "Check-in updated successfully", patrol });
+});
+
+// Delete a check-in
+export const deleteCheckIn = asyncHandler(async (req, res) => {
+    const { id, checkInId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(checkInId)) {
+        const error = new Error("Invalid patrol or check-in id");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const patrol = await service.deleteCheckIn(id, checkInId);
+    res.json({ message: "Check-in deleted successfully", patrol });
+});
