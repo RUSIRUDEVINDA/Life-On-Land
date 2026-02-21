@@ -1,5 +1,5 @@
-import Zone from "../models/Zone.models.js";
-import ProtectedArea from "../models/ProtectedArea.models.js";
+import Zone from "../models/Zone.model.js";
+import ProtectedArea from "../models/ProtectedArea.model.js";
 
 // Check if protected area exists and is active
 const ensureProtectedAreaActive = async (protectedAreaId) => {
@@ -43,10 +43,25 @@ const softDeleteZone = async (zoneId) => {
   );
 };
 
+const findZoneByCoordinates = async (lng, lat) => {
+  return await Zone.findOne({
+    status: "ACTIVE",
+    geometry: {
+      $geoIntersects: {
+        $geometry: {
+          type: "Point",
+          coordinates: [lng, lat],
+        },
+      },
+    },
+  });
+};
+
 export {
   ensureProtectedAreaActive,
   listZonesByProtectedAreaId,
   createZone,
   updateZone,
   softDeleteZone,
+  findZoneByCoordinates,
 };

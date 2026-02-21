@@ -1,4 +1,4 @@
-import * as incidentRepository from '../repositories/incident.repositories.js';
+import * as incidentRepository from '../repositories/incident.repository.js';
 
 /**
  * Create a new incident

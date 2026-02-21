@@ -9,6 +9,16 @@ const animalSchema = new mongoose.Schema(
             index: true,
             trim: true
         },
+        protectedAreaId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            index: true
+        },
+        zoneId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            index: true
+        },
         species: {
             type: String,
             required: true,
@@ -26,11 +36,6 @@ const animalSchema = new mongoose.Schema(
             enum: ["INFANT", "JUVENILE", "SUBADULT", "ADULT", "UNKNOWN"],
             required: true,
             default: "UNKNOWN"
-        },
-        protectedAreaId: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            index: true
         },
         status: {
             type: String,

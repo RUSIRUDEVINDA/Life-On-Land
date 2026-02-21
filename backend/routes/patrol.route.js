@@ -1,23 +1,8 @@
 import express from "express";
-import {
-    createPatrol,
-    getPatrols,
-    getPatrolById,
-    updatePatrol,
-    deletePatrol,
-    addCheckIn,
-    getCheckIns,
-    updateCheckIn,
-    deleteCheckIn
-} from "../controllers/patrol.controller.js";
+import { createPatrol, getPatrols, getPatrolById, updatePatrol, deletePatrol, addCheckIn, getCheckIns, updateCheckIn, deleteCheckIn } from "../controllers/patrol.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
-import {
-    validateCreatePatrol,
-    validateUpdatePatrol,
-    validatePatrolQuery,
-    validateCheckIn
-} from "../validators/patrol.validator.js";
+import {validateCreatePatrol,validateUpdatePatrol,validatePatrolQuery,validateCheckIn} from "../validators/patrol.validator.js";
 
 const router = express.Router();
 
