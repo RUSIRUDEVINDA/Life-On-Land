@@ -9,21 +9,29 @@ import * as incidentRepository from '../repositories/incident.repositories.js';
 export const createIncident = async (incidentData, user) => {
   // Verify zone and protected area exist
   const zone = await incidentRepository.findZoneById(incidentData.zoneId);
-  if (!zone || !zone.isActive) {
+  if (!zone || zone.status !== 'ACTIVE') {
     throw new Error('Zone not found or inactive');
   }
 
   const protectedArea = await incidentRepository.findProtectedAreaById(
     incidentData.protectedAreaId
   );
-  if (!protectedArea || !protectedArea.isActive) {
-    throw new Error('Protected area not found or inactive');
+  if (!protectedArea) {
+    throw new Error(`Protected area with ID ${incidentData.protectedAreaId} not found`);
+  }
+  if (protectedArea.status !== 'ACTIVE') {
+    throw new Error(`Protected area with ID ${incidentData.protectedAreaId} is not active (status: ${protectedArea.status})`);
   }
 
-  // Verify zone belongs to protected area
-  if (zone.protectedAreaId.toString() !== incidentData.protectedAreaId) {
-    throw new Error('Zone does not belong to the specified protected area');
+  // Verify zone belongs to protected area (if zone has protectedAreaId, check it matches)
+  if (zone.protectedAreaId) {
+    const zoneProtectedAreaId = zone.protectedAreaId.toString ? zone.protectedAreaId.toString() : String(zone.protectedAreaId);
+    const incidentProtectedAreaId = String(incidentData.protectedAreaId);
+    if (zoneProtectedAreaId !== incidentProtectedAreaId) {
+      throw new Error('Zone does not belong to the specified protected area');
+    }
   }
+  // Note: If zone.protectedAreaId is missing, we still proceed since we've validated the protectedAreaId exists and is active
 
   // Handle unauthenticated users (PUBLIC access)
   let reportingUser = user;
@@ -38,19 +46,24 @@ export const createIncident = async (incidentData, user) => {
 
   // Set status based on user role
   let status = incidentData.status || 'REPORTED';
-  if (!user || reportingUser.role === 'PUBLIC') {
+  // If no user provided or it's the anonymous user, set status to UNVERIFIED
+  if (!user || reportingUser.email === 'anonymous@public.local') {
     status = 'UNVERIFIED';
   }
 
   const incidentToCreate = {
     ...incidentData,
     status,
-    reportedBy: reportingUser._id,
-    location: {
+    reportedBy: reportingUser._id
+  };
+
+  // Only add location if provided
+  if (incidentData.location && incidentData.location.coordinates) {
+    incidentToCreate.location = {
       type: 'Point',
       coordinates: incidentData.location.coordinates
-    }
-  };
+    };
+  }
 
   const incident = await incidentRepository.createIncident(incidentToCreate);
   return await incidentRepository.getIncidentWithRelationsById(incident._id);
@@ -97,8 +110,8 @@ export const getIncidents = async (filters = {}, pagination = {}) => {
     limit: parseInt(limit),
     sort,
     populate: [
-      { path: 'reportedBy', select: 'username email fullName role' },
-      { path: 'verifiedBy', select: 'username email fullName role' },
+      { path: 'reportedBy', select: 'name email role' },
+      { path: 'verifiedBy', select: 'name email role' },
       { path: 'zoneId', select: 'name' },
       { path: 'protectedAreaId', select: 'name' }
     ]
@@ -148,9 +161,9 @@ export const updateIncident = async (incidentId, updateData, user) => {
     throw new Error('Incident not found');
   }
 
-  // Role-based update restrictions
-  if (user.role === 'PUBLIC') {
-    throw new Error('Public users cannot update incidents');
+  // Role-based update restrictions - anonymous users cannot update incidents
+  if (user.email === 'anonymous@public.local') {
+    throw new Error('Anonymous users cannot update incidents');
   }
 
   // Only Admin and OFFICER can change status to VERIFIED
@@ -167,7 +180,7 @@ export const updateIncident = async (incidentId, updateData, user) => {
   // If updating zone, verify it exists and belongs to the same protected area
   if (updateData.zoneId) {
     const zone = await incidentRepository.findZoneById(updateData.zoneId);
-    if (!zone || !zone.isActive) {
+    if (!zone || zone.status !== 'ACTIVE') {
       throw new Error('Zone not found or inactive');
     }
     if (zone.protectedAreaId.toString() !== incident.protectedAreaId.toString()) {

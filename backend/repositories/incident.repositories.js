@@ -1,6 +1,6 @@
 import Incident from '../models/Incident.model.js';
-import Zone from '../models/Zone.model.js';
-import ProtectedArea from '../models/ProtectedArea.model.js';
+import Zone from '../models/Zone.models.js';
+import ProtectedArea from '../models/ProtectedArea.models.js';
 import User from '../models/User.js';
 
 // Zone & Protected Area lookups
@@ -11,16 +11,14 @@ export const findProtectedAreaById = (protectedAreaId) =>
 
 // User helpers
 export const findAnonymousPublicUser = () =>
-  User.findOne({ username: 'anonymous_public', role: 'PUBLIC' });
+  User.findOne({ email: 'anonymous@public.local', role: 'RANGER' });
 
 export const createAnonymousPublicUser = async () => {
   const anonymousUser = new User({
-    username: 'anonymous_public',
+    name: 'Anonymous Public User',
     email: 'anonymous@public.local',
     password: 'anonymous', // Will be hashed by the User model middleware
-    role: 'PUBLIC',
-    fullName: 'Anonymous Public User',
-    isActive: true
+    role: 'RANGER'
   });
 
   await anonymousUser.save();
@@ -45,8 +43,8 @@ export const findActiveIncidentById = (incidentId) =>
 
 export const getIncidentWithRelationsById = (incidentId) =>
   Incident.findById(incidentId)
-    .populate('reportedBy', 'username email fullName role')
-    .populate('verifiedBy', 'username email fullName role')
+    .populate('reportedBy', 'name email role')
+    .populate('verifiedBy', 'name email role')
     .populate('zoneId', 'name')
     .populate('protectedAreaId', 'name');
 

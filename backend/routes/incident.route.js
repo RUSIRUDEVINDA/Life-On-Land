@@ -26,7 +26,6 @@ const router = express.Router();
  *             required:
  *               - type
  *               - description
- *               - location
  *               - zoneId
  *               - protectedAreaId
  *               - incidentDate
@@ -38,6 +37,7 @@ const router = express.Router();
  *                 type: string
  *               location:
  *                 type: object
+ *                 description: Optional location coordinates
  *                 properties:
  *                   type:
  *                     type: string
