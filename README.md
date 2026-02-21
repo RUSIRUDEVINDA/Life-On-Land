@@ -1,249 +1,189 @@
 # Life-On-Land 🦁🐘
 
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)
+![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)
+
 **Classification:** Public-SLIIT
 
-Life-On-Land is a Poaching Alert and Wildlife Movement Tracking application. It is designed to assist authorities and rangers in monitoring wildlife movements and preventing illegal poaching activities. This project is developed as part of the Application Frameworks module at SLIIT.
+Life-On-Land is a professional-grade **Poaching Alert and Wildlife Movement Tracking** system. It provides a robust backend infrastructure for monitoring wildlife, managing ranger patrols, assessing environmental risks, and detecting potential poaching incidents in real-time.
 
 ---
 
 ## 🏗️ System Architecture
 
-The project follows a **Layered Architecture** with the **Service-Repository Pattern** to ensure separation of concerns, maintainability, and scalability.
+The project is built using a **Layered Architecture** with the **Service-Repository Pattern**, ensuring a clean separation of concerns and high testability.
 
 ### Request-Response Flow
 ```mermaid
 graph TD
-    A[Client / Frontend] -->|1. HTTP Request| B[Express Router]
-    B -->|2. Middleware| C[Auth & Role Middleware]
-    C -->|3. Validation| D[Request Validators]
-    D -->|4. Route Handler| E[Controller]
-    E -->|5. Business Logic| F[Service Layer]
-    F -->|6. Data Operations| G[Repository Layer]
-    G -->|7. Mongoose Operations| H[Mongoose Model]
-    H -->|8. Query/Save| I[(MongoDB)]
+    A[Client / Frontend] -->|HTTP Request| B[Express Router]
+    B -->|Auth & Role Check| C[Security Middleware]
+    C -->|Input Validation| D[Express-Validator]
+    D -->|Request Handling| E[Controller]
+    E -->|Business Logic| F[Service Layer]
+    F -->|Data Access| G[Repository Layer]
+    G -->|Mongoose Schema| H[MongoDB]
     
-    I -.->|Data Result| H
-    H -.-> G
-    G -.-> F
-    F -.-> E
-    E -.->|9. HTTP Response| A
+    H -.->|Data| G
+    G -.->|Business Object| F
+    F -.->|Result| E
+    E -.->|JSON Response| A
 ```
 
-1.  **API Layer (Routes & Controllers):**
-    *   **Routes:** Define the API endpoints and specify middleware (authentication, role-based access, validation).
-    *   **Controllers:** Handle HTTP requests, extract data from the request object, and call the appropriate services.
-2.  **Business Logic Layer (Services):**
-    *   **Services:** Encapsulate core business logic, such as validation checks that depend on multiple resources and complex data transformations.
-3.  **Data Access Layer (Repositories & Models):**
-    *   **Repositories:** Abstract database operations. This allows the business logic to remain agnostic of the underlying database implementation.
-    *   **Models:** Define the database schemas using Mongoose for MongoDB.
-
-### Folder Responsibilities & Structure
-
-The `backend` directory is organized into specific folders, each with a clear responsibility to maintain the Single Responsibility Principle:
-
-*   **`config/`**: Contains configuration files, such as the database connection logic (`db.js`). Centralizes environment-dependent settings.
-*   **`routes/`**: The entry point for all API requests. It maps URLs to specific controllers and attaches necessary middleware (like authentication or validation).
-*   **`controllers/`**: Orchestrates the request-response cycle. It extracts data from the request, calls the appropriate Service, and sends the final HTTP response (e.g., `201 Created`).
-*   **`services/`**: The "brain" of the application. Contains business logic that isn't specific to the database or the transport layer. For example, checking if a `tagId` is already in use before creating a new animal.
-*   **`repositories/`**: Acts as a data access layer. It contains direct database operations using Mongoose methods (`find`, `findById`, `create`). This makes it easy to swap databases or unit test services.
-*   **`models/`**: Defines the data structure (Schema) for MongoDB. It ensures data consistency and provides the Mongoose model objects.
-*   **`middleware/`**: Functions that run "in the middle" of a request.
-    *   `auth.middleware.js`: Verifies JWT tokens.
-    *   `role.middleware.js`: Restricts access based on user roles (`ADMIN`, `RANGER`).
-    *   `error.middleware.js`: Global error handling to catch and format server errors.
-*   **`validators/`**: Contains logic to "sanitize" and validate incoming request data (body, query, params) before it reaches the controllers.
-*   **`utils/`**: Reusable utility functions, such as JWT generation, custom error handling wrappers (`asyncHandler`), and complex query builders.
-
----
-
-### Full Execution Flow (Example: Creating an Animal)
-
-1.  **Incoming Request**: A client sends a `POST` request to `/api/animals`.
-2.  **Routing**: `server.js` passes the request to `animal.route.js`.
-3.  **Middleware & Security**:
-    *   `protect` middleware verifies the user's JWT.
-    *   `authorizeRoles("ADMIN")` ensures the user has permission.
-4.  **Validation**: `validateCreateAnimal` checks if the body has a valid `tagId`, `species`, etc.
-5.  **Controller**: `animal.controller.js` receives the sanitized data. It calls `animalService.createAnimal()`.
-6.  **Business Logic**: `animal.service.js` checks if an animal with that `tagId` already exists via the repository.
-7.  **Data Access**: If valid, `animal.repository.js` calls `Animal.create()` to save it to MongoDB.
-8.  **Final Response**: The Controller sends a `201` status back to the client with the created animal data.
-
----
-
-**Tech Stack:**
-*   **Backend:** Node.js, Express.js
-*   **Database:** MongoDB with Mongoose
-*   **Authentication:** JSON Web Token (JWT) with HTTP-only Cookies and Bearer Header support.
+### Folder Responsibilities
+- **`config/`**: Database and environment configurations.
+- **`routes/`**: API endpoint definitions and middleware mapping.
+- **`controllers/`**: HTTP logic, status codes, and response formatting.
+- **`services/`**: Complex business rules and cross-module logic.
+- **`repositories/`**: Raw database interactions (Mongoose queries).
+- **`models/`**: Data schemas and entity definitions.
+- **`middleware/`**: Auth, Authorization, and Global Error Handling.
+- **`validators/`**: Request body and query parameter requirements.
+- **`scripts/`**: Automation and simulation utilities.
 
 ---
 
 ## 🚀 Setup Instructions
 
-Follow these steps to get the project running locally:
+### 1. Prerequisites
+- **Node.js**: v18.x or higher
+- **MongoDB**: v6.0 or higher (Local or Atlas)
+- **Git**: For version control
 
-### Prerequisites
-*   [Node.js](https://nodejs.org/) (v16+ recommended)
-*   [MongoDB](https://www.mongodb.com/try/download/community) (Local or Atlas instance)
+### 2. Installation
+```bash
+# Clone the repository
+git clone <repository-url>
+cd Life-On-Land
 
-### Installation
+# Install dependencies
+cd backend
+npm install
+```
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone <repository-url>
-    cd Life-On-Land
-    ```
+### 3. Environment Configuration
+Create a `.env` file in the `backend/` directory:
+```env
+PORT=5001
+MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/life-on-land
+JWT_SECRET=your_super_secret_key_change_this_regularly
+JWT_EXPIRES_IN=7d
+NODE_ENV=development
+```
 
-2.  **Setup Backend:**
-    ```bash
-    cd backend
-    npm install
-    ```
+### 4. Running the Application
+```bash
+# Development mode (with Hot Reload)
+npm run dev
 
-3.  **Configure Environment Variables:**
-    Create a `.env` file in the `backend` directory and add your credentials (refer to `.env.example`):
-    ```env
-    PORT=5001
-    MONGO_URI=your_mongodb_connection_string
-    JWT_SECRET=your_jwt_secret_key
-    JWT_EXPIRES_IN=7d
-    NODE_ENV=development
-    ```
+# Production mode
+npm start
+```
+The API is served at `http://localhost:5001/api`.
 
-4.  **Run the Application:**
-    ```bash
-    # For development (with nodemon)
-    npm run dev
-
-    # For production
-    npm start
-    ```
-    The server should now be running on `http://localhost:5001`.
+### 5. Running the Movement Simulator
+To simulate real-time animal tracking data:
+```bash
+npm run simulate
+```
 
 ---
 
 ## 🔑 API Endpoint Documentation
 
-### Authentication
-Most endpoints require authentication. You can authenticate by:
-1.  Providing a `Bearer <token>` in the `Authorization` header.
-2.  Using the `jwt` cookie set automatically upon login.
+### 🛡️ Authentication
+| Method | Endpoint | Description | Auth Req. |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Register a new Ranger/Admin | None |
+| `POST` | `/api/auth/login` | Login and receive JWT/Cookie | None |
+| `POST` | `/api/auth/logout` | Clear authentication state | None |
 
-#### 1. Register User
-*   **Endpoint:** `POST /api/auth/register`
-*   **Method:** `POST`
-*   **Auth Required:** No
-*   **Request Body:**
-    ```json
-    {
-      "name": "John Doe",
-      "email": "john@example.com",
-      "password": "Password123",
-      "role": "RANGER"
-    }
-    ```
-*   **Success Response (201):**
-    ```json
-    {
-      "message": "User registered successfully",
-      "_id": "...",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "role": "RANGER"
-    }
-    ```
+### 🐾 Animal Management
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/animals` | List animals (Paginated + Filters) | RANGER, ADMIN |
+| `POST` | `/api/animals` | Register a new animal with TagId | ADMIN |
+| `GET` | `/api/animals/:tagId` | Get detailed animal profile | RANGER, ADMIN |
+| `GET` | `/api/animals/:tagId/movements` | Get movement history for specific animal | RANGER, ADMIN |
+| `PUT` | `/api/animals/:tagId` | Update animal status/details | ADMIN |
+| `DELETE` | `/api/animals/:tagId` | Soft delete an animal | ADMIN |
 
-#### 2. Login User
-*   **Endpoint:** `POST /api/auth/login`
-*   **Method:** `POST`
-*   **Auth Required:** No
-*   **Request Body:**
-    ```json
-    {
-      "email": "john@example.com",
-      "password": "Password123"
-    }
-    ```
-*   **Success Response (200):** Sets a `jwt` cookie.
+### 📍 Movement Tracking
+| Method | Endpoint | Description | Auth Req. |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/movements` | Ingest movement data (GPS/Manual) | None (IoT) |
+| `GET` | `/api/movements` | Search movement logs (with filters) | JWT |
+| `GET` | `/api/movements/summary` | Get latest location for all animals | JWT |
+| `GET` | `/api/movements/:tagId` | Get movement history by Tag ID | JWT |
 
-#### 3. Logout User
-*   **Endpoint:** `POST /api/auth/logout`
-*   **Method:** `POST`
-*   **Auth Required:** No
-*   **Response (200):** Clears the `jwt` cookie.
+### 🛡️ Patrol Management
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/patrols` | Schedule a new patrol route | ADMIN |
+| `GET` | `/api/patrols` | List active/past patrols | RANGER, ADMIN |
+| `GET` | `/api/patrols/:id` | Get specific patrol details | RANGER, ADMIN |
+| `PUT` | `/api/patrols/:id` | Update patrol schedule/route | ADMIN |
+| `DELETE` | `/api/patrols/:id` | Remove a patrol record | ADMIN |
+| `POST` | `/api/patrols/:id/check-ins` | Record a ranger check-in point | RANGER |
+| `GET` | `/api/patrols/:id/check-ins` | View check-in history for a patrol | RANGER, ADMIN |
+| `PUT` | `/api/patrols/:id/check-ins/:checkInId` | Update an existing check-in | RANGER |
+| `DELETE` | `/api/patrols/:id/check-ins/:checkInId` | Remove a check-in record | RANGER |
 
-### Animal Management
+### 🚨 Incident Reporting
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/incidents` | Report a poaching/habitat threat | ANY (Verified) |
+| `GET` | `/api/incidents` | Search and filter incidents | RANGER, ADMIN |
+| `GET` | `/api/incidents/:id` | Get full incident investigation report | RANGER, ADMIN |
+| `PUT` | `/api/incidents/:id` | Update severity, status, or notes | RANGER, ADMIN |
+| `DELETE` | `/api/incidents/:id` | Soft delete an incident record | ADMIN |
 
-#### 4. Create Animal
-*   **Endpoint:** `POST /api/animals`
-*   **Method:** `POST`
-*   **Auth Required:** Yes (Role: `ADMIN`)
-*   **Request Body:**
-    ```json
-    {
-      "tagId": "ELE-001",
-      "species": "Elephant",
-      "sex": "MALE",
-      "ageClass": "ADULT",
-      "protectedAreaId": "65d... (Valid ObjectId)",
-      "status": "ACTIVE"
-    }
-    ```
-*   **Success Response (201):**
-    ```json
-    {
-      "message": "Animal registered",
-      "animal": { ... }
-    }
-    ```
+### 🗺️ Conservation Areas & Zones
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/protected-areas` | List all conservation areas | ALL |
+| `POST` | `/api/protected-areas` | Create new area boundary | ADMIN |
+| `GET` | `/api/protected-areas/:id` | Get specific area details | ALL |
+| `PUT` | `/api/protected-areas/:id` | Update area data | ADMIN |
+| `DELETE` | `/api/protected-areas/:id` | Remove an area | ADMIN |
+| `GET` | `/api/protected-areas/:id/zones` | List zones within an area | ALL |
+| `POST` | `/api/protected-areas/:id/zones` | Create a new zone in an area | ADMIN |
+| `PUT` | `/api/zones/:zoneId` | Update zone properties (e.g. Risk Level) | ADMIN |
+| `DELETE` | `/api/zones/:zoneId` | Remove a zone permanently | ADMIN |
 
-#### 5. Get All Animals (with Pagination)
-*   **Endpoint:** `GET /api/animals`
-*   **Method:** `GET`
-*   **Auth Required:** Yes (Role: `ADMIN`, `RANGER`)
-*   **Query Parameters:**
-    *   `page`: Page number (default: 1)
-    *   `limit`: Items per page (default: 10)
-    *   `species`: Filter by species
-    *   `status`: Filter by status (`ACTIVE`, `INACTIVE`, etc.)
-*   **Success Response (200):**
-    ```json
-    {
-      "data": [...],
-      "pagination": {
-        "total": 100,
-        "page": 1,
-        "limit": 10,
-        "pages": 10
-      }
-    }
-    ```
+### 📊 Risk Assessment
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/risk-map` | Generate risk map data (Heatmap) | ADMIN |
 
-#### 6. Get Animal by ID
-*   **Endpoint:** `GET /api/animals/:id`
-*   **Method:** `GET`
-*   **Auth Required:** Yes (Role: `ADMIN`, `RANGER`)
-*   **Success Response (200):** `{ "animal": { ... } }`
+---
 
-#### 7. Update Animal
-*   **Endpoint:** `PUT /api/animals/:id`
-*   **Method:** `PUT`
-*   **Auth Required:** Yes (Role: `ADMIN`)
-*   **Request Body:** (Any subset of animal fields)
-*   **Success Response (200):** `{ "message": "Animal updated", "animal": { ... } }`
+## 🔮 Future Developments
 
-#### 8. Delete Animal
-*   **Endpoint:** `DELETE /api/animals/:id`
-*   **Method:** `DELETE`
-*   **Auth Required:** Yes (Role: `ADMIN`)
-*   **Success Response (200):** `{ "message": "Animal deleted permanently" }`
+### 1. Deployment Report
+Planned integration with **AWS (EC2/Lambda)** and **MongoDB Atlas** for high availability. We aim to implement **Docker** containerization for consistent environment scaling.
+
+### 2. Testing Instruction Report
+A comprehensive testing suite is in development using **Jest** and **Supertest**. 
+- **Unit Tests**: Coverage for individual services and repositories.
+- **Integration Tests**: End-to-end API flow validation.
+- **Performance Tests**: Stress testing for movement ingestion (1000+ data points/sec).
+
+### 3. React Frontend
+A modern dashboard built with **React, Tailwind CSS, and Leaflet.js** is planned to visualize animal movements on interactive maps, provide heatmaps for risk zones, and manage ranger assignments through a GIS-based interface.
 
 ---
 
 ## 🛠️ Built With
-*   **Express.js** - Web framework
-*   **Mongoose** - MongoDB object modeling
-*   **JSON Web Token** - Authentication
-*   **Bcryptjs** - Password hashing
-*   **Express-validator** - Input validation
+- **Node.js & Express** - Scalable backend framework.
+- **Mongoose** - Advanced MongoDB data modeling.
+- **JWT & Bcrypt** - Secure authentication and password hashing.
+- **Express-Validator** - Robust input sanitization.
+- **Mermaid.js** - Dynamic architectural diagrams.
+
+---
+**Life-On-Land** - *Protecting our natural heritage through technology.*
