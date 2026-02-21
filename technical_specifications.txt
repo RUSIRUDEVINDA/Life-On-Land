@@ -1,0 +1,107 @@
+SYSTEM ARCHITECTURE DOCUMENTATION: DATA STRUCTURES, ALGORITHMS & DESIGN PATTERNS
+================================================================================
+
+This document outlines the core technical implementations of the Life-On-Land
+Wildlife Tracking & Poaching Alert System.
+
+--------------------------------------------------------------------------------
+1. DESIGN PATTERNS
+--------------------------------------------------------------------------------
+
+A. SERVICE-REPOSITORY PATTERN
+   - Description: Decouples business logic from data access logic.
+   - Implementation: 
+     * Files: `backend/services/*.js` (Business logic)
+     * Files: `backend/repositories/*.js` (Data access logic)
+   - Usage: The controller calls a Service, which then communicates with a 
+     Repository to fetch or mutate data.
+
+B. MIDDLEWARE PATTERN
+   - Description: Intercepts requests to perform cross-cutting concerns.
+   - Implementation:
+     * File: `backend/middleware/auth.middleware.js` (Identity verification)
+     * File: `backend/middleware/role.middleware.js` (Authorization)
+     * File: `backend/middleware/error.middleware.js` (Global error handling)
+
+C. BUILDER PATTERN (Query Building)
+   - Description: Simplifies the creation of complex objects step-by-step.
+   - Implementation:
+     * File: `backend/utils/queryBuilder.js`
+   - Usage: The `buildAnimalQuery` function dynamically constructs MongoDB 
+     query objects based on varying input parameters.
+
+D. SINGLETON PATTERN
+   - Description: Ensures a class/module has only one instance.
+   - Implementation:
+     * File: `backend/config/db.js`
+   - Usage: The `connectDB` function ensures a single persistent connection 
+     to the MongoDB instance is shared across the application.
+
+--------------------------------------------------------------------------------
+2. DATA STRUCTURES
+--------------------------------------------------------------------------------
+
+A. HASH MAPS (Map Object)
+   - Implementation: 
+     * File: `backend/scripts/simulate_movement.js` (Line 95: `const states = new Map();`)
+   - Usage: Stores the current GPS and momentum state of active animals for 
+     real-time simulation, providing O(1) lookup performance.
+
+B. GEOJSON (Spatial Data Structure)
+   - Implementation:
+     * File: `backend/models/Movement.js`
+     * File: `backend/models/Zone.model.js`
+   - Usage: Uses standard Point and Polygon structures to represent geographic 
+     locations and conservation boundaries.
+
+C. B-TREE INDEXES (Database level)
+   - Implementation:
+     * File: `backend/models/Movement.js` (Lines 46-50)
+   - Usage: Compound indexing on `lat`/`lng` for spatial queries and 
+     descending indexing on `timestamp` for rapid history retrieval.
+
+D. TTL (TIME-TO-LIVE) INDEX / QUEUE-LIKE EXPIRY
+   - Implementation:
+     * File: `backend/models/Movement.js` (Line 50)
+   - Usage: Automatically purges movement records after 24 hours to prevent 
+     database bloat, acting as a sliding window of recent data.
+
+--------------------------------------------------------------------------------
+3. ALGORITHMS
+--------------------------------------------------------------------------------
+
+A. WEIGHTED RISK SCORING ALGORITHM
+   - Implementation:
+     * File: `backend/services/risk.service.js` (Function: `calculateZoneRiskScore`)
+   - Logic: 
+     1. Base Weighting: 2pts per total incident.
+     2. Recency Weighting: +5pts for 30-day incidents, +10pts for 7-day incidents.
+     3. Severity Normalization: (Avg Severity * 5).
+     4. Environmental Multiplier: Weather condition (rain/fog) increases risk.
+     5. Normalization: Result is capped at 100 via `Math.min(100, ... )`.
+
+B. RANDOM WALK WITH MOMENTUM (Simulation Algorithm)
+   - Implementation:
+     * File: `backend/scripts/simulate_movement.js` (Function: `getNextPosition`)
+   - Logic: 
+     1. Calculates a movement probability (0.3).
+     2. Applies "Momentum" by preserving 70% of the previous delta.
+     3. Adds random drift variation.
+     4. Velocity Capping: Clamps movement to a realistic limit (0.002 lat/lng).
+
+C. GEOSPATIAL INTERSECTION ALGORITHM
+   - Implementation:
+     * File: `backend/scripts/simulate_movement.js` (Line 57)
+   - Usage: Uses the Ray Casting / Point-in-Polygon logic (via MongoDB `$geoIntersects`)
+     to detect if an animal has breached a high-risk zone boundary.
+
+D. BCRYPT HASHING (Security Algorithm)
+   - Implementation:
+     * File: `backend/controllers/auth.controller.js`
+   - Usage: Uses adaptive hashing with a salt factor (salting + key stretching) 
+     to ensure password security.
+
+E. PAGINATION ALGORITHM
+   - Implementation:
+     * File: `backend/repositories/animal.repository.js`
+   - Usage: Uses skip/limit math to provide efficient data windowing.
