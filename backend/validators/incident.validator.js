@@ -64,15 +64,17 @@ export const validateCreateIncident = (req, res, next) => {
         }
     }
 
-    // Location validation
-    if (!location || typeof location !== "object") {
-        errors.push("Location is required");
-    } else {
-        if (location.type !== "Point") {
-            errors.push('Location type must be "Point"');
-        }
-        if (!isValidCoordinates(location.coordinates, location.type)) {
-            errors.push("Coordinates must be [longitude, latitude] for Point type");
+    // Location validation (optional)
+    if (location !== undefined) {
+        if (typeof location !== "object" || location === null) {
+            errors.push("Location must be an object if provided");
+        } else {
+            if (location.type && location.type !== "Point") {
+                errors.push('Location type must be "Point"');
+            }
+            if (location.coordinates && !isValidCoordinates(location.coordinates, location.type || "Point")) {
+                errors.push("Coordinates must be [longitude, latitude] for Point type");
+            }
         }
     }
 
@@ -109,7 +111,12 @@ export const validateCreateIncident = (req, res, next) => {
     } else {
         const date = new Date(incidentDate);
         const now = new Date();
-        if (date > now) {
+        
+        // Compare dates only (ignore time) - allow today's date, reject future dates
+        const incidentDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        if (incidentDateOnly > todayOnly) {
             errors.push("Incident date cannot be in the future");
         }
     }
@@ -151,10 +158,12 @@ export const validateCreateIncident = (req, res, next) => {
     req.body = {
         type: type.toUpperCase(),
         description: normalizeTrim(description),
-        location: {
-            type: location.type,
-            coordinates: location.coordinates
-        },
+        ...(location && {
+            location: {
+                type: location.type,
+                coordinates: location.coordinates
+            }
+        }),
         zoneId: normalizeTrim(zoneId),
         protectedAreaId: normalizeTrim(protectedAreaId),
         severity: severity ? severity.toUpperCase() : "MEDIUM",
