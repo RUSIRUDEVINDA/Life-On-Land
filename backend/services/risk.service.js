@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import Incident from '../models/Incident.model.js';
-import Zone from '../models/Zone.models.js';
+import Zone from '../models/Zone.model.js';
 import { getWeatherData } from './weather.service.js';
 
 /**

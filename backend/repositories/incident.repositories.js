@@ -1,6 +1,6 @@
 import Incident from '../models/Incident.model.js';
-import Zone from '../models/Zone.models.js';
-import ProtectedArea from '../models/ProtectedArea.models.js';
+import Zone from '../models/Zone.model.js';
+import ProtectedArea from '../models/ProtectedArea.model.js';
 import User from '../models/User.js';
 
 // Zone & Protected Area lookups
