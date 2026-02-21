@@ -49,4 +49,3 @@ export const getIncidentWithRelationsById = (incidentId) =>
     .populate('protectedAreaId', 'name');
 
 export const saveIncident = (incident) => incident.save();
-
