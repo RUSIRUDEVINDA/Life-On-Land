@@ -166,9 +166,9 @@ export const updateIncident = async (incidentId, updateData, user) => {
     throw new Error('Anonymous users cannot update incidents');
   }
 
-  // Only Admin and OFFICER can change status to VERIFIED
-  if (updateData.status === 'VERIFIED' && !['Admin', 'OFFICER'].includes(user.role)) {
-    throw new Error('Only Admin and OFFICER can verify incidents');
+  // Only Admin can change status to VERIFIED (case-insensitive check)
+  if (updateData.status === 'VERIFIED' && user.role?.toUpperCase() !== 'ADMIN') {
+    throw new Error('Only Admin can verify incidents');
   }
 
   // If verifying, set verifiedBy and verifiedAt
@@ -215,9 +215,10 @@ export const deleteIncident = async (incidentId, user) => {
     throw new Error('Incident not found');
   }
 
-  // Only Admin and OFFICER can delete incidents
-  if (!['Admin', 'OFFICER'].includes(user.role)) {
-    throw new Error('Only Admin and OFFICER can delete incidents');
+  // Only Admin can delete incidents (case-insensitive check)
+  const userRole = user.role?.toUpperCase();
+  if (userRole !== 'ADMIN') {
+    throw new Error('Only Admin can delete incidents');
   }
 
   incident.isDeleted = true;
