@@ -5,8 +5,11 @@ import { buildAnimalQuery } from "../utils/queryBuilder.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const createAnimal = asyncHandler(async (req, res) => {
-    const animal = await service.createAnimal(req.body);
-    res.status(201).json({ message: "Animal registered", animal });
+    const result = await service.createAnimal(req.body);
+    res.status(201).json({
+        message: "Animal created successfully",
+        animal: result.animal,
+    });
 });
 
 export const getAnimals = asyncHandler(async (req, res) => {
@@ -22,7 +25,18 @@ export const getAnimals = asyncHandler(async (req, res) => {
         repo.findWithPagination(query, sort, skip, limit)
     ]);
 
-    res.json({ data: animals, pagination: { total, page, limit, pages: Math.ceil(total / limit) || 1 } });
+    // Map animals to include protected area and zone names
+    const animalsWithDetails = animals.map(animal => ({
+        ...animal.toObject(),
+        protectedAreaName: animal.protectedAreaName,
+        zoneName: animal.zoneName
+    }));
+
+    res.json({
+        message: "Animals retrieved successfully",
+        data: animalsWithDetails,
+        pagination: { total, page, limit, pages: Math.ceil(total / limit) || 1 }
+    });
 });
 
 export const getAnimalById = asyncHandler(async (req, res) => {
@@ -35,22 +49,28 @@ export const getAnimalById = asyncHandler(async (req, res) => {
         throw error;
     }
 
-    res.json({ animal });
+    res.json({
+        message: "Animal retrieved successfully",
+        animal
+    });
 });
 
 export const updateAnimal = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
 
     const animal = await service.updateAnimal(tagId, req.body);
-    res.json({ message: "Animal updated", animal });
+    res.json({ message: "Animal updated successfully", animal });
 });
 
 export const deleteAnimal = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
+    console.log("Controller: Received delete request for tagId:", tagId);
 
     const animal = await service.deleteAnimal(tagId);
+    console.log("Controller: Service returned deleted animal:", animal);
+
     res.json({
-        message: "Animal deleted permanently",
+        message: "Animal deleted successfully",
         animal
     });
 });

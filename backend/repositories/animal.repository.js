@@ -24,8 +24,10 @@ export const updateByTagId = (tagId, update) =>
         { new: true, runValidators: true }
     );
 
-export const deleteByTagId = (tagId) =>
-    Animal.findOneAndDelete({ tagId });
+export const deleteByTagId = (tagId) => {
+    console.log("Repo: Calling findOneAndDelete for tagId:", tagId);
+    return Animal.findOneAndDelete({ tagId });
+};
 
 export const deleteById = (id) =>
     Animal.findByIdAndDelete(id);
