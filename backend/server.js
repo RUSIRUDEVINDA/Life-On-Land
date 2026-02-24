@@ -5,6 +5,7 @@ import cors from "cors"
 import authRoutes from "./routes/auth.route.js"
 import patrolRoutes from "./routes/patrol.route.js"
 import incidentRoutes from "./routes/incident.route.js"
+import alertRoutes from "./routes/alert.route.js"
 import riskRoutes from "./routes/risk.route.js"
 import animalRoutes from "./routes/animal.route.js"
 import movementRoutes from "./routes/movement.route.js"
@@ -27,6 +28,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes)
 // Patrol routes
 app.use("/api/patrols", patrolRoutes)
+// Alert routes
+app.use("/api/alerts", alertRoutes)
 // Incident routes
 app.use("/api/incidents", incidentRoutes)
 // Risk map routes
