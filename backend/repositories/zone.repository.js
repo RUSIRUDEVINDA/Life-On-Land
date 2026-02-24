@@ -45,7 +45,7 @@ const softDeleteZone = async (zoneId) => {
 
 const findZoneByCoordinates = async (lng, lat) => {
   return await Zone.findOne({
-    status: "ACTIVE",
+    status: { $ne: "DELETED" },
     geometry: {
       $geoIntersects: {
         $geometry: {
