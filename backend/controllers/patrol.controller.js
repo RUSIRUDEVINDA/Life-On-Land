@@ -29,7 +29,19 @@ const buildPatrolQuery = (queryParams) => {
 
 // Create a new patrol
 export const createPatrol = asyncHandler(async (req, res) => {
-    const patrol = await service.createPatrol(req.body);
+    const { alertId, ...patrolData } = req.body;
+    const patrol = await service.createPatrol(patrolData);
+
+    // If created from an alert, link them
+    if (alertId && mongoose.Types.ObjectId.isValid(alertId)) {
+        try {
+            const { linkPatrolToAlert } = await import("../services/alert.service.js");
+            await linkPatrolToAlert(alertId, patrol._id);
+        } catch (error) {
+            console.error("Failed to link alert to patrol:", error);
+        }
+    }
+
     res.status(201).json({ message: "Patrol created successfully", patrol });
 });
 
