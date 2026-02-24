@@ -9,6 +9,7 @@ import alertRoutes from "./routes/alert.route.js"
 import riskRoutes from "./routes/risk.route.js"
 import animalRoutes from "./routes/animal.route.js"
 import movementRoutes from "./routes/movement.route.js"
+import userRoutes from "./routes/user.route.js"
 import { notFound, errorHandler } from "./middleware/error.middleware.js"
 import dotenv from "dotenv"
 
@@ -38,6 +39,7 @@ app.use("/api/risk-map", riskRoutes)
 app.use("/api/animals", animalRoutes)
 // Movement routes
 app.use("/api/movements", movementRoutes)
+app.use("/api/users", userRoutes)
 
 // Error handling middleware
 app.use(notFound);
