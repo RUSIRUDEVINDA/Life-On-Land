@@ -17,12 +17,16 @@ const isValidDate = (value) => !isNaN(Date.parse(value));
 
 export const validateCreatePatrol = (req, res, next) => {
     const errors = [];
-    const { protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes } = req.body || {};
+    const { alertId, protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes, title } = req.body || {};
 
-    if (!isValidObjectId(protectedAreaId)) errors.push("protectedAreaId must be a valid ObjectId");
+    if (alertId) {
+        if (!isValidObjectId(alertId)) errors.push("alertId must be a valid ObjectId");
+    } else {
+        if (!isValidObjectId(protectedAreaId)) errors.push("protectedAreaId must be a valid ObjectId");
 
-    if (!exactLocation || typeof exactLocation.lat !== "number" || typeof exactLocation.lng !== "number") {
-        errors.push("exactLocation with lat and lng (numbers) is required");
+        if (!exactLocation || typeof exactLocation.lat !== "number" || typeof exactLocation.lng !== "number") {
+            errors.push("exactLocation with lat and lng (numbers) is required");
+        }
     }
 
     if (!plannedStart || !isValidDate(plannedStart)) errors.push("plannedStart must be a valid date");
@@ -54,6 +58,8 @@ export const validateCreatePatrol = (req, res, next) => {
     }
 
     req.body = {
+        alertId,
+        title: title ? normalizeTrim(title) : "",
         protectedAreaId,
         exactLocation,
         zoneIds: zoneIds || [],
