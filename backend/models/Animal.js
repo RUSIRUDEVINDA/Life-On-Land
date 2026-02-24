@@ -14,10 +14,18 @@ const animalSchema = new mongoose.Schema(
             required: true,
             index: true
         },
+        protectedAreaName: {
+            type: String,
+            default: null
+        },
         zoneId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             index: true
+        },
+        zoneName: {
+            type: String,
+            default: null
         },
         species: {
             type: String,
@@ -39,7 +47,7 @@ const animalSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["ACTIVE", "INACTIVE", "RETIRED", "DECEASED"],
+            enum: ["ACTIVE", "INACTIVE", "DECEASED"],
             required: true,
             default: "ACTIVE",
             index: true

@@ -38,7 +38,7 @@ export const validateCreateAnimal = (req, res, next) => {
         errors.push("ageClass must be INFANT, JUVENILE, SUBADULT, ADULT, or UNKNOWN");
     }
     if (status && !VALID_STATUS.includes(normalizedStatus)) {
-        errors.push("status must be ACTIVE, INACTIVE, RETIRED, or DECEASED");
+        errors.push("status must be ACTIVE, INACTIVE, or DECEASED");
     }
     if (protectedAreaId && !isValidObjectId(protectedAreaId)) {
         errors.push("protectedAreaId must be a valid ObjectId");
