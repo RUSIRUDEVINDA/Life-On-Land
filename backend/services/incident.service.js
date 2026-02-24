@@ -1,4 +1,5 @@
 import * as incidentRepository from '../repositories/incident.repository.js';
+import * as alertService from './alert.service.js';
 
 /**
  * Create a new incident
@@ -9,29 +10,21 @@ import * as incidentRepository from '../repositories/incident.repository.js';
 export const createIncident = async (incidentData, user) => {
   // Verify zone and protected area exist
   const zone = await incidentRepository.findZoneById(incidentData.zoneId);
-  if (!zone || zone.status !== 'ACTIVE') {
+  if (!zone || !zone.isActive) {
     throw new Error('Zone not found or inactive');
   }
 
   const protectedArea = await incidentRepository.findProtectedAreaById(
     incidentData.protectedAreaId
   );
-  if (!protectedArea) {
-    throw new Error(`Protected area with ID ${incidentData.protectedAreaId} not found`);
-  }
-  if (protectedArea.status !== 'ACTIVE') {
-    throw new Error(`Protected area with ID ${incidentData.protectedAreaId} is not active (status: ${protectedArea.status})`);
+  if (!protectedArea || !protectedArea.isActive) {
+    throw new Error('Protected area not found or inactive');
   }
 
-  // Verify zone belongs to protected area (if zone has protectedAreaId, check it matches)
-  if (zone.protectedAreaId) {
-    const zoneProtectedAreaId = zone.protectedAreaId.toString ? zone.protectedAreaId.toString() : String(zone.protectedAreaId);
-    const incidentProtectedAreaId = String(incidentData.protectedAreaId);
-    if (zoneProtectedAreaId !== incidentProtectedAreaId) {
-      throw new Error('Zone does not belong to the specified protected area');
-    }
+  // Verify zone belongs to protected area
+  if (zone.protectedAreaId.toString() !== incidentData.protectedAreaId.toString()) {
+    throw new Error('Zone does not belong to the specified protected area');
   }
-  // Note: If zone.protectedAreaId is missing, we still proceed since we've validated the protectedAreaId exists and is active
 
   // Handle unauthenticated users (PUBLIC access)
   let reportingUser = user;
@@ -46,26 +39,25 @@ export const createIncident = async (incidentData, user) => {
 
   // Set status based on user role
   let status = incidentData.status || 'REPORTED';
-  // If no user provided or it's the anonymous user, set status to UNVERIFIED
-  if (!user || reportingUser.email === 'anonymous@public.local') {
+  if (!user || reportingUser.role === 'PUBLIC') {
     status = 'UNVERIFIED';
   }
 
   const incidentToCreate = {
     ...incidentData,
     status,
-    reportedBy: reportingUser._id
-  };
-
-  // Only add location if provided
-  if (incidentData.location && incidentData.location.coordinates) {
-    incidentToCreate.location = {
+    reportedBy: reportingUser._id,
+    location: {
       type: 'Point',
       coordinates: incidentData.location.coordinates
-    };
-  }
+    }
+  };
 
   const incident = await incidentRepository.createIncident(incidentToCreate);
+
+  // Trigger incident alert
+  await alertService.triggerIncidentAlert(incident, zone.name);
+
   return await incidentRepository.getIncidentWithRelationsById(incident._id);
 };
 
@@ -110,8 +102,8 @@ export const getIncidents = async (filters = {}, pagination = {}) => {
     limit: parseInt(limit),
     sort,
     populate: [
-      { path: 'reportedBy', select: 'name email role' },
-      { path: 'verifiedBy', select: 'name email role' },
+      { path: 'reportedBy', select: 'username email fullName role' },
+      { path: 'verifiedBy', select: 'username email fullName role' },
       { path: 'zoneId', select: 'name' },
       { path: 'protectedAreaId', select: 'name' }
     ]
@@ -161,14 +153,14 @@ export const updateIncident = async (incidentId, updateData, user) => {
     throw new Error('Incident not found');
   }
 
-  // Role-based update restrictions - anonymous users cannot update incidents
-  if (user.email === 'anonymous@public.local') {
-    throw new Error('Anonymous users cannot update incidents');
+  // Role-based update restrictions
+  if (user.role === 'PUBLIC') {
+    throw new Error('Public users cannot update incidents');
   }
 
-  // Only Admin can change status to VERIFIED (case-insensitive check)
-  if (updateData.status === 'VERIFIED' && user.role?.toUpperCase() !== 'ADMIN') {
-    throw new Error('Only Admin can verify incidents');
+  // Only Admin and OFFICER can change status to VERIFIED
+  if (updateData.status === 'VERIFIED' && !['Admin', 'OFFICER'].includes(user.role)) {
+    throw new Error('Only Admin and OFFICER can verify incidents');
   }
 
   // If verifying, set verifiedBy and verifiedAt
@@ -180,7 +172,7 @@ export const updateIncident = async (incidentId, updateData, user) => {
   // If updating zone, verify it exists and belongs to the same protected area
   if (updateData.zoneId) {
     const zone = await incidentRepository.findZoneById(updateData.zoneId);
-    if (!zone || zone.status !== 'ACTIVE') {
+    if (!zone || !zone.isActive) {
       throw new Error('Zone not found or inactive');
     }
     if (zone.protectedAreaId.toString() !== incident.protectedAreaId.toString()) {
@@ -215,10 +207,9 @@ export const deleteIncident = async (incidentId, user) => {
     throw new Error('Incident not found');
   }
 
-  // Only Admin can delete incidents (case-insensitive check)
-  const userRole = user.role?.toUpperCase();
-  if (userRole !== 'ADMIN') {
-    throw new Error('Only Admin can delete incidents');
+  // Only Admin and OFFICER can delete incidents
+  if (!['ADMIN', 'OFFICER'].includes(user.role)) {
+    throw new Error('Only Admin and OFFICER can delete incidents');
   }
 
   incident.isDeleted = true;
