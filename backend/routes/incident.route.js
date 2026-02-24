@@ -230,7 +230,7 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
-  authorize('Admin', 'OFFICER'),
+  authorize('ADMIN'),
   incidentController.deleteIncident
 );
 
