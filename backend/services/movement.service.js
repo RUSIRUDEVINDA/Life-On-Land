@@ -1,38 +1,42 @@
 import * as movementRepo from "../repositories/movement.repository.js";
 import * as zoneRepo from "../repositories/zone.repository.js";
 import * as animalRepo from "../repositories/animal.repository.js";
+import * as alertService from "./alert.service.js";
 
 export const ingestMovement = async (data) => {
-    const tagId = data.tagId
+    const tagId = data.tagId;
     const { lat, lng } = data;
 
     if (!tagId) {
-        throw new Error("Missing tagId or animalId in movement data");
+        throw new Error("Missing tagId in movement data");
     }
 
-    // Ensure tagId is in the data object for mongoose validation
-    data.tagId = tagId;
+    if (lat === undefined || lat === null || lng === undefined || lng === null) {
+        throw new Error("Missing lat/lng in movement data");
+    }
 
-    // Find the zone for these coordinates
+    // Strict zone check — coordinates MUST be inside an active zone
     const zone = await zoneRepo.findZoneByCoordinates(lng, lat);
 
-    // Enrich data with zoneId and protectedAreaId from the zone or animal
-    if (zone) {
-        data.zoneId = zone._id;
-        data.protectedAreaId = zone.protectedAreaId;
-    } else {
-        // If no zone, try to get protectedAreaId from the animal record
-        const animal = await animalRepo.findByTagId(tagId);
-        if (animal) {
-            data.protectedAreaId = animal.protectedAreaId;
-        }
+    if (!zone) {
+        // Coordinates are outside every known zone — reject the movement
+        throw new Error(
+            `Movement rejected: coordinates (${lat}, ${lng}) are not inside any active zone. ` +
+            `Animals must remain within zone boundaries.`
+        );
     }
+
+    // Enrich data with resolved zone and protected area
+    data.tagId = tagId;
+    data.zoneId = zone._id;
+    data.protectedAreaId = zone.protectedAreaId;
 
     const movement = await movementRepo.create(data);
 
     // Trigger alert if in a high-risk zone
-    if (zone && (zone.zoneType === "CORE" || zone.name.toLowerCase().includes("risk"))) {
+    if (zone.zoneType === "CORE" || zone.name.toLowerCase().includes("risk")) {
         console.log(`ALERT: Animal ${tagId} entered high risk zone ${zone.name}`);
+        await alertService.triggerMovementAlert(movement, zone);
     }
 
     return movement;
