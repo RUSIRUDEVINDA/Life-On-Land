@@ -49,6 +49,22 @@ movementSchema.index({ timestamp: -1 });
 // TTL Index: Automatically delete documents 24 hours (86400 seconds) after their 'timestamp'
 movementSchema.index({ timestamp: 1 }, { expireAfterSeconds: 86400 });
 
+// Alert trigger middleware
+movementSchema.post('save', async function (doc) {
+    try {
+        const Zone = mongoose.model('Zone');
+        const zone = await Zone.findById(doc.zoneId);
+
+        // Trigger alert for high-risk zones (CORE or containing "risk" in name)
+        if (zone && (zone.zoneType === "CORE" || zone.name.toLowerCase().includes("risk"))) {
+            const { triggerMovementAlert } = await import("../services/alert.service.js");
+            await triggerMovementAlert(doc, zone);
+        }
+    } catch (error) {
+        console.error("Failed to trigger movement alert from middleware:", error);
+    }
+});
+
 const Movement = mongoose.model("Movement", movementSchema);
 
 export default Movement;

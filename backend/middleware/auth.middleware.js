@@ -5,6 +5,7 @@ import { authorizeRoles } from "./role.middleware.js";
 
 // Alias for protect - used in incident routes
 export const authenticate = asyncHandler(async (req, res, next) => {
+    console.log("Auth middleware reached");
     let token;
 
     // 1. Get token from header or cookie
