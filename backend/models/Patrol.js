@@ -12,6 +12,10 @@ const checkInSchema = new mongoose.Schema({
 
 const patrolSchema = new mongoose.Schema(
     {
+        title: {
+            type: String,
+            trim: true
+        },
         protectedAreaId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "ProtectedArea",
