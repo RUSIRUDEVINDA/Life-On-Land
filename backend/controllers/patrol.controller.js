@@ -181,6 +181,9 @@ export const addCheckIn = asyncHandler(async (req, res) => {
 // Get check-ins for a patrol
 export const getCheckIns = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         const error = new Error("Invalid patrol id");
@@ -188,14 +191,22 @@ export const getCheckIns = asyncHandler(async (req, res) => {
         throw error;
     }
 
-    const checkIns = await repo.getCheckIns(id);
-    if (!checkIns) {
+    const result = await repo.getCheckIns(id, skip, limit);
+    if (!result) {
         const error = new Error("Patrol not found");
         error.statusCode = 404;
         throw error;
     }
 
-    res.json({ checkIns });
+    res.json({
+        data: result.checkIns,
+        pagination: {
+            total: result.total,
+            page,
+            limit,
+            pages: Math.ceil(result.total / limit) || 1
+        }
+    });
 });
 
 // Update a check-in
