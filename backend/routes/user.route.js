@@ -9,9 +9,6 @@ const router = express.Router();
 // All routes require authentication
 router.use(protect);
 
-router.get("/", authorizeRoles("ADMIN", "RANGER"), getUsers);
-router.get("/:id", authorizeRoles("ADMIN", "RANGER"), getUserById);
-router.put("/:id", authorizeRoles("ADMIN", "RANGER"), updateUser);
 router.get("/", authorizeRoles("ADMIN", "RANGER"), validateUserQuery, getUsers);
 router.get("/:id", getUserById);
 router.put("/:id", authorizeRoles("ADMIN", "RANGER"), validateUpdateUser(true), updateUser);    // Full replace
