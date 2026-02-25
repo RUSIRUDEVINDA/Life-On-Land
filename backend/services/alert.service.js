@@ -109,3 +109,10 @@ export const linkPatrolToAlert = async (alertId, patrolId) => {
         status: "ACKNOWLEDGED"
     });
 };
+
+/**
+ * Update alert status (ACKNOWLEDGED/RESOLVED).
+ */
+export const updateAlertStatus = async (alertId, status) => {
+    return alertRepo.updateById(alertId, { status });
+};
