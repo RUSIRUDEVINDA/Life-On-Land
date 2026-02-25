@@ -37,9 +37,18 @@ export const addCheckIn = async (id, checkInData) => {
     return patrol.save();
 };
 
-export const getCheckIns = async (id) => {
-    const patrol = await Patrol.findById(id).select("checkIns");
-    return patrol ? patrol.checkIns : null;
+export const getCheckIns = async (id, skip, limit) => {
+    const patrol = await Patrol.findById(id).select({
+        checkIns: { $slice: [skip, limit] }
+    });
+
+    if (!patrol) return null;
+
+    // We also need the total count for pagination metadata
+    const fullPatrol = await Patrol.findById(id).select("checkIns");
+    const total = fullPatrol ? fullPatrol.checkIns.length : 0;
+
+    return { checkIns: patrol.checkIns, total };
 };
 
 export const updateCheckIn = async (patrolId, checkInId, checkInData) => {
