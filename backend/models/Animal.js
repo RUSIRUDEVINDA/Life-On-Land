@@ -33,6 +33,15 @@ const animalSchema = new mongoose.Schema(
             index: true,
             trim: true
         },
+        description:{
+            type: String,
+            default: null,
+            trim: true
+        },
+        endemicToSriLanka: {
+            type: Boolean,
+            default: false
+        },
         sex: {
             type: String,
             enum: ["MALE", "FEMALE", "UNKNOWN"],
