@@ -9,5 +9,9 @@ export const findByEmailWithPassword = (email) =>
 
 export const findById = (id) => User.findById(id);
 
+export const findAll = () => User.find({});
+
 export const updateById = (id, update) =>
     User.findByIdAndUpdate(id, update, { new: true });
+
+export const deleteById = (id) => User.findByIdAndDelete(id);
