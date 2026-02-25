@@ -16,3 +16,5 @@ router.patch("/:id", authorizeRoles("ADMIN", "RANGER"), validateUpdateUser(false
 router.delete("/:id", authorizeRoles("ADMIN"), deleteUser);
 
 export default router;
+
+
