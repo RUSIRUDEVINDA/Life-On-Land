@@ -43,6 +43,14 @@ export const ingestMovement = async (data) => {
 };
 
 export const getMovementHistory = async (tagId, query) => {
+    // Check if animal exists first
+    const animal = await animalRepo.findByTagId(tagId);
+    if (!animal) {
+        const error = new Error(`Animal with tagId ${tagId} not found`);
+        error.statusCode = 404;
+        throw error;
+    }
+
     const { from, to, page = 1, limit = 50 } = query;
     const filter = {};
     if (from || to) {

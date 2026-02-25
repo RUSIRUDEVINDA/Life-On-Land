@@ -3,7 +3,7 @@ import { createAnimal, getAnimals, getAnimalById, updateAnimal, deleteAnimal } f
 import { getAnimalMovements } from "../controllers/movement.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
-import { validateCreateAnimal, validateUpdateAnimal, validateAnimalQuery } from "../validators/animal.validator.js";
+import { validateCreateAnimal, validatePutAnimal, validatePatchAnimal, validateAnimalQuery, validateTagIdParam } from "../validators/animal.validator.js";
 
 const router = express.Router();
 
@@ -11,12 +11,14 @@ router.post("/", protect, authorizeRoles("ADMIN"), validateCreateAnimal, createA
 
 router.get("/", protect, authorizeRoles("ADMIN", "RANGER"), validateAnimalQuery, getAnimals);
 
-router.get("/:tagId", protect, authorizeRoles("ADMIN", "RANGER"), getAnimalById);
+router.get("/:tagId", protect, authorizeRoles("ADMIN", "RANGER"), validateTagIdParam, getAnimalById);
 
-router.get("/:tagId/movements", protect, authorizeRoles("ADMIN", "RANGER"), getAnimalMovements);
+router.get("/:tagId/movements", protect, authorizeRoles("ADMIN", "RANGER"), validateTagIdParam, getAnimalMovements);
 
-router.put("/:tagId", protect, authorizeRoles("ADMIN"), validateUpdateAnimal, updateAnimal);
+router.put("/:tagId", protect, authorizeRoles("ADMIN"), validateTagIdParam, validatePutAnimal, updateAnimal);
 
-router.delete("/:tagId", protect, authorizeRoles("ADMIN"), deleteAnimal);
+router.patch("/:tagId", protect, authorizeRoles("ADMIN"), validateTagIdParam, validatePatchAnimal, updateAnimal);
+
+router.delete("/:tagId", protect, authorizeRoles("ADMIN"), validateTagIdParam, deleteAnimal);
 
 export default router;

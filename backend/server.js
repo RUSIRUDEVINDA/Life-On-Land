@@ -39,6 +39,7 @@ app.use("/api/risk-map", riskRoutes)
 app.use("/api/animals", animalRoutes)
 // Movement routes
 app.use("/api/movements", movementRoutes)
+// User management routes
 app.use("/api/users", userRoutes)
 
 // Error handling middleware
