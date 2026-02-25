@@ -2,9 +2,29 @@ import * as userRepo from "../repositories/user.repository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const getUsers = asyncHandler(async (req, res) => {
-    const users = await userRepo.findAll();
-    res.json(users);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const sort = { createdAt: -1 };
 
+    const query = {};
+    if (req.query.role) query.role = req.query.role.toUpperCase();
+
+    const skip = (page - 1) * limit;
+
+    const [total, users] = await Promise.all([
+        userRepo.count(query),
+        userRepo.findWithPagination(query, sort, skip, limit)
+    ]);
+
+    res.json({
+        data: users,
+        pagination: {
+            total,
+            page,
+            limit,
+            pages: Math.ceil(total / limit) || 1
+        }
+    });
 });
 
 export const getUserById = asyncHandler(async (req, res) => {
@@ -32,9 +52,15 @@ export const updateUser = asyncHandler(async (req, res) => {
         return res.status(403).json({ error: "Access denied. You can only update your own profile." });
     }
 
-    // Role restriction: Non-admins cannot change their own role or others' roles
-    const updateData = { name, email };
-    if (req.user.role === 'ADMIN' && role) {
+    // Role restriction: Non-admins CANNOT change their own role or anyone else's
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+
+    if (role !== undefined) {
+        if (req.user.role !== 'ADMIN') {
+            return res.status(403).json({ error: "Access denied. Only admins can update user roles." });
+        }
         updateData.role = role;
     }
 

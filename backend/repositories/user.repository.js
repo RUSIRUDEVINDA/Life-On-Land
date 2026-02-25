@@ -11,6 +11,12 @@ export const findById = (id) => User.findById(id);
 
 export const findAll = () => User.find({});
 
+export const findWithPagination = (query, sort, skip, limit) =>
+    User.find(query).sort(sort).skip(skip).limit(limit);
+
+export const count = (query) =>
+    User.countDocuments(query);
+
 export const updateById = (id, update) =>
     User.findByIdAndUpdate(id, update, { new: true });
 
