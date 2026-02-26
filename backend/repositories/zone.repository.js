@@ -1,19 +1,19 @@
 import Zone from "../models/Zone.models.js";
 import ProtectedArea from "../models/ProtectedArea.models.js";
 
-// Check if protected area exists and is active
+// Check if protected area exists and is ACTIVE
 const ensureProtectedAreaActive = async (protectedAreaId) => {
   return await ProtectedArea.findOne({
     _id: protectedAreaId,
-    isDeleted: false,
+    status: "ACTIVE",
   });
 };
 
 // List zones by protected area
 const listZonesByProtectedAreaId = async (protectedAreaId) => {
   return await Zone.find({
-    protectedArea: protectedAreaId,
-    isDeleted: false,
+    protectedAreaId: protectedAreaId,
+    status: "ACTIVE",
   });
 };
 
@@ -21,14 +21,15 @@ const listZonesByProtectedAreaId = async (protectedAreaId) => {
 const createZone = async (protectedAreaId, data) => {
   return await Zone.create({
     ...data,
-    protectedArea: protectedAreaId,
+    protectedAreaId,
+    status: "ACTIVE",
   });
 };
 
 // Update zone
 const updateZone = async (zoneId, payload) => {
   return await Zone.findOneAndUpdate(
-    { _id: zoneId, isDeleted: false },
+    { _id: zoneId, status: "ACTIVE" },
     payload,
     { new: true }
   );
@@ -37,8 +38,8 @@ const updateZone = async (zoneId, payload) => {
 // Soft delete zone
 const softDeleteZone = async (zoneId) => {
   return await Zone.findOneAndUpdate(
-    { _id: zoneId, isDeleted: false },
-    { isDeleted: true },
+    { _id: zoneId, status: "ACTIVE" },
+    { status: "DELETED" },
     { new: true }
   );
 };
