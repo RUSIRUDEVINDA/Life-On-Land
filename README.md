@@ -54,6 +54,7 @@ graph TD
 - `models/`: Strictly typed Mongoose schemas.
 - `middleware/`: Security, Authorization, and Centralized Logging.
 - `validators/`: Strict input validation rules.
+- `utils/`: For helper functions
 
 ---
 
@@ -184,7 +185,7 @@ npm start
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB & Mongoose ODM
 - **Security**: JWT, Bcrypt, Role-Based Access Control
-- **Validation**: Express-Validator
+- **Validation**: Custom Validators
 - **Documentation**: Mermaid.js, Markdown
 
 ---
