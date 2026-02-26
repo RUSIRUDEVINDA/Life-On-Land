@@ -1,189 +1,191 @@
 # Life-On-Land 🦁🐘
 
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)](https://jwt.io/)
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)
 
-**Classification:** Public-SLIIT
+Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracking** system designed to protect biodiversity. It provides a highly scalable backend for real-time wildlife monitoring, ranger coordination, and proactive threat detection.
 
-Life-On-Land is a professional-grade **Poaching Alert and Wildlife Movement Tracking** system. It provides a robust backend infrastructure for monitoring wildlife, managing ranger patrols, assessing environmental risks, and detecting potential poaching incidents in real-time.
+---
+
+## ✨ Key Features
+
+- 🛰️ **Real-time GPS Tracking**: High-throughput ingestion of animal movement data via IoT devices.
+- 🚨 **Automated Alert System**: Immediate notification triggers for poaching incidents and boundary breaches.
+- 🛡️ **Advanced Patrol Management**: Dynamic scheduling, geo-fenced check-ins, and digital logbooks for rangers.
+- 📈 **Risk Mapping**: Heatmap-based risk assessment utilizing historical incident and movement data.
+- 🔒 **RBAC Security**: Granular Role-Based Access Control (ADMIN, OFFICER, RANGER).
+- 🧬 **Data Integrity**: Robust validation and sanitization for all incoming data streams.
 
 ---
 
 ## 🏗️ System Architecture
 
-The project is built using a **Layered Architecture** with the **Service-Repository Pattern**, ensuring a clean separation of concerns and high testability.
+The system utilizes a **Layered Architecture** with a **Service-Repository Pattern**, maximizing decoupling and maintainability.
 
 ### Request-Response Flow
 ```mermaid
 graph TD
-    A[Client / Frontend] -->|HTTP Request| B[Express Router]
-    B -->|Auth & Role Check| C[Security Middleware]
-    C -->|Input Validation| D[Express-Validator]
-    D -->|Request Handling| E[Controller]
-    E -->|Business Logic| F[Service Layer]
-    F -->|Data Access| G[Repository Layer]
-    G -->|Mongoose Schema| H[MongoDB]
+    A[Client / IoT Node] -->|REST Request| B[Express Router]
+    B -->|Security Guard| C[Auth & Role Middleware]
+    C -->|Schema Constraint| D[Express-Validator]
+    D -->|Logic Gateway| E[Controller]
+    E -->|Business Processor| F[Service Layer]
+    F -->|Persistence Adapter| G[Repository Layer]
+    G -->|Object Mapping| H[Mongoose Schema]
+    H -->|Query| I[(MongoDB)]
     
-    H -.->|Data| G
-    G -.->|Business Object| F
-    F -.->|Result| E
-    E -.->|JSON Response| A
+    I -.->|Documents| H
+    H -.->|JSON Data| G
+    G -.->|Entities| F
+    F -.->|Result Set| E
+    E -.->|Response| A
 ```
 
-### Folder Responsibilities
-- **`config/`**: Database and environment configurations.
-- **`routes/`**: API endpoint definitions and middleware mapping.
-- **`controllers/`**: HTTP logic, status codes, and response formatting.
-- **`services/`**: Complex business rules and cross-module logic.
-- **`repositories/`**: Raw database interactions (Mongoose queries).
-- **`models/`**: Data schemas and entity definitions.
-- **`middleware/`**: Auth, Authorization, and Global Error Handling.
-- **`validators/`**: Request body and query parameter requirements.
-- **`scripts/`**: Automation and simulation utilities.
+### Component Hierarchy
+- `config/`: System orchestration & DB connectivity.
+- `routes/`: API topology and routing logic.
+- `controllers/`: Request handling and response shaping.
+- `services/`: Core business logic and inter-module coordination.
+- `repositories/`: Optimized data access layer.
+- `models/`: Strictly typed Mongoose schemas.
+- `middleware/`: Security, Authorization, and Centralized Logging.
+- `validators/`: Strict input validation rules.
 
 ---
 
-## 🚀 Setup Instructions
+## 🚀 Getting Started
 
 ### 1. Prerequisites
-- **Node.js**: v18.x or higher
-- **MongoDB**: v6.0 or higher (Local or Atlas)
-- **Git**: For version control
+- **Node.js**: v18.x+
+- **MongoDB**: v6.0+ (Local or Atlas)
 
 ### 2. Installation
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd Life-On-Land
+git clone https://github.com/RUSIRUDEVINDA/Life-On-Land.git
+cd Life-On-Land/backend
 
 # Install dependencies
-cd backend
 npm install
 ```
 
-### 3. Environment Configuration
-Create a `.env` file in the `backend/` directory:
+### 3. Setup Environment
+Rename `.env.example` to `.env` and fill in your credentials:
 ```env
 PORT=5001
-MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/life-on-land
-JWT_SECRET=your_super_secret_key_change_this_regularly
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_complex_secret
 JWT_EXPIRES_IN=7d
-NODE_ENV=development
 ```
 
-### 4. Running the Application
+### 4. Launch
 ```bash
-# Development mode (with Hot Reload)
+# Development (with hot-reload)
 npm run dev
 
-# Production mode
+# Production
 npm start
 ```
-The API is served at `http://localhost:5001/api`.
-
-### 5. Running the Movement Simulator
-To simulate real-time animal tracking data:
-```bash
-npm run simulate
-```
 
 ---
 
-## 🔑 API Endpoint Documentation
+## 🔑 API Documentation
 
-### 🛡️ Authentication
-| Method | Endpoint | Description | Auth Req. |
+### 🛡️ Authentication (`/api/auth`)
+| Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register a new Ranger/Admin | None |
-| `POST` | `/api/auth/login` | Login and receive JWT/Cookie | None |
-| `POST` | `/api/auth/logout` | Clear authentication state | None |
+| `POST` | `/register` | Register a new user | Public |
+| `POST` | `/login` | Authenticate and get JWT | Public |
+| `POST` | `/logout` | Invalidate current session | Public |
 
-### 🐾 Animal Management
+### 👤 User Management (`/api/users`)
 | Method | Endpoint | Description | Roles |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/animals` | List animals (Paginated + Filters) | RANGER, ADMIN |
-| `POST` | `/api/animals` | Register a new animal with TagId | ADMIN |
-| `GET` | `/api/animals/:tagId` | Get detailed animal profile | RANGER, ADMIN |
-| `GET` | `/api/animals/:tagId/movements` | Get movement history for specific animal | RANGER, ADMIN |
-| `PUT` | `/api/animals/:tagId` | Update animal status/details | ADMIN |
-| `DELETE` | `/api/animals/:tagId` | Soft delete an animal | ADMIN |
+| `GET` | `/` | List all users (Filters: `role`, `page`, `limit`) | ADMIN, RANGER |
+| `GET` | `/:id` | Get specific user profile | ANY |
+| `PUT` | `/:id` | Full user update | ADMIN, RANGER |
+| `PATCH` | `/:id` | Partial user update | ADMIN, RANGER |
+| `DELETE` | `/:id` | Terminate user account | ADMIN |
 
-### 📍 Movement Tracking
-| Method | Endpoint | Description | Auth Req. |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/movements` | Ingest movement data (GPS/Manual) | None (IoT) |
-| `GET` | `/api/movements` | Search movement logs (with filters) | JWT |
-| `GET` | `/api/movements/summary` | Get latest location for all animals | JWT |
-| `GET` | `/api/movements/:tagId` | Get movement history by Tag ID | JWT |
-
-### 🛡️ Patrol Management
+### 🐾 Animal Registry (`/api/animals`)
 | Method | Endpoint | Description | Roles |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/patrols` | Schedule a new patrol route | ADMIN |
-| `GET` | `/api/patrols` | List active/past patrols | RANGER, ADMIN |
-| `GET` | `/api/patrols/:id` | Get specific patrol details | RANGER, ADMIN |
-| `PUT` | `/api/patrols/:id` | Update patrol schedule/route | ADMIN |
-| `DELETE` | `/api/patrols/:id` | Remove a patrol record | ADMIN |
-| `POST` | `/api/patrols/:id/check-ins` | Record a ranger check-in point | RANGER |
-| `GET` | `/api/patrols/:id/check-ins` | View check-in history for a patrol | RANGER, ADMIN |
-| `PUT` | `/api/patrols/:id/check-ins/:checkInId` | Update an existing check-in | RANGER |
-| `DELETE` | `/api/patrols/:id/check-ins/:checkInId` | Remove a check-in record | RANGER |
+| `GET` | `/` | List animals (Paginated + Filter by `species`, `status`, `protectedAreaId`) | ADMIN, RANGER |
+| `POST` | `/` | Register new animal (Tag ID required) | ADMIN |
+| `GET` | `/:tagId` | Retrieve detailed animal profile | ADMIN, RANGER |
+| `GET` | `/:tagId/movements` | Specific animal movement history | ADMIN, RANGER |
+| `PUT` | `/:tagId` | Full profile replacement | ADMIN |
+| `PATCH` | `/:tagId` | Partial profile update | ADMIN |
+| `DELETE` | `/:tagId` | Remove animal record | ADMIN |
 
-### 🚨 Incident Reporting
+### 📡 Movement Tracking (`/api/movements`)
+| Method | Endpoint | Description | Auth |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/` | Ingest movement data (IoT/Manual) | Public (IoT) |
+| `GET` | `/` | Search movement logs | JWT |
+| `GET` | `/summary` | Latest location snapshot for all animals | JWT |
+| `GET` | `/:tagId` | Historical movements by Tag ID | JWT |
+
+### 🛡️ Patrol Operations (`/api/patrols`)
 | Method | Endpoint | Description | Roles |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/incidents` | Report a poaching/habitat threat | ANY (Verified) |
-| `GET` | `/api/incidents` | Search and filter incidents | RANGER, ADMIN |
-| `GET` | `/api/incidents/:id` | Get full incident investigation report | RANGER, ADMIN |
-| `PUT` | `/api/incidents/:id` | Update severity, status, or notes | RANGER, ADMIN |
-| `DELETE` | `/api/incidents/:id` | Soft delete an incident record | ADMIN |
+| `POST` | `/` | Schedule new patrol | ADMIN |
+| `GET` | `/` | List patrols (Filters: `rangerId`, `status`, `from`, `to`) | ADMIN, RANGER |
+| `GET` | `/:id` | Get specific patrol details | ADMIN, RANGER |
+| `PUT` | `/:id` | Full patrol update | ADMIN |
+| `PATCH` | `/:id` | Partial patrol update | ADMIN |
+| `DELETE` | `/:id` | Cancel/Remove patrol | ADMIN |
+| `POST` | `/:id/check-ins` | Record ranger check-in | RANGER |
+| `GET` | `/:id/check-ins` | View patrol check-in history | ADMIN, RANGER |
+| `PUT` | `/:id/check-ins/:cid` | Correct check-in log (Full) | RANGER |
+| `PATCH` | `/:id/check-ins/:cid` | Correct check-in log (Partial) | RANGER |
+| `DELETE` | `/:id/check-ins/:cid` | Remove check-in record | RANGER |
 
-### 🗺️ Conservation Areas & Zones
+### 🚨 Incident Reporting (`/api/incidents`)
 | Method | Endpoint | Description | Roles |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/protected-areas` | List all conservation areas | ALL |
-| `POST` | `/api/protected-areas` | Create new area boundary | ADMIN |
-| `GET` | `/api/protected-areas/:id` | Get specific area details | ALL |
-| `PUT` | `/api/protected-areas/:id` | Update area data | ADMIN |
-| `DELETE` | `/api/protected-areas/:id` | Remove an area | ADMIN |
-| `GET` | `/api/protected-areas/:id/zones` | List zones within an area | ALL |
-| `POST` | `/api/protected-areas/:id/zones` | Create a new zone in an area | ADMIN |
-| `PUT` | `/api/zones/:zoneId` | Update zone properties (e.g. Risk Level) | ADMIN |
-| `DELETE` | `/api/zones/:zoneId` | Remove a zone permanently | ADMIN |
+| `POST` | `/` | Report threat (POACHING, LOGGING, etc.) | ANY |
+| `GET` | `/` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | ADMIN, RANGER/OFFICER |
+| `GET` | `/:id` | Get full investigation report | ADMIN, RANGER/OFFICER |
+| `PUT` | `/:id` | Update status/severity | ADMIN, RANGER/OFFICER |
+| `DELETE` | `/:id` | Soft delete record | ADMIN |
 
-### 📊 Risk Assessment
+### 🔔 Smart Alerts (`/api/alerts`)
 | Method | Endpoint | Description | Roles |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/risk-map` | Generate risk map data (Heatmap) | ADMIN |
+| `GET` | `/` | List triggered alerts | ADMIN |
+| `PATCH` | `/:id` | Acknowledge or Resolve alert | ADMIN |
+
+### 🗺️ Conservation Geometry (`/api/protected-areas` & `/api/zones`)
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/protected-areas` | List conservation areas | Public |
+| `POST` | `/protected-areas` | Create new area boundary | ADMIN |
+| `GET` | `/protected-areas/:id` | Get area details | Public |
+| `PUT` | `/protected-areas/:id` | Update area metadata | ADMIN |
+| `DELETE` | `/protected-areas/:id` | Remove protected area | ADMIN |
+| `GET` | `/protected-areas/:id/zones` | List zones in specific area | Public |
+| `POST` | `/protected-areas/:id/zones` | Create zone (Risk Level) | ADMIN |
+| `PUT` | `/api/zones/:id` | Update zone properties | ADMIN |
+| `DELETE` | `/api/zones/:id` | Remove zone permanently | ADMIN |
+
+### 📊 Risk Intelligence (`/api/risk-map`)
+| Method | Endpoint | Description | Auth |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | Generate area-based risk heatmap data | JWT |
 
 ---
 
-## 🔮 Future Developments
-
-### 1. Deployment Report
-Planned integration with **AWS (EC2/Lambda)** and **MongoDB Atlas** for high availability. We aim to implement **Docker** containerization for consistent environment scaling.
-
-### 2. Testing Instruction Report
-A comprehensive testing suite is in development using **Jest** and **Supertest**. 
-- **Unit Tests**: Coverage for individual services and repositories.
-- **Integration Tests**: End-to-end API flow validation.
-- **Performance Tests**: Stress testing for movement ingestion (1000+ data points/sec).
-
-### 3. React Frontend
-A modern dashboard built with **React, Tailwind CSS, and Leaflet.js** is planned to visualize animal movements on interactive maps, provide heatmaps for risk zones, and manage ranger assignments through a GIS-based interface.
+## 🛠️ Tech Stack
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB & Mongoose ODM
+- **Security**: JWT, Bcrypt, Role-Based Access Control
+- **Validation**: Express-Validator
+- **Documentation**: Mermaid.js, Markdown
 
 ---
-
-## 🛠️ Built With
-- **Node.js & Express** - Scalable backend framework.
-- **Mongoose** - Advanced MongoDB data modeling.
-- **JWT & Bcrypt** - Secure authentication and password hashing.
-- **Express-Validator** - Robust input sanitization.
-- **Mermaid.js** - Dynamic architectural diagrams.
-
----
-**Life-On-Land** - *Protecting our natural heritage through technology.*
+**Life-On-Land** - *Empowering wildlife protection through engineering.*
