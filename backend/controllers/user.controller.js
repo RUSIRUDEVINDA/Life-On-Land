@@ -1,6 +1,9 @@
 import * as userRepo from "../repositories/user.repository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+// @desc    Get all users with filtering
+// @route   GET /api/users
+// @access  Private (Admin, Ranger)
 export const getUsers = asyncHandler(async (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
@@ -11,6 +14,7 @@ export const getUsers = asyncHandler(async (req, res) => {
 
     const skip = (page - 1) * limit;
 
+    // Concurrently fetch counts and paginated data
     const [total, users] = await Promise.all([
         userRepo.count(query),
         userRepo.findWithPagination(query, sort, skip, limit)
@@ -27,6 +31,9 @@ export const getUsers = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Get user profile by ID
+// @route   GET /api/users/:id
+// @access  Private (Self or Admin)
 export const getUserById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -43,6 +50,9 @@ export const getUserById = asyncHandler(async (req, res) => {
     res.json(user);
 });
 
+// @desc    Update user profile or role
+// @route   PUT /api/users/:id
+// @access  Private (Self or Admin)
 export const updateUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { name, email, role } = req.body;
@@ -75,6 +85,9 @@ export const updateUser = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Delete user record
+// @route   DELETE /api/users/:id
+// @access  Private (Admin only)
 export const deleteUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
