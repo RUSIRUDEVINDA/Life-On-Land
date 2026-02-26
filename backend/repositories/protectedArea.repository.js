@@ -1,4 +1,4 @@
-import ProtectedArea from "../models/ProtectedArea.models.js";
+import ProtectedArea from "../models/ProtectedArea.model.js";
 
 const listProtectedAreas = async () => {
   return await ProtectedArea.find({ isDeleted: false });
