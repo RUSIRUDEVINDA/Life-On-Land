@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Validation rules and middleware for animal-related endpoints
 const VALID_SEX = ["MALE", "FEMALE", "UNKNOWN"];
 const VALID_AGE_CLASSES = ["INFANT", "JUVENILE", "SUBADULT", "ADULT", "UNKNOWN"];
 const VALID_STATUS = ["ACTIVE", "INACTIVE", "DECEASED"];
@@ -347,7 +348,6 @@ export const validateAnimalQuery = (req, res, next) => {
             req.query.protectedAreaId = normalizeTrim(protectedAreaId);
         }
     }
-
 
     if (page !== undefined) {
         const parsedPage = Number(page);

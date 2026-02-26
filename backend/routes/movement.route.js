@@ -5,9 +5,16 @@ import { validateTagIdParam } from "../validators/animal.validator.js";
 
 const router = express.Router();
 
-router.post("/", movementController.ingestMovement); // Ingest movement
-router.get("/", protect, movementController.searchMovements); // Search movements
-router.get("/summary", protect, movementController.getMovementSummary); // Summary
+// Ingest telemetry data from devices
+router.post("/", movementController.ingestMovement);
+
+// Search all movements with filters
+router.get("/", protect, movementController.searchMovements);
+
+// Get aggregated activity per zone
+router.get("/summary", protect, movementController.getMovementSummary);
+
+// Get detailed history for a specific animal
 router.get("/:tagId", protect, validateTagIdParam, movementController.getAnimalMovements);
 
 export default router;

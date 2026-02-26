@@ -9,13 +9,19 @@ const router = express.Router();
 // All routes require authentication
 router.use(protect);
 
-router.get("/", authorizeRoles("ADMIN", "RANGER"), getUsers);
-router.get("/:id", authorizeRoles("ADMIN", "RANGER"), getUserById);
-router.put("/:id", authorizeRoles("ADMIN", "RANGER"), updateUser);
+// List all users (Admin, Ranger)
 router.get("/", authorizeRoles("ADMIN", "RANGER"), validateUserQuery, getUsers);
+
+// Get profile by ID (Admin, Ranger, or Self)
 router.get("/:id", getUserById);
-router.put("/:id", authorizeRoles("ADMIN", "RANGER"), validateUpdateUser(true), updateUser);    // Full replace
-router.patch("/:id", authorizeRoles("ADMIN", "RANGER"), validateUpdateUser(false), updateUser);  // Partial update
+
+// Update user details (Full replace)
+router.put("/:id", validateUpdateUser(true), updateUser);
+
+// Update user details (Partial update)
+router.patch("/:id", validateUpdateUser(false), updateUser);
+
+// Delete user account (Admin only)
 router.delete("/:id", authorizeRoles("ADMIN"), deleteUser);
 
 export default router;
