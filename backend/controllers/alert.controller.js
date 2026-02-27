@@ -2,13 +2,13 @@ import * as alertService from "../services/alert.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
 
-// Get all alerts with pagination and filters
+// Retrieve alerts with filtering and pagination
 export const getAlerts = asyncHandler(async (req, res) => {
     const result = await alertService.getAlerts(req.query);
     res.json(result);
 });
 
-// Update alert status (ACKNOWLEDGED/RESOLVED)
+// Update processing state of a specific alert
 export const updateAlertStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;

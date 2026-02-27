@@ -3,7 +3,7 @@ import * as service from "../services/patrol.service.js";
 import * as repo from "../repositories/patrol.repository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// Build Mongol Query for Patrols
+// Construct search filters based on query parameters
 const buildPatrolQuery = (queryParams) => {
     const { protectedAreaId, from, to, rangerId, status } = queryParams;
     const query = {};
@@ -27,7 +27,7 @@ const buildPatrolQuery = (queryParams) => {
     return query;
 };
 
-// Create a new patrol
+// Create a new patrol mission, optionally inherited from an alert
 export const createPatrol = asyncHandler(async (req, res) => {
     const { alertId, ...patrolData } = req.body;
 
@@ -88,7 +88,7 @@ export const createPatrol = asyncHandler(async (req, res) => {
     res.status(201).json({ message: "Patrol created successfully", patrol });
 });
 
-// Get all patrols
+// Fetch all patrols matching filters with pagination
 export const getPatrols = asyncHandler(async (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
@@ -113,7 +113,7 @@ export const getPatrols = asyncHandler(async (req, res) => {
     });
 });
 
-// Get single patrol details
+// Get full details of a specific patrol by ID
 export const getPatrolById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -133,7 +133,7 @@ export const getPatrolById = asyncHandler(async (req, res) => {
     res.json({ patrol });
 });
 
-// Update patrol
+// Update patrol details or status
 export const updatePatrol = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -147,7 +147,7 @@ export const updatePatrol = asyncHandler(async (req, res) => {
     res.json({ message: "Patrol updated successfully", patrol });
 });
 
-// Delete patrol
+// Permanently remove a patrol record
 export const deletePatrol = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -164,7 +164,7 @@ export const deletePatrol = asyncHandler(async (req, res) => {
     });
 });
 
-// Add check-in to patrol
+// Register a new ranger check-in for a patrol
 export const addCheckIn = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -178,7 +178,7 @@ export const addCheckIn = asyncHandler(async (req, res) => {
     res.status(201).json({ message: "Check-in added successfully", patrol });
 });
 
-// Get check-ins for a patrol
+// Retrieve all check-in logs for a specific patrol
 export const getCheckIns = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const page = Number(req.query.page) || 1;
@@ -209,7 +209,7 @@ export const getCheckIns = asyncHandler(async (req, res) => {
     });
 });
 
-// Update a check-in
+// Modify an existing check-in log
 export const updateCheckIn = asyncHandler(async (req, res) => {
     const { id, checkInId } = req.params;
 
@@ -223,7 +223,7 @@ export const updateCheckIn = asyncHandler(async (req, res) => {
     res.json({ message: "Check-in updated successfully", patrol });
 });
 
-// Delete a check-in
+// Remove a specific check-in record
 export const deleteCheckIn = asyncHandler(async (req, res) => {
     const { id, checkInId } = req.params;
 

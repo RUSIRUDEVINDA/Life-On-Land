@@ -52,15 +52,15 @@ export const getCheckIns = async (id, skip, limit) => {
 };
 
 export const updateCheckIn = async (patrolId, checkInId, checkInData) => {
+    const update = {};
+    if (checkInData.location) update["checkIns.$.location"] = checkInData.location;
+    if (checkInData.note !== undefined) update["checkIns.$.note"] = checkInData.note;
+    if (checkInData.zoneId !== undefined) update["checkIns.$.zoneId"] = checkInData.zoneId;
+    update["checkIns.$.timestamp"] = checkInData.timestamp || new Date();
+
     return Patrol.findOneAndUpdate(
         { _id: patrolId, "checkIns._id": checkInId },
-        {
-            $set: {
-                "checkIns.$.location": checkInData.location,
-                "checkIns.$.note": checkInData.note,
-                "checkIns.$.timestamp": checkInData.timestamp || new Date()
-            }
-        },
+        { $set: update },
         { new: true, runValidators: true }
     );
 };
