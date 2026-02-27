@@ -173,7 +173,7 @@ npm start
 | `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | Yes | ADMIN, RANGER, OFFICER |
 | `GET /api/incidents/:id` | Get full investigation report | Yes | ADMIN, RANGER, OFFICER |
 | `PUT /api/incidents/:id` | Update status/severity | Yes | ADMIN, RANGER, OFFICER |
-| `DELETE /api/incidents/:id` | Soft delete record | Yes | ADMIN |
+| `DELETE /api/incidents/:id` | Remove record | Yes | ADMIN |
 
 ### � Risk Intelligence (`/api/risk-map`)
 
