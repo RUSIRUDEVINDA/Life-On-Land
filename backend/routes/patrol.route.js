@@ -2,7 +2,7 @@ import express from "express";
 import { createPatrol, getPatrols, getPatrolById, updatePatrol, deletePatrol, addCheckIn, getCheckIns, updateCheckIn, deleteCheckIn } from "../controllers/patrol.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
-import { validateCreatePatrol, validateUpdatePatrol, validatePatrolQuery, validateCheckIn, validateFullUpdatePatrol, validateFullUpdateCheckIn, validateCheckInQuery } from "../validators/patrol.validator.js";
+import { validateCreatePatrol, validateUpdatePatrol, validatePatrolQuery, validateCheckIn, validateFullUpdatePatrol, validateFullUpdateCheckIn, validateCheckInQuery, validateUpdateCheckIn } from "../validators/patrol.validator.js";
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.delete("/:id", authorizeRoles("ADMIN"), deletePatrol);
 router.post("/:id/check-ins", authorizeRoles("RANGER"), validateCheckIn, addCheckIn);
 router.get("/:id/check-ins", authorizeRoles("ADMIN", "RANGER"), validateCheckInQuery, getCheckIns);
 router.put("/:id/check-ins/:checkInId", authorizeRoles("RANGER"), validateFullUpdateCheckIn, updateCheckIn);    // Full replace
-router.patch("/:id/check-ins/:checkInId", authorizeRoles("RANGER"), validateCheckIn, updateCheckIn);  // Partial update
+router.patch("/:id/check-ins/:checkInId", authorizeRoles("RANGER"), validateUpdateCheckIn, updateCheckIn);  // Partial update
 router.delete("/:id/check-ins/:checkInId", authorizeRoles("RANGER"), deleteCheckIn);
 
 export default router;

@@ -1,5 +1,6 @@
 import * as userRepo from "../repositories/user.repository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import bcrypt from "bcryptjs";
 
 // @desc    Get all users with filtering
 // @route   GET /api/users
@@ -55,23 +56,50 @@ export const getUserById = asyncHandler(async (req, res) => {
 // @access  Private (Self or Admin)
 export const updateUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, email, role } = req.body;
+    const { name, email, role, password } = req.body;
+    const isSelf = req.user._id.toString() === id;
+    const isAdmin = req.user.role === 'ADMIN';
 
-    // Authorization check: Admin can update anyone, users can only update themselves
-    if (req.user.role !== 'ADMIN' && req.user._id.toString() !== id) {
+    // Authorization check: 
+    // 1. Rangers can only update themselves
+    // 2. Admins can update others, but with restrictions
+    if (!isAdmin && !isSelf) {
         return res.status(403).json({ error: "Access denied. You can only update your own profile." });
     }
 
-    // Role restriction: Non-admins CANNOT change their own role or anyone else's
     const updateData = {};
     if (name !== undefined) updateData.name = name;
-    if (email !== undefined) updateData.email = email;
 
+    // Field-level Authorization:
+    // Only 'self' or an 'Admin' can change email
+    if (email !== undefined) {
+        if (!isSelf && !isAdmin) {
+            return res.status(403).json({ error: "Access denied. Only you or an admin can change email." });
+        }
+        updateData.email = email;
+    }
+
+    // Only 'self' can change password (Admins cannot change others' passwords)
+    if (password !== undefined) {
+        if (!isSelf) {
+            return res.status(403).json({ error: "Access denied. Only you can change your own password." });
+        }
+        // Hash password before saving
+        const salt = await bcrypt.genSalt(10);
+        updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    // Role restriction: Only admins can change roles
     if (role !== undefined) {
-        if (req.user.role !== 'ADMIN') {
+        if (!isAdmin) {
             return res.status(403).json({ error: "Access denied. Only admins can update user roles." });
         }
-        updateData.role = role;
+        // Safety check for valid role values (normalized by validator usually)
+        const normalizedRole = role.toUpperCase();
+        if (!['ADMIN', 'RANGER'].includes(normalizedRole)) {
+            return res.status(400).json({ error: "Invalid role. Must be 'ADMIN' or 'RANGER'." });
+        }
+        updateData.role = normalizedRole;
     }
 
     const updatedUser = await userRepo.updateById(id, updateData);
