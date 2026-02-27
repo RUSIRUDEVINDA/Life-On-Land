@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import Zone from "../models/Zone.model.js";
+import Patrol from "../models/Patrol.js";
 
 const VALID_STATUS = ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
 
@@ -11,7 +13,7 @@ const normalizeUpper = (value) =>
 const normalizeTrim = (value) =>
     typeof value === "string" ? value.trim() : value;
 
-const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(value);
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const isValidDate = (value) => !isNaN(Date.parse(value));
 
@@ -73,7 +75,7 @@ export const validateCreatePatrol = (req, res, next) => {
     next();
 };
 
-export const validateUpdatePatrol = (req, res, next) => {
+export const validateUpdatePatrol = async (req, res, next) => {
     const errors = [];
     const { protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes } = req.body || {};
 
@@ -82,6 +84,21 @@ export const validateUpdatePatrol = (req, res, next) => {
     }
 
     const updates = {};
+    const { id } = req.params;
+    let targetPAId = protectedAreaId;
+
+    // Handle Protected Area Lookup for Zone Validation
+    if (zoneIds !== undefined && !targetPAId) {
+        try {
+            const existingPatrol = await Patrol.findById(id).select("protectedAreaId");
+            if (!existingPatrol) {
+                return res.status(404).json({ error: "Patrol not found" });
+            }
+            targetPAId = existingPatrol.protectedAreaId;
+        } catch (err) {
+            return res.status(500).json({ error: "Database error during validation" });
+        }
+    }
 
     if (protectedAreaId !== undefined) {
         if (!isValidObjectId(protectedAreaId)) errors.push("protectedAreaId must be a valid ObjectId");
@@ -124,6 +141,21 @@ export const validateUpdatePatrol = (req, res, next) => {
             zoneIds.forEach((id, index) => {
                 if (!isValidObjectId(id)) errors.push(`zoneIds[${index}] must be a valid ObjectId`);
             });
+
+            if (errors.length === 0 && targetPAId) {
+                try {
+                    const invalidZones = await Zone.find({
+                        _id: { $in: zoneIds },
+                        protectedAreaId: { $ne: targetPAId }
+                    }).select("_id");
+
+                    if (invalidZones.length > 0) {
+                        errors.push(`The following zones do not belong to the protected area [${targetPAId}]: ${invalidZones.map(z => z._id).join(", ")}`);
+                    }
+                } catch (err) {
+                    return res.status(500).json({ error: "Zone verification failed" });
+                }
+            }
             updates.zoneIds = zoneIds;
         }
     }
@@ -202,7 +234,7 @@ export const validatePatrolQuery = (req, res, next) => {
     next();
 };
 
-export const validateCheckIn = (req, res, next) => {
+export const validateCheckIn = async (req, res, next) => {
     const errors = [];
     const { location, note, zoneId } = req.body || {};
 
@@ -212,6 +244,20 @@ export const validateCheckIn = (req, res, next) => {
 
     if (zoneId && !isValidObjectId(zoneId)) {
         errors.push("zoneId must be a valid ObjectId");
+    } else if (zoneId) {
+        // Verify Zone belongs to Patrol's Protected Area
+        try {
+            const patrol = await Patrol.findById(req.params.id).select("protectedAreaId");
+            if (!patrol) {
+                return res.status(404).json({ error: "Patrol not found" });
+            }
+            const zone = await Zone.findOne({ _id: zoneId, protectedAreaId: patrol.protectedAreaId });
+            if (!zone) {
+                errors.push(`Zone [${zoneId}] does not belong to the patrol's protected area [${patrol.protectedAreaId}]`);
+            }
+        } catch (err) {
+            return res.status(500).json({ error: "Validation error" });
+        }
     }
 
     if (errors.length > 0) {
@@ -227,11 +273,11 @@ export const validateCheckIn = (req, res, next) => {
 
     next();
 };
-export const validateFullUpdatePatrol = (req, res, next) => {
+
+export const validateFullUpdatePatrol = async (req, res, next) => {
     const errors = [];
     const { protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes } = req.body || {};
 
-    // For PUT, we require all mandatory fields
     if (!isValidObjectId(protectedAreaId)) errors.push("protectedAreaId is required and must be a valid ObjectId");
 
     if (!exactLocation || typeof exactLocation.lat !== "number" || typeof exactLocation.lng !== "number") {
@@ -255,6 +301,21 @@ export const validateFullUpdatePatrol = (req, res, next) => {
         zoneIds.forEach((id, index) => {
             if (!isValidObjectId(id)) errors.push(`zoneIds[${index}] must be a valid ObjectId`);
         });
+
+        if (errors.length === 0 && isValidObjectId(protectedAreaId)) {
+            try {
+                const invalidZones = await Zone.find({
+                    _id: { $in: zoneIds },
+                    protectedAreaId: { $ne: protectedAreaId }
+                }).select("_id");
+
+                if (invalidZones.length > 0) {
+                    errors.push(`The following zones do not belong to the protected area [${protectedAreaId}]: ${invalidZones.map(z => z._id).join(", ")}`);
+                }
+            } catch (err) {
+                return res.status(500).json({ error: "Zone verification failed" });
+            }
+        }
     }
 
     const normalizedStatus = status ? normalizeUpper(status) : "PLANNED";
@@ -280,7 +341,7 @@ export const validateFullUpdatePatrol = (req, res, next) => {
     next();
 };
 
-export const validateFullUpdateCheckIn = (req, res, next) => {
+export const validateFullUpdateCheckIn = async (req, res, next) => {
     const errors = [];
     const { location, note, zoneId } = req.body || {};
 
@@ -290,6 +351,18 @@ export const validateFullUpdateCheckIn = (req, res, next) => {
 
     if (zoneId && !isValidObjectId(zoneId)) {
         errors.push("zoneId must be a valid ObjectId");
+    } else if (zoneId) {
+        try {
+            const patrol = await Patrol.findById(req.params.id).select("protectedAreaId");
+            if (!patrol) return res.status(404).json({ error: "Patrol not found" });
+
+            const zone = await Zone.findOne({ _id: zoneId, protectedAreaId: patrol.protectedAreaId });
+            if (!zone) {
+                errors.push(`Zone [${zoneId}] does not belong to the patrol's protected area [${patrol.protectedAreaId}]`);
+            }
+        } catch (err) {
+            return res.status(500).json({ error: "Validation error" });
+        }
     }
 
     if (errors.length > 0) {
@@ -306,7 +379,7 @@ export const validateFullUpdateCheckIn = (req, res, next) => {
     next();
 };
 
-export const validateUpdateCheckIn = (req, res, next) => {
+export const validateUpdateCheckIn = async (req, res, next) => {
     const errors = [];
     const { location, note, zoneId } = req.body || {};
 
@@ -315,18 +388,27 @@ export const validateUpdateCheckIn = (req, res, next) => {
     }
 
     const updates = {};
-
     if (location !== undefined) {
         if (!location || typeof location.lat !== "number" || typeof location.lng !== "number") {
             errors.push("location with lat and lng (numbers) is required when provided");
-        } else {
-            updates.location = location;
-        }
+        } else updates.location = location;
     }
 
     if (zoneId !== undefined) {
         if (!isValidObjectId(zoneId)) errors.push("zoneId must be a valid ObjectId");
-        else updates.zoneId = zoneId;
+        else {
+            try {
+                const patrol = await Patrol.findById(req.params.id).select("protectedAreaId");
+                if (!patrol) return res.status(404).json({ error: "Patrol not found" });
+
+                const zone = await Zone.findOne({ _id: zoneId, protectedAreaId: patrol.protectedAreaId });
+                if (!zone) {
+                    errors.push(`Zone [${zoneId}] does not belong to the patrol's protected area [${patrol.protectedAreaId}]`);
+                } else updates.zoneId = zoneId;
+            } catch (err) {
+                return res.status(500).json({ error: "Validation error" });
+            }
+        }
     }
 
     if (note !== undefined) {
