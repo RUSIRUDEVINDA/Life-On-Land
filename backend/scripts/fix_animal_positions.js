@@ -36,45 +36,26 @@ async function main() {
         zonesByPA[paKey].push(z);
     }
 
-    // Prefer zones that have real geometry
-    function pickZone(zones) {
-        // Prefer CORE, then any
-        return (
-            zones.find(z => z.zoneType === 'CORE' && z.geometry?.coordinates?.length) ||
-            zones.find(z => z.geometry?.coordinates?.length) ||
-            null
-        );
-    }
-
-    // Build ordered list of (pa, zone) pairs — one entry per zone, cycling all zones in each PA
-    const assignments = [];
-    for (const pa of pas) {
-        const zones = (zonesByPA[pa._id.toString()] || []).filter(z => z.geometry?.coordinates?.length);
-        for (const zone of zones) {
-            assignments.push({ pa, zone });
-        }
-    }
-
-    if (assignments.length === 0) {
-        console.error('No zones with geometry found. Abort.');
-        process.exit(1);
-    }
+    // Create lookups for faster access
+    const zoneMap = new Map(allZones.map(z => [z._id.toString(), z]));
+    const paMap = new Map(pas.map(p => [p._id.toString(), p]));
 
     const animals = await Animal.find({ status: 'ACTIVE' });
-    console.log(`Found ${animals.length} active animals, ${assignments.length} PA-zone slots.\n`);
+    console.log(`Found ${animals.length} active animals.\n`);
 
-    let idx = 0;
     for (const animal of animals) {
-        const { pa, zone } = assignments[idx % assignments.length];
-        idx++;
+        const zone = zoneMap.get(animal.zoneId?.toString());
+        const pa = paMap.get(animal.protectedAreaId?.toString());
+
+        if (!zone || !zone.geometry?.coordinates?.length) {
+            console.log(`  SKIPPING [${animal.tagId}] - Current zone not found or lacks geometry`);
+            continue;
+        }
 
         const centroid = getCentroid(zone.geometry.coordinates);
 
-        // Update the animal's PA and zone references
-        animal.protectedAreaId = pa._id;
-        animal.zoneId = zone._id;
-
         // Seed lat/lng on the animal doc if those fields exist
+        // Note: Coordinates are updated based on the animal's EXISTING zone assignment
         if ('lat' in animal.schema?.paths || animal.lat !== undefined) animal.lat = centroid.lat;
         if ('lng' in animal.schema?.paths || animal.lng !== undefined) animal.lng = centroid.lng;
 
@@ -82,13 +63,13 @@ async function main() {
 
         console.log(
             `  FIXED [${animal.tagId}] (${animal.species})\n` +
-            `    → PA:   "${pa.name}" (${pa._id})\n` +
-            `    → Zone: "${zone.name}" [${zone.zoneType}] (${zone._id})\n` +
+            `    → PA:   "${pa?.name || 'Unknown'}" (${animal.protectedAreaId})\n` +
+            `    → Zone: "${zone.name}" [${zone.zoneType}] (${animal.zoneId})\n` +
             `    → Seed: (${centroid.lat.toFixed(6)}, ${centroid.lng.toFixed(6)})\n`
         );
     }
 
-    console.log(`Done. ${animals.length} animals updated.`);
+    console.log(`Done. Processed ${animals.length} animals.`);
     process.exit(0);
 }
 
