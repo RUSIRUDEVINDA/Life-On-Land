@@ -92,7 +92,7 @@ export const optionalAuth = asyncHandler(async (req, res, next) => {
 });
 
 
-// estricts access to specific user roles.
+// restricts access to specific user roles.
 
 export const authorize = (...roles) => {
     return authorizeRoles(...roles);
