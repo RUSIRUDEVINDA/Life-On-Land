@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { authorizeRoles } from "./role.middleware.js";
 
 export const authenticate = asyncHandler(async (req, res, next) => {
+    console.log("Auth middleware reached");
     let token;
 
     // 1. Check for token in Authorization header (Bearer token)
@@ -92,7 +93,7 @@ export const optionalAuth = asyncHandler(async (req, res, next) => {
 
 
 // estricts access to specific user roles.
- 
+
 export const authorize = (...roles) => {
     return authorizeRoles(...roles);
 };

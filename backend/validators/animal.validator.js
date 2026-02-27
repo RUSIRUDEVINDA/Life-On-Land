@@ -16,6 +16,10 @@ const normalizeTrim = (value) =>
 
 const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(value);
 
+const containsOnlyLetters = (value) =>
+    typeof value === "string" && /^[A-Za-z\s]+$/.test(value.trim());
+
+
 const parseBoolean = (value) => {
     if (typeof value === "boolean") return value;
     if (typeof value === "string") {
@@ -93,7 +97,11 @@ export const validateCreateAnimal = (req, res, next) => {
     } else if (!isValidTagId(tagId)) {
         errors.push("tagId must start with 'T' followed by 2-19 alphanumeric characters (3-20 total length, cannot be all zeros, e.g., T00 is invalid)");
     }
-    if (!isNonEmptyString(species)) errors.push("species is required");
+    if (!isNonEmptyString(species)) {
+        errors.push("species is required");
+    } else if (!containsOnlyLetters(species)) {
+        errors.push("species must only contain letters and spaces (No numbers, accents, or special characters)");
+    }
     if (!isNonEmptyString(sex)) errors.push("sex is required");
     if (!isNonEmptyString(ageClass)) errors.push("ageClass is required");
     if (!isNonEmptyString(protectedAreaId)) errors.push("protectedAreaId is required");
@@ -166,7 +174,11 @@ export const validatePutAnimal = (req, res, next) => {
     const { species, sex, ageClass, protectedAreaId, zoneId, status, description, endemicToSriLanka } = req.body || {};
 
     // For PUT, we require all main fields
-    if (!isNonEmptyString(species)) errors.push("species is required");
+    if (!isNonEmptyString(species)) {
+        errors.push("species is required");
+    } else if (!containsOnlyLetters(species)) {
+        errors.push("species must only contain letters and spaces (No numbers, accents, or special characters)");
+    }
     if (!isNonEmptyString(sex)) errors.push("sex is required");
     if (!isNonEmptyString(ageClass)) errors.push("ageClass is required");
     if (!isNonEmptyString(protectedAreaId)) errors.push("protectedAreaId is required");
@@ -246,8 +258,13 @@ export const validatePatchAnimal = (req, res, next) => {
     }
 
     if (species !== undefined) {
-        if (!isNonEmptyString(species)) errors.push("species must be a non-empty string");
-        else updates.species = normalizeTrim(species);
+        if (!isNonEmptyString(species)) {
+            errors.push("species must be a non-empty string");
+        } else if (!containsOnlyLetters(species)) {
+            errors.push("species must only contain letters and spaces (No numbers, accents, or special characters)");
+        } else {
+            updates.species = normalizeTrim(species);
+        }
     }
 
     if (sex !== undefined) {
