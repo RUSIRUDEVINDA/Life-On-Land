@@ -110,7 +110,7 @@ npm start
 ### 👤 User Management (`/api/users`)
 | Endpoint | Description | Roles |
 | :--- | :--- | :--- |
-| `GET /api/users` | List all users (Filters: `role`, `page`, `limit`) | ADMIN, RANGER |
+| `GET /api/users` | List all users (Filters: `name`, `email`, `role`, `page`, `limit`) | ADMIN, RANGER |
 | `GET /api/users/:id` | Get specific user profile | ANY (Authenticated) |
 | `PUT /api/users/:id` | Full user update | ANY (Owner/Admin) |
 | `PATCH /api/users/:id` | Partial user update | ANY (Owner/Admin) |
