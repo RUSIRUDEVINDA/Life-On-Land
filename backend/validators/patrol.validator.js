@@ -227,3 +227,137 @@ export const validateCheckIn = (req, res, next) => {
 
     next();
 };
+export const validateFullUpdatePatrol = (req, res, next) => {
+    const errors = [];
+    const { protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes } = req.body || {};
+
+    // For PUT, we require all mandatory fields
+    if (!isValidObjectId(protectedAreaId)) errors.push("protectedAreaId is required and must be a valid ObjectId");
+
+    if (!exactLocation || typeof exactLocation.lat !== "number" || typeof exactLocation.lng !== "number") {
+        errors.push("exactLocation with lat and lng (numbers) is required");
+    }
+
+    if (!plannedStart || !isValidDate(plannedStart)) errors.push("plannedStart is required and must be a valid date");
+    if (!plannedEnd || !isValidDate(plannedEnd)) errors.push("plannedEnd is required and must be a valid date");
+
+    if (!Array.isArray(assignedRangerIds) || assignedRangerIds.length === 0) {
+        errors.push("assignedRangerIds is required and must be a non-empty array");
+    } else {
+        assignedRangerIds.forEach((id, index) => {
+            if (!isValidObjectId(id)) errors.push(`assignedRangerIds[${index}] must be a valid ObjectId`);
+        });
+    }
+
+    if (zoneIds && !Array.isArray(zoneIds)) {
+        errors.push("zoneIds must be an array");
+    } else if (zoneIds) {
+        zoneIds.forEach((id, index) => {
+            if (!isValidObjectId(id)) errors.push(`zoneIds[${index}] must be a valid ObjectId`);
+        });
+    }
+
+    const normalizedStatus = status ? normalizeUpper(status) : "PLANNED";
+    if (status && !VALID_STATUS.includes(normalizedStatus)) {
+        errors.push("status must be PLANNED, IN_PROGRESS, COMPLETED, or CANCELLED");
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({ error: "Validation failed (PUT requires full replacement)", details: errors });
+    }
+
+    req.body = {
+        protectedAreaId,
+        exactLocation,
+        zoneIds: zoneIds || [],
+        plannedStart: new Date(plannedStart),
+        plannedEnd: new Date(plannedEnd),
+        assignedRangerIds,
+        status: normalizedStatus,
+        notes: notes ? normalizeTrim(notes) : ""
+    };
+
+    next();
+};
+
+export const validateFullUpdateCheckIn = (req, res, next) => {
+    const errors = [];
+    const { location, note, zoneId } = req.body || {};
+
+    if (!location || typeof location.lat !== "number" || typeof location.lng !== "number") {
+        errors.push("location with lat and lng (numbers) is required for PUT");
+    }
+
+    if (zoneId && !isValidObjectId(zoneId)) {
+        errors.push("zoneId must be a valid ObjectId");
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({ error: "Validation failed (PUT requires full replacement)", details: errors });
+    }
+
+    req.body = {
+        location,
+        note: note ? normalizeTrim(note) : "",
+        zoneId,
+        timestamp: new Date()
+    };
+
+    next();
+};
+
+export const validateUpdateCheckIn = (req, res, next) => {
+    const errors = [];
+    const { location, note, zoneId } = req.body || {};
+
+    if (!req.body || Object.keys(req.body).length === 0) {
+        return res.status(400).json({ error: "No fields provided to update" });
+    }
+
+    const updates = {};
+
+    if (location !== undefined) {
+        if (!location || typeof location.lat !== "number" || typeof location.lng !== "number") {
+            errors.push("location with lat and lng (numbers) is required when provided");
+        } else {
+            updates.location = location;
+        }
+    }
+
+    if (zoneId !== undefined) {
+        if (!isValidObjectId(zoneId)) errors.push("zoneId must be a valid ObjectId");
+        else updates.zoneId = zoneId;
+    }
+
+    if (note !== undefined) {
+        updates.note = (typeof note === "string") ? note.trim() : note;
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({ error: "Validation failed", details: errors });
+    }
+
+    req.body = updates;
+    next();
+};
+
+export const validateCheckInQuery = (req, res, next) => {
+    const { page, limit } = req.query || {};
+    const errors = [];
+
+    if (page !== undefined) {
+        const p = Number(page);
+        if (isNaN(p) || p < 1) errors.push("page must be a number >= 1");
+    }
+
+    if (limit !== undefined) {
+        const l = Number(limit);
+        if (isNaN(l) || l < 1 || l > 100) errors.push("limit must be a number between 1 and 100");
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({ error: "Validation failed", details: errors });
+    }
+
+    next();
+};

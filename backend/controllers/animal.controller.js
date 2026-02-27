@@ -4,6 +4,9 @@ import * as repo from "../repositories/animal.repository.js";
 import { buildAnimalQuery } from "../utils/queryBuilder.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+// @desc    Register a new animal
+// @route   POST /api/animals
+// @access  Private (Admin)
 export const createAnimal = asyncHandler(async (req, res) => {
     const result = await service.createAnimal(req.body);
     res.status(201).json({
@@ -12,6 +15,9 @@ export const createAnimal = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Get all animals with pagination and filters
+// @route   GET /api/animals
+// @access  Private (Admin, Ranger)
 export const getAnimals = asyncHandler(async (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
@@ -39,6 +45,9 @@ export const getAnimals = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Get animal by tag ID
+// @route   GET /api/animals/:tagId
+// @access  Private (Admin, Ranger)
 export const getAnimalById = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
 
@@ -55,6 +64,9 @@ export const getAnimalById = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Update animal record
+// @route   PUT /api/animals/:tagId
+// @access  Private (Admin)
 export const updateAnimal = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
 
@@ -62,6 +74,9 @@ export const updateAnimal = asyncHandler(async (req, res) => {
     res.json({ message: "Animal updated successfully", animal });
 });
 
+// @desc    Delete animal record
+// @route   DELETE /api/animals/:tagId
+// @access  Private (Admin)
 export const deleteAnimal = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
     console.log("Controller: Received delete request for tagId:", tagId);

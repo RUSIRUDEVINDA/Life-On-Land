@@ -3,10 +3,16 @@ import * as zoneRepo from "../repositories/zone.repository.js";
 import * as animalRepo from "../repositories/animal.repository.js";
 import * as alertService from "./alert.service.js";
 
+/*
+ * @desc    Service to record a new animal movement
+ * @param   {Object} data - Movement coordinates and tag metadata
+ * @returns {Object} Saved movement document
+ */
 export const ingestMovement = async (data) => {
     const tagId = data.tagId;
     const { lat, lng } = data;
 
+    // Field validation: Ensure identity and coordinates are present
     if (!tagId) {
         throw new Error("Missing tagId in movement data");
     }
@@ -15,25 +21,25 @@ export const ingestMovement = async (data) => {
         throw new Error("Missing lat/lng in movement data");
     }
 
-    // Strict zone check — coordinates MUST be inside an active zone
+    // Strict boundary check: coordinates MUST map to an active zone for security/integrity
     const zone = await zoneRepo.findZoneByCoordinates(lng, lat);
 
     if (!zone) {
-        // Coordinates are outside every known zone — reject the movement
+        // Enforce hard boundary constraints
         throw new Error(
             `Movement rejected: coordinates (${lat}, ${lng}) are not inside any active zone. ` +
             `Animals must remain within zone boundaries.`
         );
     }
 
-    // Enrich data with resolved zone and protected area
+    // Enrichment: link movement to resolved geopolitical entities
     data.tagId = tagId;
     data.zoneId = zone._id;
     data.protectedAreaId = zone.protectedAreaId;
 
     const movement = await movementRepo.create(data);
 
-    // Trigger alert if in a high-risk zone
+    // Alert system: evaluate zone risk levels for proactive notifications
     if (zone.zoneType === "CORE" || zone.name.toLowerCase().includes("risk")) {
         console.log(`ALERT: Animal ${tagId} entered high risk zone ${zone.name}`);
         await alertService.triggerMovementAlert(movement, zone);
@@ -42,7 +48,21 @@ export const ingestMovement = async (data) => {
     return movement;
 };
 
+/*
+ * @desc    Service to fetch movement history for a specific animal
+ * @param   {string} tagId - Animal tag identifier
+ * @param   {Object} query - Time range and pagination parameters
+ * @returns {Object} List of movements with metadata
+ */
 export const getMovementHistory = async (tagId, query) => {
+    // Identity verification
+    const animal = await animalRepo.findByTagId(tagId);
+    if (!animal) {
+        const error = new Error(`Animal with tagId ${tagId} not found`);
+        error.statusCode = 404;
+        throw error;
+    }
+
     const { from, to, page = 1, limit = 50 } = query;
     const filter = {};
     if (from || to) {
@@ -53,6 +73,7 @@ export const getMovementHistory = async (tagId, query) => {
     const skip = (page - 1) * limit;
     const sort = { timestamp: -1 };
 
+    // Concurrently fetch totals and paginated dataset
     const [total, movements] = await Promise.all([
         movementRepo.count({ tagId, ...filter }),
         movementRepo.findByAnimalIdWithPagination(tagId, filter, sort, skip, limit)

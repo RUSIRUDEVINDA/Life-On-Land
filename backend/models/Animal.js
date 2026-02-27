@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+/**
+ * @desc    Animal Schema defining tracked wildlife
+ */
 const animalSchema = new mongoose.Schema(
     {
         tagId: {
@@ -32,6 +35,15 @@ const animalSchema = new mongoose.Schema(
             required: true,
             index: true,
             trim: true
+        },
+        description: {
+            type: String,
+            default: null,
+            trim: true
+        },
+        endemicToSriLanka: {
+            type: Boolean,
+            default: false
         },
         sex: {
             type: String,

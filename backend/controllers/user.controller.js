@@ -1,12 +1,40 @@
 import * as userRepo from "../repositories/user.repository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import bcrypt from "bcryptjs";
 
+// @desc    Get all users with filtering
+// @route   GET /api/users
+// @access  Private (Admin, Ranger)
 export const getUsers = asyncHandler(async (req, res) => {
-    const users = await userRepo.findAll();
-    res.json(users);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const sort = { createdAt: -1 };
 
+    const query = {};
+    if (req.query.role) query.role = req.query.role.toUpperCase();
+
+    const skip = (page - 1) * limit;
+
+    // Concurrently fetch counts and paginated data
+    const [total, users] = await Promise.all([
+        userRepo.count(query),
+        userRepo.findWithPagination(query, sort, skip, limit)
+    ]);
+
+    res.json({
+        data: users,
+        pagination: {
+            total,
+            page,
+            limit,
+            pages: Math.ceil(total / limit) || 1
+        }
+    });
 });
 
+// @desc    Get user profile by ID
+// @route   GET /api/users/:id
+// @access  Private (Self or Admin)
 export const getUserById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -23,19 +51,55 @@ export const getUserById = asyncHandler(async (req, res) => {
     res.json(user);
 });
 
+// @desc    Update user profile or role
+// @route   PUT /api/users/:id
+// @access  Private (Self or Admin)
 export const updateUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, email, role } = req.body;
+    const { name, email, role, password } = req.body;
+    const isSelf = req.user._id.toString() === id;
+    const isAdmin = req.user.role === 'ADMIN';
 
-    // Authorization check: Admin can update anyone, users can only update themselves
-    if (req.user.role !== 'ADMIN' && req.user._id.toString() !== id) {
+    // Authorization check: 
+    // 1. Rangers can only update themselves
+    // 2. Admins can update others, but with restrictions
+    if (!isAdmin && !isSelf) {
         return res.status(403).json({ error: "Access denied. You can only update your own profile." });
     }
 
-    // Role restriction: Non-admins cannot change their own role or others' roles
-    const updateData = { name, email };
-    if (req.user.role === 'ADMIN' && role) {
-        updateData.role = role;
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+
+    // Field-level Authorization:
+    // Only 'self' or an 'Admin' can change email
+    if (email !== undefined) {
+        if (!isSelf && !isAdmin) {
+            return res.status(403).json({ error: "Access denied. Only you or an admin can change email." });
+        }
+        updateData.email = email;
+    }
+
+    // Only 'self' can change password (Admins cannot change others' passwords)
+    if (password !== undefined) {
+        if (!isSelf) {
+            return res.status(403).json({ error: "Access denied. Only you can change your own password." });
+        }
+        // Hash password before saving
+        const salt = await bcrypt.genSalt(10);
+        updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    // Role restriction: Only admins can change roles
+    if (role !== undefined) {
+        if (!isAdmin) {
+            return res.status(403).json({ error: "Access denied. Only admins can update user roles." });
+        }
+        // Safety check for valid role values (normalized by validator usually)
+        const normalizedRole = role.toUpperCase();
+        if (!['ADMIN', 'RANGER'].includes(normalizedRole)) {
+            return res.status(400).json({ error: "Invalid role. Must be 'ADMIN' or 'RANGER'." });
+        }
+        updateData.role = normalizedRole;
     }
 
     const updatedUser = await userRepo.updateById(id, updateData);
@@ -49,6 +113,9 @@ export const updateUser = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Delete user record
+// @route   DELETE /api/users/:id
+// @access  Private (Admin only)
 export const deleteUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
