@@ -129,7 +129,6 @@ npm start
 ### 📡 Movement Tracking (`/api/movements`)
 | Endpoint | Description | Roles |
 | :--- | :--- | :--- |
-| `POST /api/movements` | Ingest movement data (IoT/Manual) | Public (IoT) |
 | `GET /api/movements` | Search movement logs | ADMIN, RANGER |
 | `GET /api/movements/summary` | Latest location snapshot for all animals | ADMIN, RANGER |
 | `GET /api/movements/:tagId` | Historical movements by Tag ID | ADMIN, RANGER |
