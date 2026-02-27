@@ -39,7 +39,7 @@ export const getAnimals = asyncHandler(async (req, res) => {
     }));
 
     res.json({
-        message: "Animals retrieved successfully",
+        message: animalsWithDetails.length > 0 ? "Animals retrieved successfully" : "No animals found matching the criteria",
         data: animalsWithDetails,
         pagination: { total, page, limit, pages: Math.ceil(total / limit) || 1 }
     });
