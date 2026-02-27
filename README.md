@@ -153,8 +153,8 @@ npm start
 | `GET /api/animals`           | List animals (Paginated + Filter by `species`, `status`, etc.) | Yes           | ADMIN, RANGER |
 | `POST /api/animals`          | Register new animal (Tag ID required)                          | Yes           | ADMIN         |
 | `GET /api/animals/:tagId`    | Retrieve detailed animal profile                               | Yes           | ADMIN, RANGER |
-| `PUT /api/animals/:tagId`    | Full profile replacement                                       | Yes           | ADMIN         |
-| `PATCH /api/animals/:tagId`  | Partial profile update                                         | Yes           | ADMIN         |
+| `PUT /api/animals/:tagId`    | Full update                                      | Yes           | ADMIN         |
+| `PATCH /api/animals/:tagId`  | Partial update                                         | Yes           | ADMIN         |
 | `DELETE /api/animals/:tagId` | Remove animal record                                           | Yes           | ADMIN         |
 
 ### 📡 Movement Tracking (`/api/movements`)
