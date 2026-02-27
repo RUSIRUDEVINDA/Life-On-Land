@@ -153,9 +153,9 @@ npm start
 | Endpoint | Description | Roles |
 | :--- | :--- | :--- |
 | `POST /api/incidents` | Report threat (POACHING, LOGGING, etc.) | Public/Guest |
-| `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | ADMIN, RANGER, OFFICER |
-| `GET /api/incidents/:id` | Get full investigation report | ADMIN, RANGER, OFFICER |
-| `PUT /api/incidents/:id` | Update status/severity | ADMIN, RANGER, OFFICER |
+| `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | ADMIN, RANGER |
+| `GET /api/incidents/:id` | Get full investigation report | ADMIN, RANGER |
+| `PUT /api/incidents/:id` | Update status/severity | ADMIN, RANGER |
 | `DELETE /api/incidents/:id` | Soft delete record | ADMIN |
 
 ### 🔔 Smart Alerts (`/api/alerts`)
