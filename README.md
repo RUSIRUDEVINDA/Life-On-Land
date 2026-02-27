@@ -274,7 +274,7 @@ npm start
 ```json
 // Request
 {
-    "tagId": "AFR-001",
+    "tagId": "T0001",
     "protectedAreaId": "69975c61d112d1320744ef20",
     "zoneId": "69976248d112d1320744ef41",
     "species": "Asian Elephant",
@@ -288,7 +288,7 @@ npm start
 {
     "message": "Animal created successfully",
     "animal": {
-        "tagId": "AFR-001",
+        "tagId": "T0001",
         "protectedAreaId": "69975c61d112d1320744ef20",
         "protectedAreaName": "Sinharaja Forest Reserve",
         "zoneId": "69976248d112d1320744ef41",
