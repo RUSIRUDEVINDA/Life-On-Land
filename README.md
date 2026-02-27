@@ -17,7 +17,7 @@ Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracki
 - 🚨 **Automated Alert System**: Immediate notification triggers for poaching incidents and boundary breaches.
 - 🛡️ **Advanced Patrol Management**: Dynamic scheduling, geo-fenced check-ins, and digital logbooks for rangers.
 - 📈 **Risk Mapping**: Heatmap-based risk assessment utilizing historical incident and movement data.
-- 🔒 **RBAC Security**: Granular Role-Based Access Control (ADMIN, OFFICER, RANGER).
+- 🔒 **RBAC Security**: Granular Role-Based Access Control (ADMIN, RANGER).
 - 🧬 **Data Integrity**: Robust validation and sanitization for all incoming data streams.
 
 ---
