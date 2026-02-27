@@ -1,8 +1,6 @@
 import * as alertRepo from "../repositories/alert.repository.js";
 
-/**
- * Trigger an alert for animal movement into a high-risk zone.
- */
+// Trigger an alert for animal movement into a high-risk zone
 export const triggerMovementAlert = async (movement, zone) => {
     let paName = "Unknown Protected Area";
     let animalSpecies = "Unknown Species";
@@ -42,9 +40,7 @@ export const triggerMovementAlert = async (movement, zone) => {
     return alertRepo.create(alertData);
 };
 
-/**
- * Trigger an alert for a reported poaching incident.
- */
+// Trigger an alert for a reported poaching incident
 export const triggerIncidentAlert = async (incident, zoneName) => {
     let paName = "Unknown Protected Area";
     try {
@@ -72,9 +68,7 @@ export const triggerIncidentAlert = async (incident, zoneName) => {
     return alertRepo.create(alertData);
 };
 
-/**
- * Get alerts for admin dashboard.
- */
+// Fetch alerts with pagination, sorting, and status filtering
 export const getAlerts = async (query) => {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
@@ -100,9 +94,7 @@ export const getAlerts = async (query) => {
     };
 };
 
-/**
- * Link a patrol to an alert and mark it as ACKNOWLEDGED.
- */
+// Link a patrol to an alert and mark it as acknowledged
 export const linkPatrolToAlert = async (alertId, patrolId) => {
     return alertRepo.updateById(alertId, {
         patrolId,
@@ -110,9 +102,7 @@ export const linkPatrolToAlert = async (alertId, patrolId) => {
     });
 };
 
-/**
- * Update alert status (ACKNOWLEDGED/RESOLVED).
- */
+// Update alert processing state
 export const updateAlertStatus = async (alertId, status) => {
     return alertRepo.updateById(alertId, { status });
 };

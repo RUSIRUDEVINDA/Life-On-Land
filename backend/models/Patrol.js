@@ -1,54 +1,54 @@
 import mongoose from "mongoose";
 
 const checkInSchema = new mongoose.Schema({
-    location: {
+    location: { // Geospatial coordinates of the check-in
         lat: { type: Number, required: true },
         lng: { type: Number, required: true }
     },
-    timestamp: { type: Date, default: Date.now },
-    note: { type: String },
-    zoneId: { type: mongoose.Schema.Types.ObjectId, ref: "Zone" }
+    timestamp: { type: Date, default: Date.now }, // When the check-in occurred
+    note: { type: String }, // Optional ranger notes for this point
+    zoneId: { type: mongoose.Schema.Types.ObjectId, ref: "Zone" } // Specific zone where check-in happened
 });
 
 const patrolSchema = new mongoose.Schema(
     {
-        title: {
+        title: { // Descriptive title for the patrol
             type: String,
             trim: true
         },
-        protectedAreaId: {
+        protectedAreaId: { // Protected area assigned for patrol
             type: mongoose.Schema.Types.ObjectId,
             ref: "ProtectedArea",
             required: true
         },
-        exactLocation: {
+        exactLocation: { // Primary target location or starting point
             lat: { type: Number, required: true },
             lng: { type: Number, required: true }
         },
-        zoneIds: [{
+        zoneIds: [{ // List of zones to be covered during patrol
             type: mongoose.Schema.Types.ObjectId,
             ref: "Zone"
         }],
-        plannedStart: {
+        plannedStart: { // Scheduled start time
             type: Date,
             required: true
         },
-        plannedEnd: {
+        plannedEnd: { // Scheduled completion time
             type: Date,
             required: true
         },
-        assignedRangerIds: [{
+        assignedRangerIds: [{ // Rangers assigned to this mission
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true
         }],
-        status: {
+        status: { // Current lifecycle state of the patrol
             type: String,
             enum: ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
             default: "PLANNED"
         },
-        checkIns: [checkInSchema],
-        notes: {
+        checkIns: [checkInSchema], // Real-time progress updates from rangers
+        notes: { // Overall patrol summary or concluding remarks
             type: String
         }
     },
