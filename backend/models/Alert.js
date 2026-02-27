@@ -46,6 +46,10 @@ const alertSchema = new mongoose.Schema(
         protectedAreaName: { // Human-readable name of the protected area
             type: String
         },
+        location: { // Geospatial coordinates for patrol inheritance
+            lat: { type: Number },
+            lng: { type: Number }
+        },
         patrolId: { // Reference to a patrol assigned to handle this alert
             type: mongoose.Schema.Types.ObjectId,
             ref: "Patrol",

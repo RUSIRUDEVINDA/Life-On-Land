@@ -18,6 +18,11 @@ const buildPatrolQuery = (queryParams) => {
 
     if (status) query.status = status;
 
+    if (queryParams.zoneIds) {
+        const zoneIds = Array.isArray(queryParams.zoneIds) ? queryParams.zoneIds : queryParams.zoneIds.split(",");
+        query.zoneIds = { $in: zoneIds.map(id => new mongoose.Types.ObjectId(id.trim())) };
+    }
+
     if (from || to) {
         query.plannedStart = {};
         if (from) query.plannedStart.$gte = new Date(from);
@@ -45,27 +50,21 @@ export const createPatrol = asyncHandler(async (req, res) => {
                     patrolData.zoneIds = [...(patrolData.zoneIds || []), alert.zoneId];
                 }
 
-                // Inherit location from related Incident or Movement
-                let location = null;
-                if (alert.type === "INCIDENT") {
-                    const Incident = (await import("../models/Incident.model.js")).default;
-                    const incident = await Incident.findById(alert.relatedId).lean();
-                    if (incident && incident.location?.coordinates) {
-                        location = {
-                            lat: incident.location.coordinates[1],
-                            lng: incident.location.coordinates[0]
-                        };
+                // Inherit location directly from Alert
+                if (alert.location && alert.location.lat && alert.location.lng) {
+                    patrolData.exactLocation = alert.location;
+                } else {
+                    // Fallback for legacy alerts: Use Zone coordinates
+                    try {
+                        const Zone = (await import("../models/Zone.model.js")).default;
+                        const zone = await Zone.findById(alert.zoneId).lean();
+                        if (zone && zone.geometry?.coordinates?.[0]?.[0]) {
+                            const [lng, lat] = zone.geometry.coordinates[0][0];
+                            patrolData.exactLocation = { lat, lng };
+                        }
+                    } catch (err) {
+                        console.error("Failed legacy location fallback:", err);
                     }
-                } else if (alert.type === "MOVEMENT") {
-                    const Movement = (await import("../models/Movement.js")).default;
-                    const movement = await Movement.findById(alert.relatedId).lean();
-                    if (movement) {
-                        location = { lat: movement.lat, lng: movement.lng };
-                    }
-                }
-
-                if (location) {
-                    patrolData.exactLocation = location;
                 }
             }
         } catch (error) {

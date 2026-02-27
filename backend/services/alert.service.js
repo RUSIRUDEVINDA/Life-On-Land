@@ -34,7 +34,11 @@ export const triggerMovementAlert = async (movement, zone) => {
         protectedAreaId: movement.protectedAreaId,
         protectedAreaName: paName,
         zoneId: movement.zoneId,
-        zoneName: zone.name
+        zoneName: zone.name,
+        location: {
+            lat: movement.lat,
+            lng: movement.lng
+        }
     };
 
     return alertRepo.create(alertData);
@@ -43,12 +47,26 @@ export const triggerMovementAlert = async (movement, zone) => {
 // Trigger an alert for a reported poaching incident
 export const triggerIncidentAlert = async (incident, zoneName) => {
     let paName = "Unknown Protected Area";
+    let location = null;
+
     try {
         const ProtectedArea = (await import("../models/ProtectedArea.model.js")).default;
-        const pa = await ProtectedArea.findById(incident.protectedAreaId).lean();
+        const Zone = (await import("../models/Zone.model.js")).default;
+
+        const [pa, zone] = await Promise.all([
+            ProtectedArea.findById(incident.protectedAreaId).lean(),
+            Zone.findById(incident.zoneId).lean()
+        ]);
+
         if (pa) paName = pa.name;
+
+        // Use Zone geometry as fallback location for incident alerts
+        if (zone && zone.geometry?.coordinates?.[0]?.[0]) {
+            const [lng, lat] = zone.geometry.coordinates[0][0];
+            location = { lat, lng };
+        }
     } catch (error) {
-        console.error("Failed to fetch Protected Area name for incident alert:", error);
+        console.error("Failed to fetch Protected Area or Zone details for incident alert:", error);
     }
 
     // Format: [Park Name] CRITICAL: [Type] in [Zone] - [Description]
@@ -62,7 +80,8 @@ export const triggerIncidentAlert = async (incident, zoneName) => {
         protectedAreaId: incident.protectedAreaId,
         protectedAreaName: paName,
         zoneId: incident.zoneId,
-        zoneName: zoneName
+        zoneName: zoneName,
+        location: location
     };
 
     return alertRepo.create(alertData);
