@@ -170,9 +170,10 @@ npm start
 | Endpoint | Description | Auth Required | Roles |
 | :--- | :--- | :--- | :--- |
 | `POST /api/incidents` | Report threat (POACHING, LOGGING, etc.) | No | Public/Guest |
-| `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | Yes | ADMIN, RANGER, OFFICER |
-| `GET /api/incidents/:id` | Get full investigation report | Yes | ADMIN, RANGER, OFFICER |
-| `PUT /api/incidents/:id` | Update status/severity | Yes | ADMIN, RANGER, OFFICER |
+| `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | Yes | ADMIN, RANGER |
+| `GET /api/incidents/:id` | Get full investigation report | Yes | ADMIN, RANGER |
+| `PUT /api/incidents/:id` | Update Full Incident | Yes | ADMIN, RANGER |
+| `PATCH /api/animals/:tagId`  | Partial update Incident | Yes | ADMIN, RANGER |                                
 | `DELETE /api/incidents/:id` | Remove record | Yes | ADMIN |
 
 ### � Risk Intelligence (`/api/risk-map`)
