@@ -188,6 +188,245 @@ npm start
 
 ---
 
+## Request Response Examples
+
+### 🔐 Authentication (Login)
+**POST** `/api/auth/login`
+```json
+// Request
+{
+    "email": "admin@lifeonland.com",
+    "password": "securepassword123"
+}
+
+// Response (200 OK)
+{
+    "message": "Login successful",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGIxYjFhYzYxOTZmZGQzZjM5N2JhYyIsImlhdCI6MTY3NzUwMDAwMCwiZXhwIjoxNjc3NjAwMDAwfQ.XYZ",
+    "user": {
+        "_id": "698b1b1ac6196fdd3f397bac",
+        "name": "Head Ranger",
+        "email": "admin@lifeonland.com",
+        "role": "ADMIN",
+        "createdAt": "2026-02-20T10:00:00.000Z",
+        "updatedAt": "2026-02-20T10:00:00.000Z",
+        "__v": 0
+    }
+}
+```
+
+### 🛡️ Patrol Management (Create Mission)
+**POST** `/api/patrols`
+```json
+// Request
+{
+    "alertId": "69a1b98c5f93a7b599c594c9",
+    "assignedRangerIds": ["698b1b1ac6196fdd3f397bac"],
+    "plannedStart": "2026-02-27T08:00:00.000Z",
+    "plannedEnd": "2026-02-28T17:00:00.000Z",
+    "notes": "Emergency poaching response."
+}
+
+// Response (201 Created)
+{
+    "message": "Patrol created successfully",
+    "patrol": {
+        "title": "[Sinharaja] CRITICAL: POACHING detected",
+        "protectedAreaId": "69975c61d112d1320744ef20",
+        "exactLocation": {
+            "lat": 6.31,
+            "lng": 81.01
+        },
+        "zoneIds": ["69976248d112d1320744ef41"],
+        "plannedStart": "2026-02-27T08:00:00.000Z",
+        "plannedEnd": "2026-02-28T17:00:00.000Z",
+        "assignedRangerIds": ["698b1b1ac6196fdd3f397bac"],
+        "status": "PLANNED",
+        "notes": "Emergency poaching response.",
+        "checkIns": [],
+        "_id": "69a1ba2f93a12883034f6dfd",
+        "createdAt": "2026-02-27T15:37:19.299Z",
+        "updatedAt": "2026-02-27T15:37:19.299Z",
+        "__v": 0
+    }
+}
+```
+
+### 📍 Ranger Check-In
+**POST** `/api/patrols/:id/check-ins`
+```json
+// Request
+{
+    "location": { "lat": 6.315, "lng": 81.022 },
+    "note": "Suspect tracks found near the river boundary.",
+    "zoneId": "69976248d112d1320744ef41"
+}
+
+// Response (201 Created)
+{
+    "message": "Check-in added successfully",
+    "patrol": {
+        "_id": "69a1ba2f93a12883034f6dfd",
+        "status": "IN_PROGRESS",
+        "checkIns": [
+            {
+                "location": { "lat": 6.315, "lng": 81.022 },
+                "note": "Suspect tracks found near the river boundary.",
+                "zoneId": "69976248d112d1320744ef41",
+                "timestamp": "2026-02-27T15:45:00.299Z",
+                "_id": "69a1bb2093a12883034f6e10"
+            }
+        ],
+        "updatedAt": "2026-02-27T15:45:00.299Z"
+    }
+}
+```
+
+### 🐾 Animal Registry (Register Animal)
+**POST** `/api/animals`
+```json
+// Request
+{
+    "tagId": "AFR-001",
+    "protectedAreaId": "69975c61d112d1320744ef20",
+    "zoneId": "69976248d112d1320744ef41",
+    "species": "Asian Elephant",
+    "sex": "MALE",
+    "ageClass": "ADULT",
+    "description": "Large bull elephant with distinctive tusk.",
+    "endemicToSriLanka": true
+}
+
+// Response (201 Created)
+{
+    "message": "Animal created successfully",
+    "animal": {
+        "tagId": "AFR-001",
+        "protectedAreaId": "69975c61d112d1320744ef20",
+        "protectedAreaName": "Sinharaja Forest Reserve",
+        "zoneId": "69976248d112d1320744ef41",
+        "zoneName": "Core Zone A",
+        "species": "Asian Elephant",
+        "description": "Large bull elephant with distinctive tusk.",
+        "endemicToSriLanka": true,
+        "sex": "MALE",
+        "ageClass": "ADULT",
+        "status": "ACTIVE",
+        "_id": "69a1c4b293a12883034f6f05",
+        "createdAt": "2026-02-27T16:10:00.500Z",
+        "updatedAt": "2026-02-27T16:10:00.500Z",
+        "__v": 0
+    }
+}
+```
+
+### 🛰️ Movement Tracking (Query History)
+**GET** `/api/movements/:tagId`
+```json
+// Response Example (Array of logs)
+[
+    {
+        "_id": "69a2c2c3d4e5f6a7b8c9d0e1",
+        "tagId": "AFR-001",
+        "lat": 6.312,
+        "lng": 81.015,
+        "timestamp": "2026-02-27T18:15:00.000Z",
+        "speed": 5.2,
+        "sourceType": "GPS",
+        "zoneId": "69976248d112d1320744ef41",
+        "protectedAreaId": "69975c61d112d1320744ef20",
+        "createdAt": "2026-02-27T18:15:05.100Z",
+        "updatedAt": "2026-02-27T18:15:05.100Z",
+        "__v": 0
+    }
+]
+```
+
+### 🚨 Incident Reporting (Submit Threat)
+**POST** `/api/incidents`
+```json
+// Request
+{
+    "type": "POACHING",
+    "description": "Gunshots heard near river boundary.",
+    "zoneId": "69976248d112d1320744ef41",
+    "protectedAreaId": "69975c61d112d1320744ef20",
+    "incidentDate": "2026-02-27T17:30:00.000Z",
+    "severity": "CRITICAL"
+}
+
+// Response (201 Created)
+{
+    "success": true,
+    "message": "Incident created successfully",
+    "data": {
+        "_id": "69a1c9d293a12883034f6fb2",
+        "type": "POACHING",
+        "description": "Gunshots heard near river boundary.",
+        "zoneId": {
+            "_id": "69976248d112d1320744ef41",
+            "name": "Core Zone A"
+        },
+        "protectedAreaId": {
+            "_id": "69975c61d112d1320744ef20",
+            "name": "Sinharaja Forest Reserve"
+        },
+        "status": "UNVERIFIED",
+        "severity": "CRITICAL",
+        "incidentDate": "2026-02-27T17:30:00.000Z",
+        "reportedBy": {
+            "_id": "698b1b1ac6196fdd3f397bac",
+            "username": "head_ranger",
+            "fullName": "Head Ranger"
+        },
+        "isDeleted": false,
+        "createdAt": "2026-02-27T17:45:00.123Z",
+        "updatedAt": "2026-02-27T17:45:00.123Z",
+        "__v": 0
+    }
+}
+```
+
+### 🗺️ Conservation Geometry (Create Area)
+**POST** `/api/protected-areas`
+```json
+// Request
+{
+    "name": "Sinharaja Forest Reserve",
+    "type": "FOREST_RESERVE",
+    "district": "Ratnapura",
+    "areaSize": 88.4,
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[80.4, 6.3], [80.5, 6.3], [80.5, 6.4], [80.4, 6.4], [80.4, 6.3]]]
+    },
+    "description": "UNESCO World Heritage Site."
+}
+
+// Response (201 Created)
+{
+    "data": {
+        "name": "Sinharaja Forest Reserve",
+        "type": "FOREST_RESERVE",
+        "district": "Ratnapura",
+        "areaSize": 88.4,
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[80.4, 6.3], [80.5, 6.3], [80.5, 6.4], [80.4, 6.4], [80.4, 6.3]]],
+            "_id": "69975c61d112d1320744ef21"
+        },
+        "description": "UNESCO World Heritage Site.",
+        "status": "ACTIVE",
+        "_id": "69975c61d112d1320744ef20",
+        "createdAt": "2026-02-20T08:00:00.000Z",
+        "updatedAt": "2026-02-20T08:00:00.000Z",
+        "__v": 0
+    }
+}
+```
+
+---
+
 ## 🛠️ Tech Stack
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB & Mongoose ODM
