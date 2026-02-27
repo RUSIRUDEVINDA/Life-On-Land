@@ -93,7 +93,10 @@ npm start
 ```
 
 ---
-<img width="2596" height="1444" alt="diagram-export-2-27-2026-12_50_46-PM" src="https://github.com/user-attachments/assets/e6b530fb-ff39-4720-aa2f-9d2e3609fb85" />
+
+## System Architecture Diagram
+
+<img width="2596" height="1248" alt="diagram-export-2-27-2026-12_50_46-PM" src="https://github.com/user-attachments/assets/f5d58676-1727-4ada-b0a2-3e71bca40ab0" />
 
 ## 🔑 API Documentation
 
