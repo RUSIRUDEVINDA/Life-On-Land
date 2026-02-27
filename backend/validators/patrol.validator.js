@@ -77,41 +77,25 @@ export const validateCreatePatrol = (req, res, next) => {
 
 export const validateUpdatePatrol = async (req, res, next) => {
     const errors = [];
-    const { protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes } = req.body || {};
+    const { protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes, checkIns, title } = req.body || {};
 
     if (!req.body || Object.keys(req.body).length === 0) {
         return res.status(400).json({ error: "No fields provided to update" });
     }
 
+    // IMMUTABLE FIELDS CHECK (cannot be changed after creation)
+    const immutableFields = ["protectedAreaId", "exactLocation", "zoneIds", "title"];
+    const attemptedImmutableUpdates = immutableFields.filter(field => req.body[field] !== undefined);
+
+    if (attemptedImmutableUpdates.length > 0) {
+        return res.status(400).json({
+            error: "Validation failed",
+            details: [`Fields [${attemptedImmutableUpdates.join(", ")}] cannot be changed after patrol creation.`]
+        });
+    }
+
     const updates = {};
-    const { id } = req.params;
-    let targetPAId = protectedAreaId;
 
-    // Handle Protected Area Lookup for Zone Validation
-    if (zoneIds !== undefined && !targetPAId) {
-        try {
-            const existingPatrol = await Patrol.findById(id).select("protectedAreaId");
-            if (!existingPatrol) {
-                return res.status(404).json({ error: "Patrol not found" });
-            }
-            targetPAId = existingPatrol.protectedAreaId;
-        } catch (err) {
-            return res.status(500).json({ error: "Database error during validation" });
-        }
-    }
-
-    if (protectedAreaId !== undefined) {
-        if (!isValidObjectId(protectedAreaId)) errors.push("protectedAreaId must be a valid ObjectId");
-        else updates.protectedAreaId = protectedAreaId;
-    }
-
-    if (exactLocation !== undefined) {
-        if (!exactLocation || typeof exactLocation.lat !== "number" || typeof exactLocation.lng !== "number") {
-            errors.push("exactLocation with lat and lng (numbers) is required");
-        } else {
-            updates.exactLocation = exactLocation;
-        }
-    }
 
     if (plannedStart !== undefined) {
         if (!isValidDate(plannedStart)) errors.push("plannedStart must be a valid date");
@@ -173,6 +157,11 @@ export const validateUpdatePatrol = async (req, res, next) => {
         updates.notes = normalizeTrim(notes);
     }
 
+    if (checkIns !== undefined) {
+        if (!Array.isArray(checkIns)) errors.push("checkIns must be an array");
+        else updates.checkIns = checkIns;
+    }
+
     if (errors.length > 0) {
         return res.status(400).json({ error: "Validation failed", details: errors });
     }
@@ -183,7 +172,7 @@ export const validateUpdatePatrol = async (req, res, next) => {
 
 export const validatePatrolQuery = (req, res, next) => {
     const errors = [];
-    const { protectedAreaId, from, to, rangerId, status, page, limit, sort } = req.query || {};
+    const { protectedAreaId, zoneIds, from, to, rangerId, status, page, limit, sort } = req.query || {};
 
     if (status) {
         const normalizedStatus = normalizeUpper(status);
@@ -198,6 +187,16 @@ export const validatePatrolQuery = (req, res, next) => {
         if (!isValidObjectId(protectedAreaId)) {
             errors.push("protectedAreaId must be a valid ObjectId");
         }
+    }
+
+    if (zoneIds) {
+        const ids = Array.isArray(zoneIds) ? zoneIds : zoneIds.split(",");
+        ids.forEach((id, index) => {
+            if (!isValidObjectId(id.trim())) {
+                errors.push(`zoneIds[${index}] must be a valid ObjectId`);
+            }
+        });
+        req.query.zoneIds = ids.map(id => id.trim());
     }
 
     if (rangerId) {
@@ -276,8 +275,9 @@ export const validateCheckIn = async (req, res, next) => {
 
 export const validateFullUpdatePatrol = async (req, res, next) => {
     const errors = [];
-    const { protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes } = req.body || {};
+    const { protectedAreaId, exactLocation, zoneIds, plannedStart, plannedEnd, assignedRangerIds, status, notes, checkIns, title } = req.body || {};
 
+    // For PUT, we require all mandatory fields to be present in the body
     if (!isValidObjectId(protectedAreaId)) errors.push("protectedAreaId is required and must be a valid ObjectId");
 
     if (!exactLocation || typeof exactLocation.lat !== "number" || typeof exactLocation.lng !== "number") {
@@ -301,20 +301,36 @@ export const validateFullUpdatePatrol = async (req, res, next) => {
         zoneIds.forEach((id, index) => {
             if (!isValidObjectId(id)) errors.push(`zoneIds[${index}] must be a valid ObjectId`);
         });
+    }
 
-        if (errors.length === 0 && isValidObjectId(protectedAreaId)) {
-            try {
-                const invalidZones = await Zone.find({
-                    _id: { $in: zoneIds },
-                    protectedAreaId: { $ne: protectedAreaId }
-                }).select("_id");
+    if (errors.length === 0) {
+        try {
+            const existingPatrol = await Patrol.findById(req.params.id);
+            if (!existingPatrol) return res.status(404).json({ error: "Patrol not found" });
 
-                if (invalidZones.length > 0) {
-                    errors.push(`The following zones do not belong to the protected area [${protectedAreaId}]: ${invalidZones.map(z => z._id).join(", ")}`);
-                }
-            } catch (err) {
-                return res.status(500).json({ error: "Zone verification failed" });
+            // ENFORCE IMMUTABILITY for PUT (must match existing values)
+            if (protectedAreaId && protectedAreaId.toString() !== existingPatrol.protectedAreaId.toString()) {
+                errors.push("protectedAreaId cannot be changed after creation");
             }
+
+            if (exactLocation && (exactLocation.lat !== existingPatrol.exactLocation.lat || exactLocation.lng !== existingPatrol.exactLocation.lng)) {
+                errors.push("exactLocation cannot be changed after creation");
+            }
+
+            if (zoneIds) {
+                const existingZoneIds = existingPatrol.zoneIds.map(id => id.toString()).sort();
+                const newZoneIds = zoneIds.map(id => id.toString()).sort();
+                if (JSON.stringify(existingZoneIds) !== JSON.stringify(newZoneIds)) {
+                    errors.push("zoneIds cannot be changed after creation");
+                }
+            }
+
+            if (title !== undefined && title !== existingPatrol.title) {
+                errors.push("title cannot be changed after creation");
+            }
+
+        } catch (err) {
+            return res.status(500).json({ error: "Database error during validation" });
         }
     }
 
@@ -324,18 +340,16 @@ export const validateFullUpdatePatrol = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-        return res.status(400).json({ error: "Validation failed (PUT requires full replacement)", details: errors });
+        return res.status(400).json({ error: "Validation failed (PUT requires full replacement matching original territory)", details: errors });
     }
 
     req.body = {
-        protectedAreaId,
-        exactLocation,
-        zoneIds: zoneIds || [],
         plannedStart: new Date(plannedStart),
         plannedEnd: new Date(plannedEnd),
         assignedRangerIds,
         status: normalizedStatus,
-        notes: notes ? normalizeTrim(notes) : ""
+        notes: notes ? normalizeTrim(notes) : "",
+        checkIns: checkIns || []
     };
 
     next();
