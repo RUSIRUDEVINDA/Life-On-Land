@@ -306,6 +306,41 @@ export const validateFullUpdateCheckIn = (req, res, next) => {
     next();
 };
 
+export const validateUpdateCheckIn = (req, res, next) => {
+    const errors = [];
+    const { location, note, zoneId } = req.body || {};
+
+    if (!req.body || Object.keys(req.body).length === 0) {
+        return res.status(400).json({ error: "No fields provided to update" });
+    }
+
+    const updates = {};
+
+    if (location !== undefined) {
+        if (!location || typeof location.lat !== "number" || typeof location.lng !== "number") {
+            errors.push("location with lat and lng (numbers) is required when provided");
+        } else {
+            updates.location = location;
+        }
+    }
+
+    if (zoneId !== undefined) {
+        if (!isValidObjectId(zoneId)) errors.push("zoneId must be a valid ObjectId");
+        else updates.zoneId = zoneId;
+    }
+
+    if (note !== undefined) {
+        updates.note = (typeof note === "string") ? note.trim() : note;
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({ error: "Validation failed", details: errors });
+    }
+
+    req.body = updates;
+    next();
+};
+
 export const validateCheckInQuery = (req, res, next) => {
     const { page, limit } = req.query || {};
     const errors = [];
