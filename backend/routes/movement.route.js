@@ -5,9 +5,6 @@ import { validateTagIdParam } from "../validators/animal.validator.js";
 
 const router = express.Router();
 
-// Ingest telemetry data from devices
-router.post("/", movementController.ingestMovement);
-
 // Search all movements with filters
 router.get("/", protect, movementController.searchMovements);
 

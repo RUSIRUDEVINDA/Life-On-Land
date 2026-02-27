@@ -10,14 +10,14 @@ import * as alertService from './alert.service.js';
 export const createIncident = async (incidentData, user) => {
   // Verify zone and protected area exist
   const zone = await incidentRepository.findZoneById(incidentData.zoneId);
-  if (!zone || !zone.isActive) {
+  if (!zone || zone.status !== 'ACTIVE') {
     throw new Error('Zone not found or inactive');
   }
 
   const protectedArea = await incidentRepository.findProtectedAreaById(
     incidentData.protectedAreaId
   );
-  if (!protectedArea || !protectedArea.isActive) {
+  if (!protectedArea || protectedArea.status !== 'ACTIVE') {
     throw new Error('Protected area not found or inactive');
   }
 
@@ -46,12 +46,16 @@ export const createIncident = async (incidentData, user) => {
   const incidentToCreate = {
     ...incidentData,
     status,
-    reportedBy: reportingUser._id,
-    location: {
+    reportedBy: reportingUser._id
+  };
+
+  // Only set location if it's provided
+  if (incidentData.location && incidentData.location.coordinates) {
+    incidentToCreate.location = {
       type: 'Point',
       coordinates: incidentData.location.coordinates
-    }
-  };
+    };
+  }
 
   const incident = await incidentRepository.createIncident(incidentToCreate);
 
@@ -172,7 +176,7 @@ export const updateIncident = async (incidentId, updateData, user) => {
   // If updating zone, verify it exists and belongs to the same protected area
   if (updateData.zoneId) {
     const zone = await incidentRepository.findZoneById(updateData.zoneId);
-    if (!zone || !zone.isActive) {
+    if (!zone || zone.status !== 'ACTIVE') {
       throw new Error('Zone not found or inactive');
     }
     if (zone.protectedAreaId.toString() !== incident.protectedAreaId.toString()) {
