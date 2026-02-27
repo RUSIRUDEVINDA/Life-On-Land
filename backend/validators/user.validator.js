@@ -50,11 +50,19 @@ export const validateUpdateUser = (isFullUpdate = false) => (req, res, next) => 
 };
 
 export const validateUserQuery = (req, res, next) => {
-    const { role, page, limit } = req.query || {};
+    const { role, page, limit, name, email } = req.query || {};
     const errors = [];
 
     if (role && !["ADMIN", "RANGER"].includes(role.toUpperCase())) {
         errors.push("role must be either ADMIN or RANGER");
+    }
+
+    if (name !== undefined && (typeof name !== "string" || name.trim().length === 0)) {
+        errors.push("name must be a non-empty string");
+    }
+
+    if (email !== undefined && (typeof email !== "string" || email.trim().length === 0)) {
+        errors.push("email must be a non-empty string");
     }
 
     if (page !== undefined) {
