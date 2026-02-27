@@ -1,4 +1,4 @@
-# Life-On-Land 🦁🐘
+ # Life-On-Land 🦁🐘
 
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
@@ -101,108 +101,99 @@ npm start
 ## 🔑 API Documentation
 
 ### 🛡️ Authentication (`/api/auth`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `POST /api/auth/register` | Register a new user | Public |
-| `POST /api/auth/login` | Authenticate and obtain access credentials | Public |
-| `POST /api/auth/logout` | Invalidate current session | Public |
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST /api/auth/register` | Register a new user | No | Public |
+| `POST /api/auth/login` | Authenticate and obtain access credentials | No | Public |
+| `POST /api/auth/logout` | Invalidate current session | Yes | Public |
 
 ### 👤 User Management (`/api/users`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `GET /api/users` | List all users (Filters: `name`, `email`, `role`, `page`, `limit`) | ADMIN, RANGER |
-| `GET /api/users/:id` | Get specific user profile | ANY (Authenticated) |
-| `PUT /api/users/:id` | Full user update | ANY (Owner/Admin) |
-| `PATCH /api/users/:id` | Partial user update | ANY (Owner/Admin) |
-| `DELETE /api/users/:id` | Terminate user account | ADMIN |
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET /api/users` | List all users (Filters: `name`, `email`, `role`, `page`, `limit`) | Yes | ADMIN, RANGER |
+| `GET /api/users/:id` | Get specific user profile | Yes | ANY (Authenticated) |
+| `PUT /api/users/:id` | Full user update | Yes | ANY (Owner/Admin) |
+| `PATCH /api/users/:id` | Partial user update | Yes | ANY (Owner/Admin) |
+| `DELETE /api/users/:id` | Terminate user account | Yes | ADMIN |
 
-### 🐾 Animal Registry (`/api/animals`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `GET /api/animals` | List animals (Paginated + Filter by `species`, `status`, etc.) | ADMIN, RANGER |
-| `POST /api/animals` | Register new animal (Tag ID required) | ADMIN |
-| `GET /api/animals/:tagId` | Retrieve detailed animal profile | ADMIN, RANGER |
-| `PUT /api/animals/:tagId` | Full profile replacement | ADMIN |
-| `PATCH /api/animals/:tagId` | Partial profile update | ADMIN |
-| `DELETE /api/animals/:tagId` | Remove animal record | ADMIN |
+### �️ Conservation Geometry (`/api/protected-areas`)
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET /api/protected-areas` | List conservation areas | No | Public |
+| `POST /api/protected-areas` | Create new area boundary | Yes | ADMIN |
+| `GET /api/protected-areas/:id` | Get area details | No | Public |
+| `PUT /api/protected-areas/:id` | Update area metadata | Yes | ADMIN |
+| `DELETE /api/protected-areas/:id` | Remove protected area | Yes | ADMIN |
+| `GET /api/protected-areas/:id/zones` | List zones in specific area | No | Public |
+| `POST /api/protected-areas/:id/zones` | Create zone (Risk Level) | Yes | ADMIN |
+
+### � Zone Management (`/api/zones`)
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `PUT /api/zones/:id` | Update zone properties | Yes | ADMIN |
+| `DELETE /api/zones/:id` | Remove zone permanently | Yes | ADMIN |
+
+### � Animal Registry (`/api/animals`)
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET /api/animals` | List animals (Paginated + Filter by `species`, `status`, etc.) | Yes | ADMIN, RANGER |
+| `POST /api/animals` | Register new animal (Tag ID required) | Yes | ADMIN |
+| `GET /api/animals/:tagId` | Retrieve detailed animal profile | Yes | ADMIN, RANGER |
+| `PUT /api/animals/:tagId` | Full profile replacement | Yes | ADMIN |
+| `PATCH /api/animals/:tagId` | Partial profile update | Yes | ADMIN |
+| `DELETE /api/animals/:tagId` | Remove animal record | Yes | ADMIN |
 
 ### 📡 Movement Tracking (`/api/movements`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `POST /api/movements` | Ingest movement data (IoT/Manual) | Public (IoT) |
-| `GET /api/movements` | Search movement logs | ADMIN, RANGER |
-| `GET /api/movements/summary` | Latest location snapshot for all animals | ADMIN, RANGER |
-| `GET /api/movements/:tagId` | Historical movements by Tag ID | ADMIN, RANGER |
-
-### 🛡️ Patrol Operations (`/api/patrols`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `POST /api/patrols` | Schedule new patrol | ADMIN |
-| `GET /api/patrols` | List patrols (Filters: `rangerId`, `status`, `from`, `to`) | ADMIN, RANGER |
-| `GET /api/patrols/:id` | Get specific patrol details | ADMIN, RANGER |
-| `PUT /api/patrols/:id` | Full patrol update (Replace) | ADMIN |
-| `PATCH /api/patrols/:id` | Partial patrol update | ADMIN |
-| `DELETE /api/patrols/:id` | Cancel/Remove patrol | ADMIN |
-| `POST /api/patrols/:id/check-ins` | Record ranger check-in | RANGER |
-| `GET /api/patrols/:id/check-ins` | View patrol check-in history | ADMIN, RANGER |
-| `PUT /api/patrols/:id/check-ins/:cid` | Correct check-in log (Full) | RANGER |
-| `PATCH /api/patrols/:id/check-ins/:cid` | Correct check-in log (Partial) | RANGER |
-| `DELETE /api/patrols/:id/check-ins/:cid` | Remove check-in record | RANGER |
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET /api/movements` | Search movement logs | Yes | ADMIN, RANGER |
+| `GET /api/movements/summary` | Latest location snapshot for all animals | Yes | ADMIN, RANGER |
+| `GET /api/movements/:tagId` | Historical movements by Tag ID | Yes | ADMIN, RANGER |
 
 ### 🚨 Incident Reporting (`/api/incidents`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `POST /api/incidents` | Report threat (POACHING, LOGGING, etc.) | Public/Guest |
-| `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | ADMIN, RANGER, OFFICER |
-| `GET /api/incidents/:id` | Get full investigation report | ADMIN, RANGER, OFFICER |
-| `PUT /api/incidents/:id` | Update status/severity | ADMIN, RANGER, OFFICER |
-| `DELETE /api/incidents/:id` | Soft delete record | ADMIN |
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST /api/incidents` | Report threat (POACHING, LOGGING, etc.) | No | Public/Guest |
+| `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | Yes | ADMIN, RANGER, OFFICER |
+| `GET /api/incidents/:id` | Get full investigation report | Yes | ADMIN, RANGER, OFFICER |
+| `PUT /api/incidents/:id` | Update status/severity | Yes | ADMIN, RANGER, OFFICER |
+| `DELETE /api/incidents/:id` | Soft delete record | Yes | ADMIN |
 
-### 🔔 Smart Alerts (`/api/alerts`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `GET /api/alerts` | List triggered alerts | ADMIN |
-| `PATCH /api/alerts/:id` | Acknowledge or Resolve alert | ADMIN |
+### � Risk Intelligence (`/api/risk-map`)
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET /api/risk-map` | Generate area-based risk heatmap data | Yes | ADMIN, RANGER |
 
-### 🗺️ Conservation Geometry (`/api/protected-areas`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `GET /api/protected-areas` | List conservation areas | Public |
-| `POST /api/protected-areas` | Create new area boundary | ADMIN |
-| `GET /api/protected-areas/:id` | Get area details | Public |
-| `PUT /api/protected-areas/:id` | Update area metadata | ADMIN |
-| `DELETE /api/protected-areas/:id` | Remove protected area | ADMIN |
-| `GET /api/protected-areas/:id/zones` | List zones in specific area | Public |
-| `POST /api/protected-areas/:id/zones` | Create zone (Risk Level) | ADMIN |
+### �️ Patrol Operations (`/api/patrols`)
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST /api/patrols` | Schedule new patrol | Yes | ADMIN |
+| `GET /api/patrols` | List patrols (Filters: `rangerId`, `status`, `from`, `to`, `zoneIds`) | Yes | ADMIN, RANGER |
+| `GET /api/patrols/:id` | Get specific patrol details | Yes | ADMIN, RANGER |
+| `PUT /api/patrols/:id` | Full patrol update (Replace) | Yes | ADMIN |
+| `PATCH /api/patrols/:id` | Partial patrol update | Yes | ADMIN |
+| `DELETE /api/patrols/:id` | Cancel/Remove patrol | Yes | ADMIN |
+| `POST /api/patrols/:id/check-ins` | Record ranger check-in | Yes | RANGER |
+| `GET /api/patrols/:id/check-ins` | View patrol check-in history | Yes | ADMIN, RANGER |
+| `PUT /api/patrols/:id/check-ins/:cid` | Correct check-in log (Full) | Yes | RANGER |
+| `PATCH /api/patrols/:id/check-ins/:cid` | Correct check-in log (Partial) | Yes | RANGER |
+| `DELETE /api/patrols/:id/check-ins/:cid` | Remove check-in record | Yes | RANGER |
 
-### 📍 Zone Management (`/api/zones`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `PUT /api/zones/:id` | Update zone properties | ADMIN |
-| `DELETE /api/zones/:id` | Remove zone permanently | ADMIN |
-
-### 📊 Risk Intelligence (`/api/risk-map`)
-| Endpoint | Description | Roles |
-| :--- | :--- | :--- |
-| `GET /api/risk-map` | Generate area-based risk heatmap data | ADMIN, RANGER |
+### � Smart Alerts (`/api/alerts`)
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET /api/alerts` | List triggered alerts | Yes | ADMIN |
+| `PATCH /api/alerts/:id` | Acknowledge or Resolve alert | Yes | ADMIN |
 
 ---
 
 ## Request Response Examples
 
-### 🔐 Authentication (Login)
-**POST** `/api/auth/login`
+### � User Management (Get Profile)
+**GET** `/api/users/:id`
 ```json
-// Request
-{
-    "email": "admin@lifeonland.com",
-    "password": "securepassword123"
-}
-
 // Response (200 OK)
 {
-    "message": "Login successful",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OGIxYjFhYzYxOTZmZGQzZjM5N2JhYyIsImlhdCI6MTY3NzUwMDAwMCwiZXhwIjoxNjc3NjAwMDAwfQ.XYZ",
     "user": {
         "_id": "698b1b1ac6196fdd3f397bac",
         "name": "Head Ranger",
@@ -215,69 +206,40 @@ npm start
 }
 ```
 
-### 🛡️ Patrol Management (Create Mission)
-**POST** `/api/patrols`
+### �️ Conservation Geometry (Create Area)
+**POST** `/api/protected-areas`
 ```json
 // Request
 {
-    "alertId": "69a1b98c5f93a7b599c594c9",
-    "assignedRangerIds": ["698b1b1ac6196fdd3f397bac"],
-    "plannedStart": "2026-02-27T08:00:00.000Z",
-    "plannedEnd": "2026-02-28T17:00:00.000Z",
-    "notes": "Emergency poaching response."
+    "name": "Sinharaja Forest Reserve",
+    "type": "FOREST_RESERVE",
+    "district": "Ratnapura",
+    "areaSize": 88.4,
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[80.4, 6.3], [80.5, 6.3], [80.5, 6.4], [80.4, 6.4], [80.4, 6.3]]]
+    },
+    "description": "UNESCO World Heritage Site."
 }
 
 // Response (201 Created)
 {
-    "message": "Patrol created successfully",
-    "patrol": {
-        "title": "[Sinharaja] CRITICAL: POACHING detected",
-        "protectedAreaId": "69975c61d112d1320744ef20",
-        "exactLocation": {
-            "lat": 6.31,
-            "lng": 81.01
+    "data": {
+        "name": "Sinharaja Forest Reserve",
+        "type": "FOREST_RESERVE",
+        "district": "Ratnapura",
+        "areaSize": 88.4,
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[80.4, 6.3], [80.5, 6.3], [80.5, 6.4], [80.4, 6.4], [80.4, 6.3]]],
+            "_id": "69975c61d112d1320744ef21"
         },
-        "zoneIds": ["69976248d112d1320744ef41"],
-        "plannedStart": "2026-02-27T08:00:00.000Z",
-        "plannedEnd": "2026-02-28T17:00:00.000Z",
-        "assignedRangerIds": ["698b1b1ac6196fdd3f397bac"],
-        "status": "PLANNED",
-        "notes": "Emergency poaching response.",
-        "checkIns": [],
-        "_id": "69a1ba2f93a12883034f6dfd",
-        "createdAt": "2026-02-27T15:37:19.299Z",
-        "updatedAt": "2026-02-27T15:37:19.299Z",
+        "description": "UNESCO World Heritage Site.",
+        "status": "ACTIVE",
+        "_id": "69975c61d112d1320744ef20",
+        "createdAt": "2026-02-20T08:00:00.000Z",
+        "updatedAt": "2026-02-20T08:00:00.000Z",
         "__v": 0
-    }
-}
-```
-
-### 📍 Ranger Check-In
-**POST** `/api/patrols/:id/check-ins`
-```json
-// Request
-{
-    "location": { "lat": 6.315, "lng": 81.022 },
-    "note": "Suspect tracks found near the river boundary.",
-    "zoneId": "69976248d112d1320744ef41"
-}
-
-// Response (201 Created)
-{
-    "message": "Check-in added successfully",
-    "patrol": {
-        "_id": "69a1ba2f93a12883034f6dfd",
-        "status": "IN_PROGRESS",
-        "checkIns": [
-            {
-                "location": { "lat": 6.315, "lng": 81.022 },
-                "note": "Suspect tracks found near the river boundary.",
-                "zoneId": "69976248d112d1320744ef41",
-                "timestamp": "2026-02-27T15:45:00.299Z",
-                "_id": "69a1bb2093a12883034f6e10"
-            }
-        ],
-        "updatedAt": "2026-02-27T15:45:00.299Z"
     }
 }
 ```
@@ -387,40 +349,69 @@ npm start
 }
 ```
 
-### 🗺️ Conservation Geometry (Create Area)
-**POST** `/api/protected-areas`
+### �️ Patrol Management (Create Mission)
+**POST** `/api/patrols`
 ```json
 // Request
 {
-    "name": "Sinharaja Forest Reserve",
-    "type": "FOREST_RESERVE",
-    "district": "Ratnapura",
-    "areaSize": 88.4,
-    "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[80.4, 6.3], [80.5, 6.3], [80.5, 6.4], [80.4, 6.4], [80.4, 6.3]]]
-    },
-    "description": "UNESCO World Heritage Site."
+    "alertId": "69a1b98c5f93a7b599c594c9",
+    "assignedRangerIds": ["698b1b1ac6196fdd3f397bac"],
+    "plannedStart": "2026-02-27T08:00:00.000Z",
+    "plannedEnd": "2026-02-28T17:00:00.000Z",
+    "notes": "Emergency poaching response."
 }
 
 // Response (201 Created)
 {
-    "data": {
-        "name": "Sinharaja Forest Reserve",
-        "type": "FOREST_RESERVE",
-        "district": "Ratnapura",
-        "areaSize": 88.4,
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [[[80.4, 6.3], [80.5, 6.3], [80.5, 6.4], [80.4, 6.4], [80.4, 6.3]]],
-            "_id": "69975c61d112d1320744ef21"
+    "message": "Patrol created successfully",
+    "patrol": {
+        "title": "[Sinharaja] CRITICAL: POACHING detected",
+        "protectedAreaId": "69975c61d112d1320744ef20",
+        "exactLocation": {
+            "lat": 6.31,
+            "lng": 81.01
         },
-        "description": "UNESCO World Heritage Site.",
-        "status": "ACTIVE",
-        "_id": "69975c61d112d1320744ef20",
-        "createdAt": "2026-02-20T08:00:00.000Z",
-        "updatedAt": "2026-02-20T08:00:00.000Z",
+        "zoneIds": ["69976248d112d1320744ef41"],
+        "plannedStart": "2026-02-27T08:00:00.000Z",
+        "plannedEnd": "2026-02-28T17:00:00.000Z",
+        "assignedRangerIds": ["698b1b1ac6196fdd3f397bac"],
+        "status": "PLANNED",
+        "notes": "Emergency poaching response.",
+        "checkIns": [],
+        "_id": "69a1ba2f93a12883034f6dfd",
+        "createdAt": "2026-02-27T15:37:19.299Z",
+        "updatedAt": "2026-02-27T15:37:19.299Z",
         "__v": 0
+    }
+}
+```
+
+### 📍 Ranger Check-In
+**POST** `/api/patrols/:id/check-ins`
+```json
+// Request
+{
+    "location": { "lat": 6.315, "lng": 81.022 },
+    "note": "Suspect tracks found near the river boundary.",
+    "zoneId": "69976248d112d1320744ef41"
+}
+
+// Response (201 Created)
+{
+    "message": "Check-in added successfully",
+    "patrol": {
+        "_id": "69a1ba2f93a12883034f6dfd",
+        "status": "IN_PROGRESS",
+        "checkIns": [
+            {
+                "location": { "lat": 6.315, "lng": 81.022 },
+                "note": "Suspect tracks found near the river boundary.",
+                "zoneId": "69976248d112d1320744ef41",
+                "timestamp": "2026-02-27T15:45:00.299Z",
+                "_id": "69a1bb2093a12883034f6e10"
+            }
+        ],
+        "updatedAt": "2026-02-27T15:45:00.299Z"
     }
 }
 ```
