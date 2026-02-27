@@ -12,6 +12,8 @@ export const getUsers = asyncHandler(async (req, res) => {
 
     const query = {};
     if (req.query.role) query.role = req.query.role.toUpperCase();
+    if (req.query.name) query.name = { $regex: req.query.name, $options: "i" };
+    if (req.query.email) query.email = { $regex: req.query.email, $options: "i" };
 
     const skip = (page - 1) * limit;
 

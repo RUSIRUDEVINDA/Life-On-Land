@@ -13,17 +13,6 @@ const incidentSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      required: true
-    },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
-      required: true
-    }
-  },
   zoneId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Zone',
