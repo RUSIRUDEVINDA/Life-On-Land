@@ -3,6 +3,7 @@ import * as incidentController from '../controllers/incident.controller.js';
 import { authenticate, authorize, optionalAuth } from '../middleware/auth.middleware.js';
 import {
   validateCreateIncident,
+  validateFullUpdateIncident,
   validateUpdateIncident,
   validateGetIncidentsQuery
 } from '../validators/incident.validator.js';
@@ -32,7 +33,17 @@ router.get(
 );
 
 
+// PUT endpoint - Full update (requires all fields)
 router.put(
+  '/:id',
+  authenticate,
+  authorize('RANGER', 'OFFICER', 'Admin'),
+  validateFullUpdateIncident,
+  incidentController.updateIncident
+);
+
+// PATCH endpoint - Partial update (allows any subset of fields)
+router.patch(
   '/:id',
   authenticate,
   authorize('RANGER', 'OFFICER', 'Admin'),
