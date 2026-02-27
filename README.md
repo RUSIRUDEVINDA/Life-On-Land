@@ -165,7 +165,6 @@ npm start
 
 ### 🚨 Incident Reporting (`/api/incidents`)
 
-<<<<<<< HEAD
 | Endpoint | Description | Auth Required | Roles |
 | :--- | :--- | :--- | :--- |
 | `POST /api/incidents` | Report threat (POACHING, LOGGING, etc.) | No | Public/Guest |
