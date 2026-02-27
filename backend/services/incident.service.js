@@ -192,7 +192,13 @@ export const updateIncident = async (incidentId, updateData, user) => {
     };
   }
 
-  Object.assign(incident, updateData);
+  // Set each field individually to ensure Mongoose detects changes
+  Object.keys(updateData).forEach(key => {
+    if (updateData[key] !== undefined) {
+      incident.set(key, updateData[key]);
+    }
+  });
+  
   await incidentRepository.saveIncident(incident);
 
   return await incidentRepository.getIncidentWithRelationsById(incident._id);

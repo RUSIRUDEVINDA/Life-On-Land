@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Incident from "../models/Incident.model.js";
 
 const VALID_TYPES = ["POACHING", "ILLEGAL_LOGGING", "WILDLIFE_TRADE", "HABITAT_DESTRUCTION", "OTHER"];
 const VALID_STATUS = ["REPORTED", "VERIFIED", "INVESTIGATING", "RESOLVED", "UNVERIFIED"];
@@ -175,9 +176,9 @@ export const validateCreateIncident = (req, res, next) => {
     next();
 };
 
-export const validateUpdateIncident = (req, res, next) => {
+export const validateUpdateIncident = async (req, res, next) => {
     const errors = [];
-    const { status, severity, zoneId, description, evidence, notes } = req.body || {};
+    const { type, incidentDate, status, severity, zoneId, protectedAreaId, description, evidence, notes } = req.body || {};
 
     if (!req.body || Object.keys(req.body).length === 0) {
         return res.status(400).json({
@@ -187,7 +188,52 @@ export const validateUpdateIncident = (req, res, next) => {
         });
     }
 
+    // Protected Area ID cannot be updated - check if it's being changed
+    if (protectedAreaId !== undefined && req.params.id) {
+        try {
+            const existingIncident = await Incident.findById(req.params.id);
+            if (existingIncident) {
+                const existingProtectedAreaId = existingIncident.protectedAreaId?.toString();
+                const newProtectedAreaId = protectedAreaId.toString();
+                if (existingProtectedAreaId !== newProtectedAreaId) {
+                    errors.push("Protected area id cannot be updated");
+                }
+            }
+        } catch (error) {
+            // If incident not found, let the service handle it
+        }
+    }
+
     const updates = {};
+
+    // Type validation
+    if (type !== undefined) {
+        if (!isNonEmptyString(type) || !VALID_TYPES.includes(type.toUpperCase())) {
+            errors.push(`Type must be one of: ${VALID_TYPES.join(", ")}`);
+        } else {
+            updates.type = type.toUpperCase();
+        }
+    }
+
+    // Incident Date validation
+    if (incidentDate !== undefined) {
+        if (!isValidDate(incidentDate)) {
+            errors.push("Incident date must be a valid date");
+        } else {
+            const date = new Date(incidentDate);
+            const now = new Date();
+            
+            // Compare dates only (ignore time) - allow today's date, reject future dates
+            const incidentDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            if (incidentDateOnly > todayOnly) {
+                errors.push("Incident date cannot be in the future");
+            } else {
+                updates.incidentDate = date;
+            }
+        }
+    }
 
     // Status validation
     if (status !== undefined) {
