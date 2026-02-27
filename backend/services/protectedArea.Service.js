@@ -1,4 +1,5 @@
 import ProtectedArea from "../models/ProtectedArea.models.js";
+import Zone from "../models/Zone.models.js";
 
 const listProtectedAreas = async () => {
   return ProtectedArea.find({ status: "ACTIVE" }).sort({ createdAt: -1 });
@@ -21,11 +22,15 @@ const updateProtectedArea = async (id, payload) => {
 };
 
 const softDeleteProtectedArea = async (id) => {
-  return ProtectedArea.findOneAndUpdate(
-    { _id: id, status: "ACTIVE" },
-    { status: "DELETED" },
-    { new: true }
-  );
+  const removed = await ProtectedArea.findOneAndDelete({ _id: id, status: "ACTIVE" });
+
+  if (!removed) {
+    return null;
+  }
+
+  await Zone.deleteMany({ protectedAreaId: id });
+
+  return removed;
 };
 
 export {

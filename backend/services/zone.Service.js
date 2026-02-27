@@ -29,11 +29,7 @@ const updateZone = async (zoneId, payload) => {
 };
 
 const softDeleteZone = async (zoneId) => {
-  return Zone.findOneAndUpdate(
-    { _id: zoneId, status: "ACTIVE" },
-    { status: "DELETED" },
-    { new: true }
-  );
+  return Zone.findOneAndDelete({ _id: zoneId, status: "ACTIVE" });
 };
 
 export {
