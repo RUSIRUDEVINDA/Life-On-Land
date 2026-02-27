@@ -87,6 +87,8 @@ PORT=5001
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_complex_secret
 JWT_EXPIRES_IN=7d
+NODE_ENV=development
+API_URL=http://localhost:5001/api
 ```
 
 ### 4. Launch
