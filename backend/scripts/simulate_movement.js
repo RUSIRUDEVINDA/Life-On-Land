@@ -1,11 +1,9 @@
 import mongoose from 'mongoose';
-import axios from 'axios';
 import dotenv from 'dotenv';
 import Animal from '../models/Animal.js';
 import Zone from '../models/Zone.model.js';
 import Movement from '../models/Movement.js';
 import Incident from '../models/Incident.model.js';
-import User from '../models/User.js';
 
 dotenv.config();
 

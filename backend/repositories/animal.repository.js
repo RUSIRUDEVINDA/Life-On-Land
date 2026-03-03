@@ -11,10 +11,6 @@ export const findByTagId = (tagId) =>
 export const findByTagIdExceptId = (tagId, id) =>
     Animal.findOne({ tagId, _id: { $ne: id } });
 
-// Find animal by Mongo ID
-export const findById = (id) =>
-    Animal.findById(id);
-
 // Find animals with pagination and sorting
 export const findWithPagination = (query, sort, skip, limit) =>
     Animal.find(query).sort(sort).skip(skip).limit(limit);
@@ -36,7 +32,3 @@ export const deleteByTagId = (tagId) => {
     console.log("Repo: Calling findOneAndDelete for tagId:", tagId);
     return Animal.findOneAndDelete({ tagId });
 };
-
-// Delete animal by Mongo ID
-export const deleteById = (id) =>
-    Animal.findByIdAndDelete(id);
