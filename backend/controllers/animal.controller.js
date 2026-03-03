@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import * as service from "../services/animal.service.js";
 import * as repo from "../repositories/animal.repository.js";
 import { buildAnimalQuery } from "../utils/queryBuilder.js";

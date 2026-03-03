@@ -21,7 +21,7 @@ async function main() {
     console.log('Connected to MongoDB.\n');
 
     // Fetch all real Protected Areas
-    const pas = await ProtectedArea.find({}).lean();
+    const pas = await ProtectedArea.find({}).lean(); 
     if (pas.length === 0) {
         console.error('No Protected Areas found in database. Abort.');
         process.exit(1);
@@ -60,7 +60,8 @@ async function main() {
         if ('lng' in animal.schema?.paths || animal.lng !== undefined) animal.lng = centroid.lng;
 
         await animal.save();
-
+          
+        // This is for debugging
         console.log(
             `  FIXED [${animal.tagId}] (${animal.species})\n` +
             `    → PA:   "${pa?.name || 'Unknown'}" (${animal.protectedAreaId})\n` +
