@@ -7,8 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "simulate": "node scripts/simulate_movement.js",
-    "test": "mocha --reporter mochawesome --reporter-options reportDir=test-reports/mocha-html"
+    "simulate": "node scripts/simulate_movement.js"
   },
   "keywords": [],
   "author": "",
