@@ -1,4 +1,4 @@
- # Life-On-Land 🦁🐘
+# Life-On-Land 🦁🐘
 
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
@@ -17,7 +17,7 @@ Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracki
 - 🚨 **Automated Alert System**: Immediate notification triggers for poaching incidents and boundary breaches.
 - 🛡️ **Advanced Patrol Management**: Dynamic scheduling, geo-fenced check-ins, and digital logbooks for rangers.
 - 📈 **Risk Mapping**: Heatmap-based risk assessment utilizing historical incident and movement data.
-- 🔒 **RBAC Security**: Granular Role-Based Access Control (ADMIN, OFFICER, RANGER).
+- 🔒 **RBAC Security**: Granular Role-Based Access Control (ADMIN, RANGER).
 - 🧬 **Data Integrity**: Robust validation and sanitization for all incoming data streams.
 
 ---
@@ -27,6 +27,7 @@ Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracki
 The system utilizes a **Layered Architecture** with a **Service-Repository Pattern**, maximizing decoupling and maintainability.
 
 ### Request-Response Flow
+
 ```mermaid
 graph TD
     A[Client / IoT Node] -->|REST Request| B[Express Router]
@@ -37,7 +38,7 @@ graph TD
     F -->|Persistence Adapter| G[Repository Layer]
     G -->|Object Mapping| H[Mongoose Schema]
     H -->|Query| I[(MongoDB)]
-    
+
     I -.->|Documents| H
     H -.->|JSON Data| G
     G -.->|Entities| F
@@ -46,6 +47,7 @@ graph TD
 ```
 
 ### Component Hierarchy
+
 - `config/`: System orchestration & DB connectivity.
 - `routes/`: API topology and routing logic.
 - `controllers/`: Request handling and response shaping.
@@ -61,10 +63,12 @@ graph TD
 ## 🚀 Getting Started
 
 ### 1. Prerequisites
+
 - **Node.js**: v18.x+
 - **MongoDB**: v6.0+ (Local or Atlas)
 
 ### 2. Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/RUSIRUDEVINDA/Life-On-Land.git
@@ -75,15 +79,20 @@ npm install
 ```
 
 ### 3. Setup Environment
+
 Rename `.env.example` to `.env` and fill in your credentials:
+
 ```env
 PORT=5001
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_complex_secret
 JWT_EXPIRES_IN=7d
+NODE_ENV=development
+API_URL=http://localhost:5001/api
 ```
 
 ### 4. Launch
+
 ```bash
 # Development (with hot-reload)
 npm run dev
@@ -101,113 +110,128 @@ npm start
 ## 🔑 API Documentation
 
 ### 🛡️ Authentication (`/api/auth`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `POST /api/auth/register` | Register a new user | No | Public |
-| `POST /api/auth/login` | Authenticate and obtain access credentials | No | Public |
-| `POST /api/auth/logout` | Invalidate current session | Yes | Public |
+
+| Endpoint                  | Description                                | Auth Required | Roles  |
+| :------------------------ | :----------------------------------------- | :------------ | :----- |
+| `POST /api/auth/register` | Register a new user                        | No            | Public |
+| `POST /api/auth/login`    | Authenticate and obtain access credentials | No            | Public |
+| `POST /api/auth/logout`   | Invalidate current session                 | Yes           | Public |
 
 ### 👤 User Management (`/api/users`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `GET /api/users` | List all users (Filters: `name`, `email`, `role`, `page`, `limit`) | Yes | ADMIN, RANGER |
-| `GET /api/users/:id` | Get specific user profile | Yes | ANY (Authenticated) |
-| `PUT /api/users/:id` | Full user update | Yes | ANY (Owner/Admin) |
-| `PATCH /api/users/:id` | Partial user update | Yes | ANY (Owner/Admin) |
-| `DELETE /api/users/:id` | Terminate user account | Yes | ADMIN |
+
+| Endpoint                | Description                                                        | Auth Required | Roles               |
+| :---------------------- | :----------------------------------------------------------------- | :------------ | :------------------ |
+| `GET /api/users`        | List all users (Filters: `name`, `email`, `role`, `page`, `limit`) | Yes           | ADMIN, RANGER       |
+| `GET /api/users/:id`    | Get specific user profile                                          | Yes           | ANY (Authenticated) |
+| `PUT /api/users/:id`    | Full user update                                                   | Yes           | ANY (Owner/Admin)   |
+| `PATCH /api/users/:id`  | Partial user update                                                | Yes           | ANY (Owner/Admin)   |
+| `DELETE /api/users/:id` | Terminate user account                                             | Yes           | ADMIN               |
 
 ### �️ Conservation Geometry (`/api/protected-areas`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `GET /api/protected-areas` | List conservation areas | No | Public |
-| `POST /api/protected-areas` | Create new area boundary | Yes | ADMIN |
-| `GET /api/protected-areas/:id` | Get area details | No | Public |
-| `PUT /api/protected-areas/:id` | Update area metadata | Yes | ADMIN |
-| `DELETE /api/protected-areas/:id` | Remove protected area | Yes | ADMIN |
-| `GET /api/protected-areas/:id/zones` | List zones in specific area | No | Public |
-| `POST /api/protected-areas/:id/zones` | Create zone (Risk Level) | Yes | ADMIN |
+
+| Endpoint                              | Description                 | Auth Required | Roles  |
+| :------------------------------------ | :-------------------------- | :------------ | :----- |
+| `GET /api/protected-areas`            | List conservation areas     | No            | Public |
+| `POST /api/protected-areas`           | Create new area boundary    | Yes           | ADMIN  |
+| `GET /api/protected-areas/:id`        | Get area details            | No            | Public |
+| `PUT /api/protected-areas/:id`        | Update area metadata        | Yes           | ADMIN  |
+| `DELETE /api/protected-areas/:id`     | Remove protected area       | Yes           | ADMIN  |
+| `GET /api/protected-areas/:id/zones`  | List zones in specific area | No            | Public |
+| `POST /api/protected-areas/:id/zones` | Create zone (Risk Level)    | Yes           | ADMIN  |
 
 ### � Zone Management (`/api/zones`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `PUT /api/zones/:id` | Update zone properties | Yes | ADMIN |
-| `DELETE /api/zones/:id` | Remove zone permanently | Yes | ADMIN |
+
+| Endpoint                | Description             | Auth Required | Roles |
+| :---------------------- | :---------------------- | :------------ | :---- |
+| `PUT /api/zones/:id`    | Update zone properties  | Yes           | ADMIN |
+| `DELETE /api/zones/:id` | Remove zone permanently | Yes           | ADMIN |
 
 ### � Animal Registry (`/api/animals`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `GET /api/animals` | List animals (Paginated + Filter by `species`, `status`, etc.) | Yes | ADMIN, RANGER |
-| `POST /api/animals` | Register new animal (Tag ID required) | Yes | ADMIN |
-| `GET /api/animals/:tagId` | Retrieve detailed animal profile | Yes | ADMIN, RANGER |
-| `PUT /api/animals/:tagId` | Full profile replacement | Yes | ADMIN |
-| `PATCH /api/animals/:tagId` | Partial profile update | Yes | ADMIN |
-| `DELETE /api/animals/:tagId` | Remove animal record | Yes | ADMIN |
+
+| Endpoint                     | Description                                                    | Auth Required | Roles         |
+| :--------------------------- | :------------------------------------------------------------- | :------------ | :------------ |
+| `GET /api/animals`           | List animals (Paginated + Filter by `species`, `status`, etc.) | Yes           | ADMIN, RANGER |
+| `POST /api/animals`          | Register new animal (Tag ID required)                          | Yes           | ADMIN         |
+| `GET /api/animals/:tagId`    | Retrieve detailed animal profile                               | Yes           | ADMIN, RANGER |
+| `PUT /api/animals/:tagId`    | Full update                                                    | Yes           | ADMIN         |
+| `PATCH /api/animals/:tagId`  | Partial update                                                 | Yes           | ADMIN         |
+| `DELETE /api/animals/:tagId` | Remove animal record                                           | Yes           | ADMIN         |
 
 ### 📡 Movement Tracking (`/api/movements`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `GET /api/movements` | Search movement logs | Yes | ADMIN, RANGER |
-| `GET /api/movements/summary` | Latest location snapshot for all animals | Yes | ADMIN, RANGER |
-| `GET /api/movements/:tagId` | Historical movements by Tag ID | Yes | ADMIN, RANGER |
+
+| Endpoint                     | Description                              | Auth Required | Roles         |
+| :--------------------------- | :--------------------------------------- | :------------ | :------------ |
+| `GET /api/movements`         | Search movement logs                     | Yes           | ADMIN, RANGER |
+| `GET /api/movements/summary` | Latest location snapshot for all animals | Yes           | ADMIN, RANGER |
+| `GET /api/movements/:tagId`  | Historical movements by Tag ID           | Yes           | ADMIN, RANGER |
 
 ### 🚨 Incident Reporting (`/api/incidents`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `POST /api/incidents` | Report threat (POACHING, LOGGING, etc.) | No | Public/Guest |
-| `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | Yes | ADMIN, RANGER, OFFICER |
-| `GET /api/incidents/:id` | Get full investigation report | Yes | ADMIN, RANGER, OFFICER |
-| `PUT /api/incidents/:id` | Update status/severity | Yes | ADMIN, RANGER, OFFICER |
-| `DELETE /api/incidents/:id` | Soft delete record | Yes | ADMIN |
+
+| Endpoint                    | Description                                                     | Auth Required | Roles         |
+| :-------------------------- | :-------------------------------------------------------------- | :------------ | :------------ |
+| `POST /api/incidents`       | Report threat (POACHING, LOGGING, etc.)                         | No            | Public/Guest  |
+| `GET /api/incidents`        | Query incidents (Filters: `type`, `status`, `severity`, `date`) | Yes           | ADMIN, RANGER |
+| `GET /api/incidents/:id`    | Get full investigation report                                   | Yes           | ADMIN, RANGER |
+| `PUT /api/incidents/:id`    | Update Full Incident                                            | Yes           | ADMIN, RANGER |
+| `PATCH /api/incidents/:id`  | Partial update Incident                                         | Yes           | ADMIN, RANGER |
+| `DELETE /api/incidents/:id` | Remove record                                                   | Yes           | ADMIN         |
 
 ### � Risk Intelligence (`/api/risk-map`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `GET /api/risk-map` | Generate area-based risk heatmap data | Yes | ADMIN, RANGER |
+
+| Endpoint            | Description                           | Auth Required | Roles         |
+| :------------------ | :------------------------------------ | :------------ | :------------ |
+| `GET /api/risk-map` | Generate area-based risk heatmap data | Yes           | ADMIN, RANGER |
 
 ### �️ Patrol Operations (`/api/patrols`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `POST /api/patrols` | Schedule new patrol | Yes | ADMIN |
-| `GET /api/patrols` | List patrols (Filters: `rangerId`, `status`, `from`, `to`, `zoneIds`) | Yes | ADMIN, RANGER |
-| `GET /api/patrols/:id` | Get specific patrol details | Yes | ADMIN, RANGER |
-| `PUT /api/patrols/:id` | Full patrol update (Replace) | Yes | ADMIN |
-| `PATCH /api/patrols/:id` | Partial patrol update | Yes | ADMIN |
-| `DELETE /api/patrols/:id` | Cancel/Remove patrol | Yes | ADMIN |
-| `POST /api/patrols/:id/check-ins` | Record ranger check-in | Yes | RANGER |
-| `GET /api/patrols/:id/check-ins` | View patrol check-in history | Yes | ADMIN, RANGER |
-| `PUT /api/patrols/:id/check-ins/:cid` | Correct check-in log (Full) | Yes | RANGER |
-| `PATCH /api/patrols/:id/check-ins/:cid` | Correct check-in log (Partial) | Yes | RANGER |
-| `DELETE /api/patrols/:id/check-ins/:cid` | Remove check-in record | Yes | RANGER |
+
+| Endpoint                                 | Description                                                           | Auth Required | Roles         |
+| :--------------------------------------- | :-------------------------------------------------------------------- | :------------ | :------------ |
+| `POST /api/patrols`                      | Schedule new patrol                                                   | Yes           | ADMIN         |
+| `GET /api/patrols`                       | List patrols (Filters: `rangerId`, `status`, `from`, `to`, `zoneIds`) | Yes           | ADMIN, RANGER |
+| `GET /api/patrols/:id`                   | Get specific patrol details                                           | Yes           | ADMIN, RANGER |
+| `PUT /api/patrols/:id`                   | Full patrol update (Replace)                                          | Yes           | ADMIN         |
+| `PATCH /api/patrols/:id`                 | Partial patrol update                                                 | Yes           | ADMIN         |
+| `DELETE /api/patrols/:id`                | Cancel/Remove patrol                                                  | Yes           | ADMIN         |
+| `POST /api/patrols/:id/check-ins`        | Record ranger check-in                                                | Yes           | RANGER        |
+| `GET /api/patrols/:id/check-ins`         | View patrol check-in history                                          | Yes           | ADMIN, RANGER |
+| `PUT /api/patrols/:id/check-ins/:cid`    | Correct check-in log (Full)                                           | Yes           | RANGER        |
+| `PATCH /api/patrols/:id/check-ins/:cid`  | Correct check-in log (Partial)                                        | Yes           | RANGER        |
+| `DELETE /api/patrols/:id/check-ins/:cid` | Remove check-in record                                                | Yes           | RANGER        |
 
 ### � Smart Alerts (`/api/alerts`)
-| Endpoint | Description | Auth Required | Roles |
-| :--- | :--- | :--- | :--- |
-| `GET /api/alerts` | List triggered alerts | Yes | ADMIN |
-| `PATCH /api/alerts/:id` | Acknowledge or Resolve alert | Yes | ADMIN |
+
+| Endpoint                | Description                  | Auth Required | Roles |
+| :---------------------- | :--------------------------- | :------------ | :---- |
+| `GET /api/alerts`       | List triggered alerts        | Yes           | ADMIN |
+| `PATCH /api/alerts/:id` | Acknowledge or Resolve alert | Yes           | ADMIN |
 
 ---
 
 ## Request Response Examples
 
 ### � User Management (Get Profile)
+
 **GET** `/api/users/:id`
+
 ```json
 // Response (200 OK)
 {
-    "user": {
-        "_id": "698b1b1ac6196fdd3f397bac",
-        "name": "Head Ranger",
-        "email": "admin@lifeonland.com",
-        "role": "ADMIN",
-        "createdAt": "2026-02-20T10:00:00.000Z",
-        "updatedAt": "2026-02-20T10:00:00.000Z",
-        "__v": 0
-    }
+  "user": {
+    "_id": "698b1b1ac6196fdd3f397bac",
+    "name": "Head Ranger",
+    "email": "admin@lifeonland.com",
+    "role": "ADMIN",
+    "createdAt": "2026-02-20T10:00:00.000Z",
+    "updatedAt": "2026-02-20T10:00:00.000Z",
+    "__v": 0
+  }
 }
 ```
 
 ### �️ Conservation Geometry (Create Area)
+
 **POST** `/api/protected-areas`
+
 ```json
 // Request
 {
@@ -245,11 +269,13 @@ npm start
 ```
 
 ### 🐾 Animal Registry (Register Animal)
+
 **POST** `/api/animals`
+
 ```json
 // Request
 {
-    "tagId": "AFR-001",
+    "tagId": "T0001",
     "protectedAreaId": "69975c61d112d1320744ef20",
     "zoneId": "69976248d112d1320744ef41",
     "species": "Asian Elephant",
@@ -263,7 +289,7 @@ npm start
 {
     "message": "Animal created successfully",
     "animal": {
-        "tagId": "AFR-001",
+        "tagId": "T0001",
         "protectedAreaId": "69975c61d112d1320744ef20",
         "protectedAreaName": "Sinharaja Forest Reserve",
         "zoneId": "69976248d112d1320744ef41",
@@ -283,29 +309,33 @@ npm start
 ```
 
 ### 🛰️ Movement Tracking (Query History)
+
 **GET** `/api/movements/:tagId`
+
 ```json
 // Response Example (Array of logs)
 [
-    {
-        "_id": "69a2c2c3d4e5f6a7b8c9d0e1",
-        "tagId": "AFR-001",
-        "lat": 6.312,
-        "lng": 81.015,
-        "timestamp": "2026-02-27T18:15:00.000Z",
-        "speed": 5.2,
-        "sourceType": "GPS",
-        "zoneId": "69976248d112d1320744ef41",
-        "protectedAreaId": "69975c61d112d1320744ef20",
-        "createdAt": "2026-02-27T18:15:05.100Z",
-        "updatedAt": "2026-02-27T18:15:05.100Z",
-        "__v": 0
-    }
+  {
+    "_id": "69a2c2c3d4e5f6a7b8c9d0e1",
+    "tagId": "AFR-001",
+    "lat": 6.312,
+    "lng": 81.015,
+    "timestamp": "2026-02-27T18:15:00.000Z",
+    "speed": 5.2,
+    "sourceType": "GPS",
+    "zoneId": "69976248d112d1320744ef41",
+    "protectedAreaId": "69975c61d112d1320744ef20",
+    "createdAt": "2026-02-27T18:15:05.100Z",
+    "updatedAt": "2026-02-27T18:15:05.100Z",
+    "__v": 0
+  }
 ]
 ```
 
 ### 🚨 Incident Reporting (Submit Threat)
+
 **POST** `/api/incidents`
+
 ```json
 // Request
 {
@@ -350,7 +380,9 @@ npm start
 ```
 
 ### �️ Patrol Management (Create Mission)
+
 **POST** `/api/patrols`
+
 ```json
 // Request
 {
@@ -387,7 +419,9 @@ npm start
 ```
 
 ### 📍 Ranger Check-In
+
 **POST** `/api/patrols/:id/check-ins`
+
 ```json
 // Request
 {
@@ -419,6 +453,7 @@ npm start
 ---
 
 ## 🛠️ Tech Stack
+
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB & Mongoose ODM
 - **Security**: JWT, Bcrypt, Role-Based Access Control
@@ -426,4 +461,5 @@ npm start
 - **Documentation**: Mermaid.js, Markdown
 
 ---
-**Life-On-Land** - *Empowering wildlife protection through engineering.*
+
+**Life-On-Land** - _Empowering wildlife protection through engineering._
