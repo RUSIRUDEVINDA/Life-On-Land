@@ -1,8 +1,7 @@
 import express from "express";
 import * as protectedAreaController from "../controllers/protectedArea.Controller.js";
 import * as zoneController from "../controllers/zone.Controller.js";
-import { protect } from "../middleware/auth.middleware.js";
-import { authorizeRoles } from "../middleware/role.middleware.js";
+import { protect, authorize } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -17,7 +16,7 @@ router.get("/", protectedAreaController.list);
 router.post(
   "/",
   protect,
-  authorizeRoles("ADMIN"),
+  authorize("ADMIN"),
   protectedAreaController.create
 );
 
@@ -35,7 +34,7 @@ router.get(
 router.post(
   "/:id/zones",
   protect,
-  authorizeRoles("ADMIN"),
+  authorize("ADMIN"),
   zoneController.createForProtectedArea
 );
 
@@ -53,7 +52,7 @@ router.get(
 router.put(
   "/:id",
   protect,
-  authorizeRoles("ADMIN"),
+  authorize("ADMIN"),
   protectedAreaController.update
 );
 
@@ -61,7 +60,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorizeRoles("ADMIN"),
+  authorize("ADMIN"),
   protectedAreaController.remove
 );
 

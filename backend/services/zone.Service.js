@@ -1,5 +1,5 @@
-import Zone from "../models/Zone.models.js";
-import ProtectedArea from "../models/ProtectedArea.models.js";
+import Zone from "../models/Zone.model.js";
+import ProtectedArea from "../models/ProtectedArea.model.js";
 
 const ensureProtectedAreaActive = async (protectedAreaId) => {
   const area = await ProtectedArea.findOne({

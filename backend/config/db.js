@@ -1,16 +1,18 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 export const connectDB = async () => {
-  if (!process.env.MONGO_URI) {
-    console.error("MONGO_URI is not defined")
-    process.exit(1)
-  }
+    try {
+        const uri = process.env.MONGO_URI?.trim();
+        if (!uri) {
+            throw new Error("MONGO_URI is not defined in environment variables");
+        }
 
-  try {
-    const connection = await mongoose.connect(process.env.MONGO_URI)
-    console.log(`MongoDB connected: ${connection.connection.host}`)
-  } catch (error) {
-    console.error(`Database connection failed: ${error.message}`)
-    process.exit(1)
-  }
+        await mongoose.connect(uri);
+        console.log("MongoDB connected successfully");
+    } catch (error) {
+        console.error("Error connecting to MongoDB:", error.message);
+        // Don't exit immediately, maybe it's a temporary DNS issue
+        // But if it's nodemon, exiting is fine as it will restart
+        process.exit(1);
+    }
 }

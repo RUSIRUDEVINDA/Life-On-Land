@@ -1,4 +1,5 @@
-import * as incidentRepository from '../repositories/incident.repositories.js';
+import * as incidentRepository from '../repositories/incident.repository.js';
+import * as alertService from './alert.service.js';
 
 /**
  * Create a new incident
@@ -9,19 +10,19 @@ import * as incidentRepository from '../repositories/incident.repositories.js';
 export const createIncident = async (incidentData, user) => {
   // Verify zone and protected area exist
   const zone = await incidentRepository.findZoneById(incidentData.zoneId);
-  if (!zone || !zone.isActive) {
+  if (!zone || zone.status !== 'ACTIVE') {
     throw new Error('Zone not found or inactive');
   }
 
   const protectedArea = await incidentRepository.findProtectedAreaById(
     incidentData.protectedAreaId
   );
-  if (!protectedArea || !protectedArea.isActive) {
+  if (!protectedArea || protectedArea.status !== 'ACTIVE') {
     throw new Error('Protected area not found or inactive');
   }
 
   // Verify zone belongs to protected area
-  if (zone.protectedAreaId.toString() !== incidentData.protectedAreaId) {
+  if (zone.protectedAreaId.toString() !== incidentData.protectedAreaId.toString()) {
     throw new Error('Zone does not belong to the specified protected area');
   }
 
@@ -45,14 +46,22 @@ export const createIncident = async (incidentData, user) => {
   const incidentToCreate = {
     ...incidentData,
     status,
-    reportedBy: reportingUser._id,
-    location: {
-      type: 'Point',
-      coordinates: incidentData.location.coordinates
-    }
+    reportedBy: reportingUser._id
   };
 
+  // Only set location if it's provided
+  if (incidentData.location && incidentData.location.coordinates) {
+    incidentToCreate.location = {
+      type: 'Point',
+      coordinates: incidentData.location.coordinates
+    };
+  }
+
   const incident = await incidentRepository.createIncident(incidentToCreate);
+
+  // Trigger incident alert
+  await alertService.triggerIncidentAlert(incident, zone.name);
+
   return await incidentRepository.getIncidentWithRelationsById(incident._id);
 };
 
@@ -167,7 +176,7 @@ export const updateIncident = async (incidentId, updateData, user) => {
   // If updating zone, verify it exists and belongs to the same protected area
   if (updateData.zoneId) {
     const zone = await incidentRepository.findZoneById(updateData.zoneId);
-    if (!zone || !zone.isActive) {
+    if (!zone || zone.status !== 'ACTIVE') {
       throw new Error('Zone not found or inactive');
     }
     if (zone.protectedAreaId.toString() !== incident.protectedAreaId.toString()) {
@@ -183,7 +192,13 @@ export const updateIncident = async (incidentId, updateData, user) => {
     };
   }
 
-  Object.assign(incident, updateData);
+  // Set each field individually to ensure Mongoose detects changes
+  Object.keys(updateData).forEach(key => {
+    if (updateData[key] !== undefined) {
+      incident.set(key, updateData[key]);
+    }
+  });
+  
   await incidentRepository.saveIncident(incident);
 
   return await incidentRepository.getIncidentWithRelationsById(incident._id);
@@ -203,7 +218,7 @@ export const deleteIncident = async (incidentId, user) => {
   }
 
   // Only Admin and OFFICER can delete incidents
-  if (!['Admin', 'OFFICER'].includes(user.role)) {
+  if (!['ADMIN', 'OFFICER'].includes(user.role)) {
     throw new Error('Only Admin and OFFICER can delete incidents');
   }
 

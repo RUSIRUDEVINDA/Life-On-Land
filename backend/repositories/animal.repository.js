@@ -1,28 +1,34 @@
 import Animal from "../models/Animal.js";
 
+// Create a new animal document
 export const create = (data) => Animal.create(data);
 
+// Find animal by tag ID
 export const findByTagId = (tagId) =>
     Animal.findOne({ tagId });
 
+// Find animal by tag ID excluding a specific record (used in updates)
 export const findByTagIdExceptId = (tagId, id) =>
     Animal.findOne({ tagId, _id: { $ne: id } });
 
-export const findById = (id) =>
-    Animal.findById(id);
-
+// Find animals with pagination and sorting
 export const findWithPagination = (query, sort, skip, limit) =>
     Animal.find(query).sort(sort).skip(skip).limit(limit);
 
+// Count animals matching a query
 export const count = (query) =>
     Animal.countDocuments(query);
 
-export const updateById = (id, update) =>
-    Animal.findByIdAndUpdate(
-        id,
+// Update animal by tag ID
+export const updateByTagId = (tagId, update) =>
+    Animal.findOneAndUpdate(
+        { tagId },
         update,
         { new: true, runValidators: true }
     );
 
-export const deleteById = (id) =>
-    Animal.findByIdAndDelete(id);
+// Delete animal by tag ID
+export const deleteByTagId = (tagId) => {
+    console.log("Repo: Calling findOneAndDelete for tagId:", tagId);
+    return Animal.findOneAndDelete({ tagId });
+};

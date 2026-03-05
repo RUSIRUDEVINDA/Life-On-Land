@@ -1,249 +1,465 @@
 # Life-On-Land 🦁🐘
 
-**Classification:** Public-SLIIT
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)](https://jwt.io/)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)
+![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)
 
-Life-On-Land is a Poaching Alert and Wildlife Movement Tracking application. It is designed to assist authorities and rangers in monitoring wildlife movements and preventing illegal poaching activities. This project is developed as part of the Application Frameworks module at SLIIT.
+Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracking** system designed to protect biodiversity. It provides a highly scalable backend for real-time wildlife monitoring, ranger coordination, and proactive threat detection.
+
+---
+
+## ✨ Key Features
+
+- 🛰️ **Real-time GPS Tracking**: High-throughput ingestion of animal movement data via IoT devices.
+- 🚨 **Automated Alert System**: Immediate notification triggers for poaching incidents and boundary breaches.
+- 🛡️ **Advanced Patrol Management**: Dynamic scheduling, geo-fenced check-ins, and digital logbooks for rangers.
+- 📈 **Risk Mapping**: Heatmap-based risk assessment utilizing historical incident and movement data.
+- 🔒 **RBAC Security**: Granular Role-Based Access Control (ADMIN, RANGER).
+- 🧬 **Data Integrity**: Robust validation and sanitization for all incoming data streams.
 
 ---
 
 ## 🏗️ System Architecture
 
-The project follows a **Layered Architecture** with the **Service-Repository Pattern** to ensure separation of concerns, maintainability, and scalability.
+The system utilizes a **Layered Architecture** with a **Service-Repository Pattern**, maximizing decoupling and maintainability.
 
 ### Request-Response Flow
+
 ```mermaid
 graph TD
-    A[Client / Frontend] -->|1. HTTP Request| B[Express Router]
-    B -->|2. Middleware| C[Auth & Role Middleware]
-    C -->|3. Validation| D[Request Validators]
-    D -->|4. Route Handler| E[Controller]
-    E -->|5. Business Logic| F[Service Layer]
-    F -->|6. Data Operations| G[Repository Layer]
-    G -->|7. Mongoose Operations| H[Mongoose Model]
-    H -->|8. Query/Save| I[(MongoDB)]
-    
-    I -.->|Data Result| H
-    H -.-> G
-    G -.-> F
-    F -.-> E
-    E -.->|9. HTTP Response| A
+    A[Client / IoT Node] -->|REST Request| B[Express Router]
+    B -->|Security Guard| C[Auth & Role Middleware]
+    C -->|Schema Constraint| D[Express-Validator]
+    D -->|Logic Gateway| E[Controller]
+    E -->|Business Processor| F[Service Layer]
+    F -->|Persistence Adapter| G[Repository Layer]
+    G -->|Object Mapping| H[Mongoose Schema]
+    H -->|Query| I[(MongoDB)]
+
+    I -.->|Documents| H
+    H -.->|JSON Data| G
+    G -.->|Entities| F
+    F -.->|Result Set| E
+    E -.->|Response| A
 ```
 
-1.  **API Layer (Routes & Controllers):**
-    *   **Routes:** Define the API endpoints and specify middleware (authentication, role-based access, validation).
-    *   **Controllers:** Handle HTTP requests, extract data from the request object, and call the appropriate services.
-2.  **Business Logic Layer (Services):**
-    *   **Services:** Encapsulate core business logic, such as validation checks that depend on multiple resources and complex data transformations.
-3.  **Data Access Layer (Repositories & Models):**
-    *   **Repositories:** Abstract database operations. This allows the business logic to remain agnostic of the underlying database implementation.
-    *   **Models:** Define the database schemas using Mongoose for MongoDB.
+### Component Hierarchy
 
-### Folder Responsibilities & Structure
-
-The `backend` directory is organized into specific folders, each with a clear responsibility to maintain the Single Responsibility Principle:
-
-*   **`config/`**: Contains configuration files, such as the database connection logic (`db.js`). Centralizes environment-dependent settings.
-*   **`routes/`**: The entry point for all API requests. It maps URLs to specific controllers and attaches necessary middleware (like authentication or validation).
-*   **`controllers/`**: Orchestrates the request-response cycle. It extracts data from the request, calls the appropriate Service, and sends the final HTTP response (e.g., `201 Created`).
-*   **`services/`**: The "brain" of the application. Contains business logic that isn't specific to the database or the transport layer. For example, checking if a `tagId` is already in use before creating a new animal.
-*   **`repositories/`**: Acts as a data access layer. It contains direct database operations using Mongoose methods (`find`, `findById`, `create`). This makes it easy to swap databases or unit test services.
-*   **`models/`**: Defines the data structure (Schema) for MongoDB. It ensures data consistency and provides the Mongoose model objects.
-*   **`middleware/`**: Functions that run "in the middle" of a request.
-    *   `auth.middleware.js`: Verifies JWT tokens.
-    *   `role.middleware.js`: Restricts access based on user roles (`ADMIN`, `RANGER`).
-    *   `error.middleware.js`: Global error handling to catch and format server errors.
-*   **`validators/`**: Contains logic to "sanitize" and validate incoming request data (body, query, params) before it reaches the controllers.
-*   **`utils/`**: Reusable utility functions, such as JWT generation, custom error handling wrappers (`asyncHandler`), and complex query builders.
+- `config/`: System orchestration & DB connectivity.
+- `routes/`: API topology and routing logic.
+- `controllers/`: Request handling and response shaping.
+- `services/`: Core business logic and inter-module coordination.
+- `repositories/`: Optimized data access layer.
+- `models/`: Strictly typed Mongoose schemas.
+- `middleware/`: Security, Authorization, and Centralized Logging.
+- `validators/`: Strict input validation rules.
+- `utils/`: For helper functions
 
 ---
 
-### Full Execution Flow (Example: Creating an Animal)
+## 🚀 Getting Started
 
-1.  **Incoming Request**: A client sends a `POST` request to `/api/animals`.
-2.  **Routing**: `server.js` passes the request to `animal.route.js`.
-3.  **Middleware & Security**:
-    *   `protect` middleware verifies the user's JWT.
-    *   `authorizeRoles("ADMIN")` ensures the user has permission.
-4.  **Validation**: `validateCreateAnimal` checks if the body has a valid `tagId`, `species`, etc.
-5.  **Controller**: `animal.controller.js` receives the sanitized data. It calls `animalService.createAnimal()`.
-6.  **Business Logic**: `animal.service.js` checks if an animal with that `tagId` already exists via the repository.
-7.  **Data Access**: If valid, `animal.repository.js` calls `Animal.create()` to save it to MongoDB.
-8.  **Final Response**: The Controller sends a `201` status back to the client with the created animal data.
+### 1. Prerequisites
 
----
+- **Node.js**: v18.x+
+- **MongoDB**: v6.0+ (Local or Atlas)
 
-**Tech Stack:**
-*   **Backend:** Node.js, Express.js
-*   **Database:** MongoDB with Mongoose
-*   **Authentication:** JSON Web Token (JWT) with HTTP-only Cookies and Bearer Header support.
+### 2. Installation
 
----
+```bash
+# Clone the repository
+git clone https://github.com/RUSIRUDEVINDA/Life-On-Land.git
+cd Life-On-Land/backend
 
-## 🚀 Setup Instructions
+# Install dependencies
+npm install
+```
 
-Follow these steps to get the project running locally:
+### 3. Setup Environment
 
-### Prerequisites
-*   [Node.js](https://nodejs.org/) (v16+ recommended)
-*   [MongoDB](https://www.mongodb.com/try/download/community) (Local or Atlas instance)
+Rename `.env.example` to `.env` and fill in your credentials:
 
-### Installation
+```env
+PORT=5001
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_complex_secret
+JWT_EXPIRES_IN=7d
+NODE_ENV=development
+API_URL=http://localhost:5001/api
+```
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone <repository-url>
-    cd Life-On-Land
-    ```
+### 4. Launch
 
-2.  **Setup Backend:**
-    ```bash
-    cd backend
-    npm install
-    ```
+```bash
+# Development (with hot-reload)
+npm run dev
 
-3.  **Configure Environment Variables:**
-    Create a `.env` file in the `backend` directory and add your credentials (refer to `.env.example`):
-    ```env
-    PORT=5001
-    MONGO_URI=your_mongodb_connection_string
-    JWT_SECRET=your_jwt_secret_key
-    JWT_EXPIRES_IN=7d
-    NODE_ENV=development
-    ```
-
-4.  **Run the Application:**
-    ```bash
-    # For development (with nodemon)
-    npm run dev
-
-    # For production
-    npm start
-    ```
-    The server should now be running on `http://localhost:5001`.
+# Production
+npm start
+```
 
 ---
 
-## 🔑 API Endpoint Documentation
+## System Architecture Diagram
 
-### Authentication
-Most endpoints require authentication. You can authenticate by:
-1.  Providing a `Bearer <token>` in the `Authorization` header.
-2.  Using the `jwt` cookie set automatically upon login.
+<img width="2596" height="1248" alt="diagram-export-2-27-2026-12_50_46-PM" src="https://github.com/user-attachments/assets/f5d58676-1727-4ada-b0a2-3e71bca40ab0" />
 
-#### 1. Register User
-*   **Endpoint:** `POST /api/auth/register`
-*   **Method:** `POST`
-*   **Auth Required:** No
-*   **Request Body:**
-    ```json
-    {
-      "name": "John Doe",
-      "email": "john@example.com",
-      "password": "Password123",
-      "role": "RANGER"
-    }
-    ```
-*   **Success Response (201):**
-    ```json
-    {
-      "message": "User registered successfully",
-      "_id": "...",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "role": "RANGER"
-    }
-    ```
+## 🔑 API Documentation
 
-#### 2. Login User
-*   **Endpoint:** `POST /api/auth/login`
-*   **Method:** `POST`
-*   **Auth Required:** No
-*   **Request Body:**
-    ```json
-    {
-      "email": "john@example.com",
-      "password": "Password123"
-    }
-    ```
-*   **Success Response (200):** Sets a `jwt` cookie.
+### 🛡️ Authentication (`/api/auth`)
 
-#### 3. Logout User
-*   **Endpoint:** `POST /api/auth/logout`
-*   **Method:** `POST`
-*   **Auth Required:** No
-*   **Response (200):** Clears the `jwt` cookie.
+| Endpoint                  | Description                                | Auth Required | Roles  |
+| :------------------------ | :----------------------------------------- | :------------ | :----- |
+| `POST /api/auth/register` | Register a new user                        | No            | Public |
+| `POST /api/auth/login`    | Authenticate and obtain access credentials | No            | Public |
+| `POST /api/auth/logout`   | Invalidate current session                 | Yes           | Public |
 
-### Animal Management
+### 👤 User Management (`/api/users`)
 
-#### 4. Create Animal
-*   **Endpoint:** `POST /api/animals`
-*   **Method:** `POST`
-*   **Auth Required:** Yes (Role: `ADMIN`)
-*   **Request Body:**
-    ```json
-    {
-      "tagId": "ELE-001",
-      "species": "Elephant",
-      "sex": "MALE",
-      "ageClass": "ADULT",
-      "protectedAreaId": "65d... (Valid ObjectId)",
-      "status": "ACTIVE"
-    }
-    ```
-*   **Success Response (201):**
-    ```json
-    {
-      "message": "Animal registered",
-      "animal": { ... }
-    }
-    ```
+| Endpoint                | Description                                                        | Auth Required | Roles               |
+| :---------------------- | :----------------------------------------------------------------- | :------------ | :------------------ |
+| `GET /api/users`        | List all users (Filters: `name`, `email`, `role`, `page`, `limit`) | Yes           | ADMIN, RANGER       |
+| `GET /api/users/:id`    | Get specific user profile                                          | Yes           | ANY (Authenticated) |
+| `PUT /api/users/:id`    | Full user update                                                   | Yes           | ANY (Owner/Admin)   |
+| `PATCH /api/users/:id`  | Partial user update                                                | Yes           | ANY (Owner/Admin)   |
+| `DELETE /api/users/:id` | Terminate user account                                             | Yes           | ADMIN               |
 
-#### 5. Get All Animals (with Pagination)
-*   **Endpoint:** `GET /api/animals`
-*   **Method:** `GET`
-*   **Auth Required:** Yes (Role: `ADMIN`, `RANGER`)
-*   **Query Parameters:**
-    *   `page`: Page number (default: 1)
-    *   `limit`: Items per page (default: 10)
-    *   `species`: Filter by species
-    *   `status`: Filter by status (`ACTIVE`, `INACTIVE`, etc.)
-*   **Success Response (200):**
-    ```json
-    {
-      "data": [...],
-      "pagination": {
-        "total": 100,
-        "page": 1,
-        "limit": 10,
-        "pages": 10
-      }
-    }
-    ```
+### �️ Conservation Geometry (`/api/protected-areas`)
 
-#### 6. Get Animal by ID
-*   **Endpoint:** `GET /api/animals/:id`
-*   **Method:** `GET`
-*   **Auth Required:** Yes (Role: `ADMIN`, `RANGER`)
-*   **Success Response (200):** `{ "animal": { ... } }`
+| Endpoint                              | Description                 | Auth Required | Roles  |
+| :------------------------------------ | :-------------------------- | :------------ | :----- |
+| `GET /api/protected-areas`            | List conservation areas     | No            | Public |
+| `POST /api/protected-areas`           | Create new area boundary    | Yes           | ADMIN  |
+| `GET /api/protected-areas/:id`        | Get area details            | No            | Public |
+| `PUT /api/protected-areas/:id`        | Update area metadata        | Yes           | ADMIN  |
+| `DELETE /api/protected-areas/:id`     | Remove protected area       | Yes           | ADMIN  |
+| `GET /api/protected-areas/:id/zones`  | List zones in specific area | No            | Public |
+| `POST /api/protected-areas/:id/zones` | Create zone (Risk Level)    | Yes           | ADMIN  |
 
-#### 7. Update Animal
-*   **Endpoint:** `PUT /api/animals/:id`
-*   **Method:** `PUT`
-*   **Auth Required:** Yes (Role: `ADMIN`)
-*   **Request Body:** (Any subset of animal fields)
-*   **Success Response (200):** `{ "message": "Animal updated", "animal": { ... } }`
+### � Zone Management (`/api/zones`)
 
-#### 8. Delete Animal
-*   **Endpoint:** `DELETE /api/animals/:id`
-*   **Method:** `DELETE`
-*   **Auth Required:** Yes (Role: `ADMIN`)
-*   **Success Response (200):** `{ "message": "Animal deleted permanently" }`
+| Endpoint                | Description             | Auth Required | Roles |
+| :---------------------- | :---------------------- | :------------ | :---- |
+| `PUT /api/zones/:id`    | Update zone properties  | Yes           | ADMIN |
+| `DELETE /api/zones/:id` | Remove zone permanently | Yes           | ADMIN |
+
+### � Animal Registry (`/api/animals`)
+
+| Endpoint                     | Description                                                    | Auth Required | Roles         |
+| :--------------------------- | :------------------------------------------------------------- | :------------ | :------------ |
+| `GET /api/animals`           | List animals (Paginated + Filter by `species`, `status`, etc.) | Yes           | ADMIN, RANGER |
+| `POST /api/animals`          | Register new animal (Tag ID required)                          | Yes           | ADMIN         |
+| `GET /api/animals/:tagId`    | Retrieve detailed animal profile                               | Yes           | ADMIN, RANGER |
+| `PUT /api/animals/:tagId`    | Full update                                      | Yes           | ADMIN         |
+| `PATCH /api/animals/:tagId`  | Partial update                                         | Yes           | ADMIN         |
+| `DELETE /api/animals/:tagId` | Remove animal record                                           | Yes           | ADMIN         |
+
+### 📡 Movement Tracking (`/api/movements`)
+
+| Endpoint                     | Description                              | Auth Required | Roles         |
+| :--------------------------- | :--------------------------------------- | :------------ | :------------ |
+| `GET /api/movements`         | Search movement logs                     | Yes           | ADMIN, RANGER |
+| `GET /api/movements/summary` | Latest location snapshot for all animals | Yes           | ADMIN, RANGER |
+| `GET /api/movements/:tagId`  | Historical movements by Tag ID           | Yes           | ADMIN, RANGER |
+
+### 🚨 Incident Reporting (`/api/incidents`)
+
+| Endpoint | Description | Auth Required | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST /api/incidents` | Report threat (POACHING, LOGGING, etc.) | No | Public/Guest |
+| `GET /api/incidents` | Query incidents (Filters: `type`, `status`, `severity`, `date`) | Yes | ADMIN, RANGER |
+| `GET /api/incidents/:id` | Get full investigation report | Yes | ADMIN, RANGER |
+| `PUT /api/incidents/:id` | Update Full Incident | Yes | ADMIN, RANGER |
+| `PATCH /api/incidents/:id`  | Partial update Incident | Yes | ADMIN, RANGER |                                
+| `DELETE /api/incidents/:id` | Remove record | Yes | ADMIN |
+
+### � Risk Intelligence (`/api/risk-map`)
+
+| Endpoint            | Description                           | Auth Required | Roles         |
+| :------------------ | :------------------------------------ | :------------ | :------------ |
+| `GET /api/risk-map` | Generate area-based risk heatmap data | Yes           | ADMIN, RANGER |
+
+### �️ Patrol Operations (`/api/patrols`)
+
+| Endpoint                                 | Description                                                           | Auth Required | Roles         |
+| :--------------------------------------- | :-------------------------------------------------------------------- | :------------ | :------------ |
+| `POST /api/patrols`                      | Schedule new patrol                                                   | Yes           | ADMIN         |
+| `GET /api/patrols`                       | List patrols (Filters: `rangerId`, `status`, `from`, `to`, `zoneIds`) | Yes           | ADMIN, RANGER |
+| `GET /api/patrols/:id`                   | Get specific patrol details                                           | Yes           | ADMIN, RANGER |
+| `PUT /api/patrols/:id`                   | Full patrol update (Replace)                                          | Yes           | ADMIN         |
+| `PATCH /api/patrols/:id`                 | Partial patrol update                                                 | Yes           | ADMIN         |
+| `DELETE /api/patrols/:id`                | Cancel/Remove patrol                                                  | Yes           | ADMIN         |
+| `POST /api/patrols/:id/check-ins`        | Record ranger check-in                                                | Yes           | RANGER        |
+| `GET /api/patrols/:id/check-ins`         | View patrol check-in history                                          | Yes           | ADMIN, RANGER |
+| `PUT /api/patrols/:id/check-ins/:cid`    | Correct check-in log (Full)                                           | Yes           | RANGER        |
+| `PATCH /api/patrols/:id/check-ins/:cid`  | Correct check-in log (Partial)                                        | Yes           | RANGER        |
+| `DELETE /api/patrols/:id/check-ins/:cid` | Remove check-in record                                                | Yes           | RANGER        |
+
+### � Smart Alerts (`/api/alerts`)
+
+| Endpoint                | Description                  | Auth Required | Roles |
+| :---------------------- | :--------------------------- | :------------ | :---- |
+| `GET /api/alerts`       | List triggered alerts        | Yes           | ADMIN |
+| `PATCH /api/alerts/:id` | Acknowledge or Resolve alert | Yes           | ADMIN |
 
 ---
 
-## 🛠️ Built With
-*   **Express.js** - Web framework
-*   **Mongoose** - MongoDB object modeling
-*   **JSON Web Token** - Authentication
-*   **Bcryptjs** - Password hashing
-*   **Express-validator** - Input validation
+## Request Response Examples
+
+### � User Management (Get Profile)
+
+**GET** `/api/users/:id`
+
+```json
+// Response (200 OK)
+{
+  "user": {
+    "_id": "698b1b1ac6196fdd3f397bac",
+    "name": "Head Ranger",
+    "email": "admin@lifeonland.com",
+    "role": "ADMIN",
+    "createdAt": "2026-02-20T10:00:00.000Z",
+    "updatedAt": "2026-02-20T10:00:00.000Z",
+    "__v": 0
+  }
+}
+```
+
+### �️ Conservation Geometry (Create Area)
+
+**POST** `/api/protected-areas`
+
+```json
+// Request
+{
+    "name": "Sinharaja Forest Reserve",
+    "type": "FOREST_RESERVE",
+    "district": "Ratnapura",
+    "areaSize": 88.4,
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[80.4, 6.3], [80.5, 6.3], [80.5, 6.4], [80.4, 6.4], [80.4, 6.3]]]
+    },
+    "description": "UNESCO World Heritage Site."
+}
+
+// Response (201 Created)
+{
+    "data": {
+        "name": "Sinharaja Forest Reserve",
+        "type": "FOREST_RESERVE",
+        "district": "Ratnapura",
+        "areaSize": 88.4,
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[80.4, 6.3], [80.5, 6.3], [80.5, 6.4], [80.4, 6.4], [80.4, 6.3]]],
+            "_id": "69975c61d112d1320744ef21"
+        },
+        "description": "UNESCO World Heritage Site.",
+        "status": "ACTIVE",
+        "_id": "69975c61d112d1320744ef20",
+        "createdAt": "2026-02-20T08:00:00.000Z",
+        "updatedAt": "2026-02-20T08:00:00.000Z",
+        "__v": 0
+    }
+}
+```
+
+### 🐾 Animal Registry (Register Animal)
+
+**POST** `/api/animals`
+
+```json
+// Request
+{
+    "tagId": "T0001",
+    "protectedAreaId": "69975c61d112d1320744ef20",
+    "zoneId": "69976248d112d1320744ef41",
+    "species": "Asian Elephant",
+    "sex": "MALE",
+    "ageClass": "ADULT",
+    "description": "Large bull elephant with distinctive tusk.",
+    "endemicToSriLanka": true
+}
+
+// Response (201 Created)
+{
+    "message": "Animal created successfully",
+    "animal": {
+        "tagId": "T0001",
+        "protectedAreaId": "69975c61d112d1320744ef20",
+        "protectedAreaName": "Sinharaja Forest Reserve",
+        "zoneId": "69976248d112d1320744ef41",
+        "zoneName": "Core Zone A",
+        "species": "Asian Elephant",
+        "description": "Large bull elephant with distinctive tusk.",
+        "endemicToSriLanka": true,
+        "sex": "MALE",
+        "ageClass": "ADULT",
+        "status": "ACTIVE",
+        "_id": "69a1c4b293a12883034f6f05",
+        "createdAt": "2026-02-27T16:10:00.500Z",
+        "updatedAt": "2026-02-27T16:10:00.500Z",
+        "__v": 0
+    }
+}
+```
+
+### 🛰️ Movement Tracking (Query History)
+
+**GET** `/api/movements/:tagId`
+
+```json
+// Response Example (Array of logs)
+[
+  {
+    "_id": "69a2c2c3d4e5f6a7b8c9d0e1",
+    "tagId": "AFR-001",
+    "lat": 6.312,
+    "lng": 81.015,
+    "timestamp": "2026-02-27T18:15:00.000Z",
+    "speed": 5.2,
+    "sourceType": "GPS",
+    "zoneId": "69976248d112d1320744ef41",
+    "protectedAreaId": "69975c61d112d1320744ef20",
+    "createdAt": "2026-02-27T18:15:05.100Z",
+    "updatedAt": "2026-02-27T18:15:05.100Z",
+    "__v": 0
+  }
+]
+```
+
+### 🚨 Incident Reporting (Submit Threat)
+
+**POST** `/api/incidents`
+
+```json
+// Request
+{
+    "type": "POACHING",
+    "description": "Gunshots heard near river boundary.",
+    "zoneId": "69976248d112d1320744ef41",
+    "protectedAreaId": "69975c61d112d1320744ef20",
+    "incidentDate": "2026-02-27T17:30:00.000Z",
+    "severity": "CRITICAL"
+}
+
+// Response (201 Created)
+{
+    "success": true,
+    "message": "Incident created successfully",
+    "data": {
+        "_id": "69a1c9d293a12883034f6fb2",
+        "type": "POACHING",
+        "description": "Gunshots heard near river boundary.",
+        "zoneId": {
+            "_id": "69976248d112d1320744ef41",
+            "name": "Core Zone A"
+        },
+        "protectedAreaId": {
+            "_id": "69975c61d112d1320744ef20",
+            "name": "Sinharaja Forest Reserve"
+        },
+        "status": "UNVERIFIED",
+        "severity": "CRITICAL",
+        "incidentDate": "2026-02-27T17:30:00.000Z",
+        "reportedBy": {
+            "_id": "698b1b1ac6196fdd3f397bac",
+            "username": "head_ranger",
+            "fullName": "Head Ranger"
+        },
+        "isDeleted": false,
+        "createdAt": "2026-02-27T17:45:00.123Z",
+        "updatedAt": "2026-02-27T17:45:00.123Z",
+        "__v": 0
+    }
+}
+```
+
+### �️ Patrol Management (Create Mission)
+
+**POST** `/api/patrols`
+
+```json
+// Request
+{
+    "alertId": "69a1b98c5f93a7b599c594c9",
+    "assignedRangerIds": ["698b1b1ac6196fdd3f397bac"],
+    "plannedStart": "2026-02-27T08:00:00.000Z",
+    "plannedEnd": "2026-02-28T17:00:00.000Z",
+    "notes": "Emergency poaching response."
+}
+
+// Response (201 Created)
+{
+    "message": "Patrol created successfully",
+    "patrol": {
+        "title": "[Sinharaja] CRITICAL: POACHING detected",
+        "protectedAreaId": "69975c61d112d1320744ef20",
+        "exactLocation": {
+            "lat": 6.31,
+            "lng": 81.01
+        },
+        "zoneIds": ["69976248d112d1320744ef41"],
+        "plannedStart": "2026-02-27T08:00:00.000Z",
+        "plannedEnd": "2026-02-28T17:00:00.000Z",
+        "assignedRangerIds": ["698b1b1ac6196fdd3f397bac"],
+        "status": "PLANNED",
+        "notes": "Emergency poaching response.",
+        "checkIns": [],
+        "_id": "69a1ba2f93a12883034f6dfd",
+        "createdAt": "2026-02-27T15:37:19.299Z",
+        "updatedAt": "2026-02-27T15:37:19.299Z",
+        "__v": 0
+    }
+}
+```
+
+### 📍 Ranger Check-In
+
+**POST** `/api/patrols/:id/check-ins`
+
+```json
+// Request
+{
+    "location": { "lat": 6.315, "lng": 81.022 },
+    "note": "Suspect tracks found near the river boundary.",
+    "zoneId": "69976248d112d1320744ef41"
+}
+
+// Response (201 Created)
+{
+    "message": "Check-in added successfully",
+    "patrol": {
+        "_id": "69a1ba2f93a12883034f6dfd",
+        "status": "IN_PROGRESS",
+        "checkIns": [
+            {
+                "location": { "lat": 6.315, "lng": 81.022 },
+                "note": "Suspect tracks found near the river boundary.",
+                "zoneId": "69976248d112d1320744ef41",
+                "timestamp": "2026-02-27T15:45:00.299Z",
+                "_id": "69a1bb2093a12883034f6e10"
+            }
+        ],
+        "updatedAt": "2026-02-27T15:45:00.299Z"
+    }
+}
+```
+
+---
+
+## 🛠️ Tech Stack
+
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB & Mongoose ODM
+- **Security**: JWT, Bcrypt, Role-Based Access Control
+- **Validation**: Custom Validators
+- **Documentation**: Mermaid.js, Markdown
+
+---
+
+**Life-On-Land** - _Empowering wildlife protection through engineering._

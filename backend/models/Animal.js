@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+/**
+ * @desc    Animal Schema defining tracked wildlife
+ */
 const animalSchema = new mongoose.Schema(
     {
         tagId: {
@@ -9,11 +12,38 @@ const animalSchema = new mongoose.Schema(
             index: true,
             trim: true
         },
+        protectedAreaId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            index: true
+        },
+        protectedAreaName: {
+            type: String,
+            default: null
+        },
+        zoneId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            index: true
+        },
+        zoneName: {
+            type: String,
+            default: null
+        },
         species: {
             type: String,
             required: true,
             index: true,
             trim: true
+        },
+        description: {
+            type: String,
+            default: null,
+            trim: true
+        },
+        endemicToSriLanka: {
+            type: Boolean,
+            default: false
         },
         sex: {
             type: String,
@@ -27,14 +57,9 @@ const animalSchema = new mongoose.Schema(
             required: true,
             default: "UNKNOWN"
         },
-        protectedAreaId: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            index: true
-        },
         status: {
             type: String,
-            enum: ["ACTIVE", "INACTIVE", "RETIRED", "DECEASED"],
+            enum: ["ACTIVE", "INACTIVE", "DECEASED"],
             required: true,
             default: "ACTIVE",
             index: true
