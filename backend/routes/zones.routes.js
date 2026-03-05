@@ -1,17 +1,20 @@
 import express from "express";
 import * as zoneController from "../controllers/zone.Controller.js";
-import { allowRoles } from "../middleware/authorize.middleware.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authorizeRoles } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
 router.put(
   "/:zoneId",
-  allowRoles(["ADMIN"]),
+  protect,
+  authorizeRoles("ADMIN"),
   zoneController.update
 );
 router.delete(
   "/:zoneId",
-  allowRoles(["ADMIN"]),
+  protect,
+  authorizeRoles("ADMIN"),
   zoneController.remove
 );
 
