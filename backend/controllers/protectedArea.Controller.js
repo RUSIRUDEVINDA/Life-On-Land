@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import {
   listProtectedAreas,
   createProtectedArea,
@@ -12,7 +14,9 @@ import {
 } from "../validators/protectedArea.validator.js";
 
 
-// LIST
+/* ===============================
+   LIST
+================================ */
 const list = async (req, res, next) => {
   try {
     const items = await listProtectedAreas();
@@ -23,7 +27,9 @@ const list = async (req, res, next) => {
 };
 
 
-// CREATE
+/* ===============================
+   CREATE
+================================ */
 const create = async (req, res, next) => {
   try {
     const error = validateCreateProtectedArea(req.body);
@@ -40,10 +46,19 @@ const create = async (req, res, next) => {
 };
 
 
-// GET BY ID
+/* ===============================
+   GET BY ID
+================================ */
 const getById = async (req, res, next) => {
   try {
-    const item = await getProtectedAreaById(req.params.id);
+    const { id } = req.params;
+
+    // 🔥 Validate MongoDB ObjectId format first
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid protected area ID" });
+    }
+
+    const item = await getProtectedAreaById(id);
 
     if (!item) {
       return res.status(404).json({ message: "Protected area not found" });
@@ -56,15 +71,23 @@ const getById = async (req, res, next) => {
 };
 
 
-// UPDATE
+/* ===============================
+   UPDATE
+================================ */
 const update = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid protected area ID" });
+    }
+
     const error = validateUpdateProtectedArea(req.body);
     if (error) {
       return res.status(400).json({ message: error });
     }
 
-    const updated = await updateProtectedArea(req.params.id, req.body);
+    const updated = await updateProtectedArea(id, req.body);
 
     if (!updated) {
       return res.status(404).json({ message: "Protected area not found" });
@@ -77,10 +100,18 @@ const update = async (req, res, next) => {
 };
 
 
-// DELETE (Soft Delete)
+/* ===============================
+   DELETE (Soft Delete)
+================================ */
 const remove = async (req, res, next) => {
   try {
-    const removed = await softDeleteProtectedArea(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid protected area ID" });
+    }
+
+    const removed = await softDeleteProtectedArea(id);
 
     if (!removed) {
       return res.status(404).json({ message: "Protected area not found" });

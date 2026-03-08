@@ -79,41 +79,45 @@ export const updateAnimal = async (tagId, data) => {
         }
     }
 
-    // Protected Area ID is immutable
-    if (data.protectedAreaId && data.protectedAreaId.toString() !== currentAnimal.protectedAreaId.toString()) {
-        const error = new Error("protectedAreaId is immutable and cannot be updated");
-        error.statusCode = 400;
-        throw error;
-    }
+    // Cross-validate Area/Zone if either is modified
+    const targetPAId = data.protectedAreaId || currentAnimal.protectedAreaId.toString();
+    const targetZoneId = data.zoneId || currentAnimal.zoneId.toString();
 
-    // Ensure protectedAreaId is NOT in the final update object to be extra safe
-    delete data.protectedAreaId;
-    delete data.protectedAreaName;
-
-    // Cross-validate Zone if it is modified
-    if (data.zoneId) {
-        const zone = await Zone.findById(data.zoneId);
+    if (data.protectedAreaId || data.zoneId) {
+        const zone = await Zone.findById(targetZoneId);
         if (!zone) {
             const error = new Error("Zone not found");
             error.statusCode = 404;
             throw error;
         }
-
-        if (zone.status !== "ACTIVE") {
-            const error = new Error("Zone is inactive");
+        if (zone.protectedAreaId.toString() !== targetPAId) {
+            const error = new Error("Validation failed: The specified Zone does not belong to the target Protected Area");
             error.statusCode = 400;
             throw error;
         }
 
-        // Zone must belong to the CURRENT Protected Area (since PA can't change)
-        if (zone.protectedAreaId.toString() !== currentAnimal.protectedAreaId.toString()) {
-            const error = new Error("Validation failed: The specified Zone does not belong to the animal's Protected Area");
-            error.statusCode = 400;
-            throw error;
+        // Sync redundant names if IDs changed
+        if (data.protectedAreaId) {
+            const pa = await ProtectedArea.findById(data.protectedAreaId);
+            if (!pa || pa.status !== "ACTIVE") {
+                const error = new Error("Protected Area not found or inactive");
+                error.statusCode = 404;
+                throw error;
+            }
+            data.protectedAreaName = pa.name;
         }
 
-        // Sync redundant names
-        data.zoneName = zone.name;
+        if (data.zoneId) {
+            if (zone.status !== "ACTIVE") {
+                const error = new Error("Zone is inactive");
+                error.statusCode = 400;
+                throw error;
+            }
+            data.zoneName = zone.name;
+        } else if (data.protectedAreaId) {
+            // Keep zone name in sync if PA changed but zone stayed same
+            data.zoneName = zone.name;
+        }
     }
 
     const updatedAnimal = await repo.updateByTagId(tagId, { $set: data });
