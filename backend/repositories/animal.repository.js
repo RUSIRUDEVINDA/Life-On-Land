@@ -27,6 +27,7 @@ const count = (query) =>
 const updateByTagId = (tagId, update) =>
     Animal.findOneAndUpdate(
         { tagId },
+
         update,
         { new: true, runValidators: true }
     );
@@ -55,3 +56,4 @@ const animalRepo = {
 };
 
 export default animalRepo;
+

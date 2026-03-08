@@ -42,6 +42,7 @@ export const authenticate = asyncHandler(async (req, res, next) => {
         }
 
         req.user = user;
+
         next();
 
     } catch (error) {
@@ -97,3 +98,4 @@ export const optionalAuth = asyncHandler(async (req, res, next) => {
 export const authorize = (...roles) => {
     return authorizeRoles(...roles);
 };
+

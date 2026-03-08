@@ -13,7 +13,9 @@ import zoneRoutes from "./routes/zones.route.js"
 import movementRoutes from "./routes/movement.route.js"
 import userRoutes from "./routes/user.route.js"
 import { notFound, errorHandler } from "./middleware/error.middleware.js"
+
 import dotenv from "dotenv"
+import { notFound, errorHandler } from "./middleware/error.middleware.js"
 
 dotenv.config()
 
@@ -53,6 +55,7 @@ app.use("/api/zones", zoneRoutes)
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
+
 
 const PORT = process.env.PORT || 5001
 app.listen(PORT, () => {
