@@ -10,6 +10,7 @@ router.put(
   authorize("ADMIN"),
   zoneController.update
 );
+
 router.delete(
   "/:zoneId",
   protect,

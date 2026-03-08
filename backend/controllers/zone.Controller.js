@@ -15,13 +15,15 @@ import {
 // LIST ZONES BY PROTECTED AREA
 const listByProtectedArea = async (req, res, next) => {
   try {
-    const area = await ensureProtectedAreaActive(req.params.id);
+    const areaId = req.params.id;
+
+    const area = await ensureProtectedAreaActive(areaId);
 
     if (!area) {
       return res.status(404).json({ message: "Protected area not found" });
     }
 
-    const zones = await listZonesByProtectedAreaId(req.params.id);
+    const zones = await listZonesByProtectedAreaId(areaId);
 
     return res.status(200).json({ data: zones });
   } catch (error) {
@@ -38,12 +40,14 @@ const createForProtectedArea = async (req, res, next) => {
       return res.status(400).json({ message: error });
     }
 
-    const area = await ensureProtectedAreaActive(req.params.id);
+    const areaId = req.params.id;
+
+    const area = await ensureProtectedAreaActive(areaId);
     if (!area) {
       return res.status(404).json({ message: "Protected area not found" });
     }
 
-    const created = await createZone(req.params.id, req.body);
+    const created = await createZone(areaId, req.body);
 
     return res.status(201).json({ data: created });
   } catch (error) {
@@ -60,7 +64,9 @@ const update = async (req, res, next) => {
       return res.status(400).json({ message: error });
     }
 
-    const updated = await updateZone(req.params.zoneId, req.body);
+    const zoneId = req.params.zoneId;
+
+    const updated = await updateZone(zoneId, req.body);
 
     if (!updated) {
       return res.status(404).json({ message: "Zone not found" });
@@ -73,21 +79,22 @@ const update = async (req, res, next) => {
 };
 
 
-// DELETE ZONE
+// DELETE ZONE (Soft Delete)
 const remove = async (req, res, next) => {
   try {
-    const removed = await softDeleteZone(req.params.zoneId);
+    const zoneId = req.params.zoneId;
+
+    const removed = await softDeleteZone(zoneId);
 
     if (!removed) {
       return res.status(404).json({ message: "Zone not found" });
     }
 
-    return res.status(200).json({ message: "Zone deleted" });
+    return res.status(200).json({ message: "Zone deleted successfully" });
   } catch (error) {
     return next(error);
   }
 };
-
 
 export {
   listByProtectedArea,
