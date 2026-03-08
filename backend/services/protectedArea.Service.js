@@ -1,41 +1,55 @@
-import ProtectedArea from "../models/ProtectedArea.model.js";
+import areaRepo from "../repositories/protectedArea.repository.js";
 
-const listProtectedAreas = async () => {
-  return ProtectedArea.find({ status: "ACTIVE" }).sort({ createdAt: -1 });
+/*
+ * @desc    Get all protected areas
+ * @returns {Array} List of active protected areas
+ */
+export const getAllProtectedAreas = async () => {
+  return areaRepo.findAll();
 };
 
-const createProtectedArea = async (payload) => {
-  return ProtectedArea.create(payload);
+/*
+ * @desc    Create a new protected area
+ */
+export const createProtectedArea = async (payload) => {
+  return areaRepo.create(payload);
 };
 
-const getProtectedAreaById = async (id) => {
-  return ProtectedArea.findOne({ _id: id, status: "ACTIVE" });
-};
-
-const updateProtectedArea = async (id, payload) => {
-  return ProtectedArea.findOneAndUpdate(
-    { _id: id, status: "ACTIVE" },
-    payload,
-    { new: true, runValidators: true }
-  );
-};
-
-const softDeleteProtectedArea = async (id) => {
-  const removed = await ProtectedArea.findOneAndDelete({ _id: id, status: "ACTIVE" });
-
-  if (!removed) {
-    return null;
+/*
+ * @desc    Get a protected area by ID
+ */
+export const getProtectedAreaById = async (id) => {
+  const area = await areaRepo.findById(id);
+  if (!area) {
+    const error = new Error("Protected area not found");
+    error.statusCode = 404;
+    throw error;
   }
-
-  await Zone.deleteMany({ protectedAreaId: id });
-
-  return removed;
+  return area;
 };
 
-export {
-  listProtectedAreas,
-  createProtectedArea,
-  getProtectedAreaById,
-  updateProtectedArea,
-  softDeleteProtectedArea,
+/*
+ * @desc    Update a protected area
+ */
+export const updateProtectedArea = async (id, payload) => {
+  const area = await areaRepo.updateById(id, payload);
+  if (!area) {
+    const error = new Error("Protected area not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return area;
+};
+
+/*
+ * @desc    Soft delete a protected area
+ */
+export const deleteProtectedArea = async (id) => {
+  const area = await areaRepo.softDelete(id);
+  if (!area) {
+    const error = new Error("Protected area not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return area;
 };

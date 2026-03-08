@@ -1,4 +1,4 @@
-import * as repo from "../repositories/animal.repository.js";
+import repo from "../repositories/animal.repository.js";
 import ProtectedArea from "../models/ProtectedArea.model.js";
 import Zone from "../models/Zone.model.js";
 
@@ -54,6 +54,21 @@ export const createAnimal = async (data) => {
         protectedAreaDetails: protectedArea,
         zoneDetails: zone
     };
+};
+
+/*
+ * @desc    Service to get an animal by Mongo ID
+ * @param   {string} id - Mongo ID
+ * @returns {Object} Animal document
+ */
+export const getAnimalById = async (id) => {
+    const animal = await repo.findById(id);
+    if (!animal) {
+        const error = new Error("Animal not found");
+        error.statusCode = 404;
+        throw error;
+    }
+    return animal;
 };
 
 /*
@@ -117,7 +132,6 @@ export const updateAnimal = async (tagId, data) => {
             }
             data.zoneName = zone.name;
         } else if (data.protectedAreaId) {
-            // Keep zone name in sync if PA changed but zone stayed same
             data.zoneName = zone.name;
         }
     }
@@ -133,7 +147,6 @@ export const updateAnimal = async (tagId, data) => {
 
     return updatedAnimal;
 };
-
 
 /*
  * @desc    Service to delete an animal record
