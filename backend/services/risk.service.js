@@ -37,19 +37,7 @@ export const calculateZoneRiskScore = async (zone, fromDate = null, toDate = nul
     const totalIncidents = incidents.length;
     baseScore += Math.min(totalIncidents * 2, 50);
 
-    // 2. Recent incidents (last 30 days) - higher weight
-    const recentIncidents = incidents.filter(inc => 
-      new Date(inc.incidentDate) >= thirtyDaysAgo
-    );
-    baseScore += Math.min(recentIncidents.length * 5, 30);
-
-    // 3. Very recent incidents (last 7 days) - highest weight
-    const veryRecentIncidents = incidents.filter(inc => 
-      new Date(inc.incidentDate) >= sevenDaysAgo
-    );
-    baseScore += Math.min(veryRecentIncidents.length * 10, 20);
-
-    // 4. Severity-based scoring (prioritize highest severity incidents)
+    // 2. Severity-based scoring (prioritize highest severity incidents)
     const severityWeights = { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 };
     
     // Count incidents by severity
@@ -72,11 +60,11 @@ export const calculateZoneRiskScore = async (zone, fromDate = null, toDate = nul
       baseScore += severityCounts.HIGH * 8; // Max 20 points
     }
 
-    // 5. Unverified incidents increase risk
+    //  Unverified incidents increase risk
     const unverifiedCount = incidents.filter(inc => inc.status === 'UNVERIFIED').length;
     baseScore += unverifiedCount * 3;
 
-    // 6. Weather-based multiplier
+    // 3. Weather-based multiplier
     // Zone uses geometry.coordinates (Polygon), get first point for weather API
     let lon, lat;
     if (zone.geometry && zone.geometry.coordinates && zone.geometry.coordinates[0] && zone.geometry.coordinates[0][0]) {
@@ -122,7 +110,6 @@ export const calculateZoneRiskScore = async (zone, fromDate = null, toDate = nul
     return {
       zoneId: zone._id,
       zoneName: zone.name,
-      riskScore: finalScore,
       riskLevel,
       weatherMultiplier: weatherMultiplier.toFixed(2),
       weatherCondition: weatherData.condition,
