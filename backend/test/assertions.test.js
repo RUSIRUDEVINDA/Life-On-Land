@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 // Member 1: Pure Assertions (expect) & BDD Syntax (describe/it)
-describe('Member 1: Perfectly Balanced Data Audit', () => {
+describe('IT23286696 - Devinda M R I: Perfectly Balanced Data Audit', () => {
 
     // 1. DOMAIN A: USER & AUTHENTICATION
     describe('Domain A: Identity & Access Control', () => {
