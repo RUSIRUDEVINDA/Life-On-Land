@@ -13,6 +13,7 @@ export const createAnimal = asyncHandler(async (req, res) => {
         message: "Animal created successfully",
         animal: result.animal,
     });
+
 });
 
 // @desc    Get all animals with pagination and filters
@@ -52,17 +53,16 @@ export const getAnimalById = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
 
     const animal = await repo.findByTagId(tagId);
+
     if (!animal) {
         const error = new Error("Animal not found");
         error.statusCode = 404;
         throw error;
     }
 
-    res.json({
-        message: "Animal retrieved successfully",
-        animal
-    });
+    res.json({ animal });
 });
+
 
 // @desc    Update animal record
 // @route   PUT /api/animals/:tagId

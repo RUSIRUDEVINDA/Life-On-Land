@@ -30,3 +30,4 @@ export const updateById = (id, update) =>
 
 // Delete user by Mongo ID
 export const deleteById = (id) => User.findByIdAndDelete(id);
+
