@@ -17,7 +17,8 @@
     "chai": "^6.2.2",
     "mocha": "^11.7.5",
     "mochawesome": "^7.1.4",
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "sinon": "^21.0.2"
   },
   "dependencies": {
     "axios": "^1.13.5",
