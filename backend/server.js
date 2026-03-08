@@ -15,7 +15,6 @@ import userRoutes from "./routes/user.route.js"
 import { notFound, errorHandler } from "./middleware/error.middleware.js"
 
 import dotenv from "dotenv"
-import { notFound, errorHandler } from "./middleware/error.middleware.js"
 
 dotenv.config()
 
