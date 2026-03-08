@@ -7,7 +7,8 @@ export const authorizeRoles = (...roles) => {
         }
 
         if (!allowedRoles.includes(String(req.user.role).toUpperCase())) {
-            return res.status(403).json({ error: "Insufficient permissions" });
+            return res.status(403).json({ error: "Not authorized for this role" });
+
         }
 
         next();

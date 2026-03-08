@@ -1,31 +1,31 @@
 import Patrol from "../models/Patrol.js";
 
-export const create = (data) => Patrol.create(data);
+const create = (data) => Patrol.create(data);
 
-export const findById = (id) =>
+const findById = (id) =>
     Patrol.findById(id);
 
-export const findWithPagination = (query, sort, skip, limit) =>
+const findWithPagination = (query, sort, skip, limit) =>
     Patrol.find(query)
         .populate("assignedRangerIds", "name email")
         .sort(sort)
         .skip(skip)
         .limit(limit);
 
-export const count = (query) =>
+const count = (query) =>
     Patrol.countDocuments(query);
 
-export const updateById = (id, update) =>
+const updateById = (id, update) =>
     Patrol.findByIdAndUpdate(
         id,
         update,
         { new: true, runValidators: true }
     );
 
-export const deleteById = (id) =>
+const deleteById = (id) =>
     Patrol.findByIdAndDelete(id);
 
-export const addCheckIn = async (id, checkInData) => {
+const addCheckIn = async (id, checkInData) => {
     const patrol = await Patrol.findById(id);
     if (!patrol) return null;
 
@@ -37,31 +37,53 @@ export const addCheckIn = async (id, checkInData) => {
     return patrol.save();
 };
 
-export const getCheckIns = async (id) => {
-    const patrol = await Patrol.findById(id).select("checkIns");
-    return patrol ? patrol.checkIns : null;
+const getCheckIns = async (id, skip, limit) => {
+    const patrol = await Patrol.findById(id).select({
+        checkIns: { $slice: [skip, limit] }
+    });
+
+    if (!patrol) return null;
+
+    const fullPatrol = await Patrol.findById(id).select("checkIns");
+    const total = fullPatrol ? fullPatrol.checkIns.length : 0;
+
+    return { checkIns: patrol.checkIns, total };
 };
 
-export const updateCheckIn = async (patrolId, checkInId, checkInData) => {
+const updateCheckIn = async (patrolId, checkInId, checkInData) => {
+    const update = {};
+    if (checkInData.location) update["checkIns.$.location"] = checkInData.location;
+    if (checkInData.note !== undefined) update["checkIns.$.note"] = checkInData.note;
+    if (checkInData.zoneId !== undefined) update["checkIns.$.zoneId"] = checkInData.zoneId;
+    update["checkIns.$.timestamp"] = checkInData.timestamp || new Date();
+
     return Patrol.findOneAndUpdate(
         { _id: patrolId, "checkIns._id": checkInId },
-        {
-            $set: {
-                "checkIns.$.location": checkInData.location,
-                "checkIns.$.note": checkInData.note,
-                "checkIns.$.timestamp": checkInData.timestamp || new Date()
-            }
-        },
+        { $set: update },
         { new: true, runValidators: true }
     );
 };
 
-export const deleteCheckIn = async (patrolId, checkInId) => {
+const deleteCheckIn = async (patrolId, checkInId) => {
     return Patrol.findByIdAndUpdate(
         patrolId,
-        {
-            $pull: { checkIns: { _id: checkInId } }
-        },
+        { $pull: { checkIns: { _id: checkInId } } },
         { new: true }
     );
 };
+
+// Default export — sinon can stub properties on this object
+const patrolRepo = {
+    create,
+    findById,
+    findWithPagination,
+    count,
+    updateById,
+    deleteById,
+    addCheckIn,
+    getCheckIns,
+    updateCheckIn,
+    deleteCheckIn,
+};
+
+export default patrolRepo;

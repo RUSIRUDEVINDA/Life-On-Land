@@ -1,34 +1,28 @@
-import * as incidentRepository from '../repositories/incident.repository.js';
+import incidentRepository from '../repositories/incident.repository.js';
+import * as alertService from './alert.service.js';
 
 /**
  * Create a new incident
- * @param {Object} incidentData - Incident data
- * @param {Object} user - User creating the incident (can be undefined for public)
- * @returns {Promise<Object>} Created incident
  */
 export const createIncident = async (incidentData, user) => {
-  // Verify zone and protected area exist
   const zone = await incidentRepository.findZoneById(incidentData.zoneId);
-  if (!zone || !zone.isActive) {
+  if (!zone || zone.status !== 'ACTIVE') {
     throw new Error('Zone not found or inactive');
   }
 
   const protectedArea = await incidentRepository.findProtectedAreaById(
     incidentData.protectedAreaId
   );
-  if (!protectedArea || !protectedArea.isActive) {
+  if (!protectedArea || protectedArea.status !== 'ACTIVE') {
     throw new Error('Protected area not found or inactive');
   }
 
-  // Verify zone belongs to protected area
-  if (zone.protectedAreaId.toString() !== incidentData.protectedAreaId) {
+  if (zone.protectedAreaId.toString() !== incidentData.protectedAreaId.toString()) {
     throw new Error('Zone does not belong to the specified protected area');
   }
 
-  // Handle unauthenticated users (PUBLIC access)
   let reportingUser = user;
   if (!user) {
-    // Create or find anonymous public user for unauthenticated reports
     let anonymousUser = await incidentRepository.findAnonymousPublicUser();
     if (!anonymousUser) {
       anonymousUser = await incidentRepository.createAnonymousPublicUser();
@@ -36,7 +30,6 @@ export const createIncident = async (incidentData, user) => {
     reportingUser = anonymousUser;
   }
 
-  // Set status based on user role
   let status = incidentData.status || 'REPORTED';
   if (!user || reportingUser.role === 'PUBLIC') {
     status = 'UNVERIFIED';
@@ -45,22 +38,25 @@ export const createIncident = async (incidentData, user) => {
   const incidentToCreate = {
     ...incidentData,
     status,
-    reportedBy: reportingUser._id,
-    location: {
-      type: 'Point',
-      coordinates: incidentData.location.coordinates
-    }
+    reportedBy: reportingUser._id
   };
 
+  if (incidentData.location && incidentData.location.coordinates) {
+    incidentToCreate.location = {
+      type: 'Point',
+      coordinates: incidentData.location.coordinates
+    };
+  }
+
   const incident = await incidentRepository.createIncident(incidentToCreate);
-  return await incidentRepository.getIncidentWithRelationsById(incident._id);
+
+  await alertService.triggerIncidentAlert(incident, zone.name);
+
+  return await incidentRepository.findById(incident._id);
 };
 
 /**
  * Get incidents with filters and pagination
- * @param {Object} filters - Filter criteria
- * @param {Object} pagination - Pagination options
- * @returns {Promise<Object>} Paginated incidents
  */
 export const getIncidents = async (filters = {}, pagination = {}) => {
   const {
@@ -121,25 +117,21 @@ export const getIncidents = async (filters = {}, pagination = {}) => {
 
 /**
  * Get incident by ID
- * @param {string} incidentId - Incident ID
- * @returns {Promise<Object>} Incident
  */
 export const getIncidentById = async (incidentId) => {
-  const incident = await incidentRepository.findActiveIncidentById(incidentId);
+  const incident = await incidentRepository.findById(incidentId);
 
   if (!incident) {
-    throw new Error('Incident not found');
+    const error = new Error('Incident not found');
+    error.statusCode = 404;
+    throw error;
   }
 
-  return await incidentRepository.getIncidentWithRelationsById(incident._id);
+  return incident;
 };
 
 /**
  * Update incident
- * @param {string} incidentId - Incident ID
- * @param {Object} updateData - Update data
- * @param {Object} user - User making the update
- * @returns {Promise<Object>} Updated incident
  */
 export const updateIncident = async (incidentId, updateData, user) => {
   const incident = await incidentRepository.findActiveIncidentById(incidentId);
@@ -148,26 +140,22 @@ export const updateIncident = async (incidentId, updateData, user) => {
     throw new Error('Incident not found');
   }
 
-  // Role-based update restrictions
   if (user.role === 'PUBLIC') {
     throw new Error('Public users cannot update incidents');
   }
 
-  // Only Admin and OFFICER can change status to VERIFIED
   if (updateData.status === 'VERIFIED' && !['Admin', 'OFFICER'].includes(user.role)) {
     throw new Error('Only Admin and OFFICER can verify incidents');
   }
 
-  // If verifying, set verifiedBy and verifiedAt
   if (updateData.status === 'VERIFIED' && incident.status !== 'VERIFIED') {
     updateData.verifiedBy = user._id;
     updateData.verifiedAt = new Date();
   }
 
-  // If updating zone, verify it exists and belongs to the same protected area
   if (updateData.zoneId) {
     const zone = await incidentRepository.findZoneById(updateData.zoneId);
-    if (!zone || !zone.isActive) {
+    if (!zone || zone.status !== 'ACTIVE') {
       throw new Error('Zone not found or inactive');
     }
     if (zone.protectedAreaId.toString() !== incident.protectedAreaId.toString()) {
@@ -175,7 +163,6 @@ export const updateIncident = async (incidentId, updateData, user) => {
     }
   }
 
-  // Update location if coordinates are provided
   if (updateData.location && updateData.location.coordinates) {
     updateData.location = {
       type: 'Point',
@@ -186,14 +173,11 @@ export const updateIncident = async (incidentId, updateData, user) => {
   Object.assign(incident, updateData);
   await incidentRepository.saveIncident(incident);
 
-  return await incidentRepository.getIncidentWithRelationsById(incident._id);
+  return await incidentRepository.findById(incident._id);
 };
 
 /**
  * Soft delete incident
- * @param {string} incidentId - Incident ID
- * @param {Object} user - User deleting the incident
- * @returns {Promise<Object>} Deleted incident
  */
 export const deleteIncident = async (incidentId, user) => {
   const incident = await incidentRepository.findActiveIncidentById(incidentId);
@@ -202,8 +186,7 @@ export const deleteIncident = async (incidentId, user) => {
     throw new Error('Incident not found');
   }
 
-  // Only Admin and OFFICER can delete incidents
-  if (!['Admin', 'OFFICER'].includes(user.role)) {
+  if (!['ADMIN', 'OFFICER'].includes(user.role)) {
     throw new Error('Only Admin and OFFICER can delete incidents');
   }
 

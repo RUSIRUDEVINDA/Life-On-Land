@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 // This function builds a MongoDB query object based on the provided query parameters.
 export const buildAnimalQuery = (queryParams) => {
-    const { species, status, protectedAreaId } = queryParams;
+    const { species, status, protectedAreaId, zoneId } = queryParams;
     const query = {};
 
     if (species) {
@@ -13,8 +13,13 @@ export const buildAnimalQuery = (queryParams) => {
 
     if (protectedAreaId) {
         query.protectedAreaId =
-            new mongoose.Types.ObjectId(protectedAreaId);
+            new mongoose.Types.ObjectId(String(protectedAreaId));
     }
+
+    if (zoneId) {
+        query.zoneId = new mongoose.Types.ObjectId(String(zoneId));
+    }
+
 
     return query;
 };

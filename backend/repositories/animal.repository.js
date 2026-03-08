@@ -1,28 +1,59 @@
 import Animal from "../models/Animal.js";
 
-export const create = (data) => Animal.create(data);
+// Create a new animal document
+const create = (data) => Animal.create(data);
 
-export const findByTagId = (tagId) =>
+// Find animal by tag ID
+const findByTagId = (tagId) =>
     Animal.findOne({ tagId });
 
-export const findByTagIdExceptId = (tagId, id) =>
+// Find animal by tag ID excluding a specific record (used in updates)
+const findByTagIdExceptId = (tagId, id) =>
     Animal.findOne({ tagId, _id: { $ne: id } });
 
-export const findById = (id) =>
+// Find animal by Mongo ID
+const findById = (id) =>
     Animal.findById(id);
 
-export const findWithPagination = (query, sort, skip, limit) =>
+// Find animals with pagination and sorting
+const findWithPagination = (query, sort, skip, limit) =>
     Animal.find(query).sort(sort).skip(skip).limit(limit);
 
-export const count = (query) =>
+// Count animals matching a query
+const count = (query) =>
     Animal.countDocuments(query);
 
-export const updateById = (id, update) =>
-    Animal.findByIdAndUpdate(
-        id,
+// Update animal by tag ID
+const updateByTagId = (tagId, update) =>
+    Animal.findOneAndUpdate(
+        { tagId },
+
         update,
         { new: true, runValidators: true }
     );
 
-export const deleteById = (id) =>
+// Delete animal by tag ID
+const deleteByTagId = (tagId) => {
+    console.log("Repo: Calling findOneAndDelete for tagId:", tagId);
+    return Animal.findOneAndDelete({ tagId });
+};
+
+// Delete animal by Mongo ID
+const deleteById = (id) =>
     Animal.findByIdAndDelete(id);
+
+// Default export — sinon can stub properties on this object
+const animalRepo = {
+    create,
+    findByTagId,
+    findByTagIdExceptId,
+    findById,
+    findWithPagination,
+    count,
+    updateByTagId,
+    deleteByTagId,
+    deleteById,
+};
+
+export default animalRepo;
+

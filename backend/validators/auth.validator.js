@@ -22,7 +22,11 @@ export const validateRegister = (req, res, next) => {
     // Role validation
     if (!role || typeof role !== "string" || !allowedRoles.includes(role.toUpperCase())) {
         errors.push(`Role must be one of: ${allowedRoles.join(" or ")}`);
+    } else {
+        // Normalize role to uppercase early if valid
+        req.body.role = role.toUpperCase();
     }
+
 
     if (errors.length > 0) {
         return res.status(400).json({

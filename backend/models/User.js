@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+/**
+ * @desc    System User Schema for RBAC
+ */
 const userSchema = new mongoose.Schema(
     {
         name: {
@@ -10,12 +13,12 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
-            index: true // Add an index for faster queries on email
+            index: true // Faster lookups for login
         },
         password: {
             type: String,
             required: true,
-            select: false // Exclude password from query results by default
+            select: false // Protection: hidden by default
         },
         role: {
             type: String,

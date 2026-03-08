@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Incident from "../models/Incident.model.js";
 
 const VALID_TYPES = ["POACHING", "ILLEGAL_LOGGING", "WILDLIFE_TRADE", "HABITAT_DESTRUCTION", "OTHER"];
 const VALID_STATUS = ["REPORTED", "VERIFIED", "INVESTIGATING", "RESOLVED", "UNVERIFIED"];
@@ -59,20 +60,22 @@ export const validateCreateIncident = (req, res, next) => {
         const trimmedDesc = normalizeTrim(description);
         if (trimmedDesc.length < 10) {
             errors.push("Description must be at least 10 characters");
-        } else if (trimmedDesc.length > 5000) {
-            errors.push("Description must not exceed 5000 characters");
+        } else if (trimmedDesc.length > 300) {
+            errors.push("Description must not exceed 300 characters");
         }
     }
 
-    // Location validation
-    if (!location || typeof location !== "object") {
-        errors.push("Location is required");
+    // Location validation (optional)
+    if (location !== undefined) {
+        if (typeof location !== "object" || location === null) {
+            errors.push("Location must be an object if provided");
     } else {
-        if (location.type !== "Point") {
+            if (location.type && location.type !== "Point") {
             errors.push('Location type must be "Point"');
         }
-        if (!isValidCoordinates(location.coordinates, location.type)) {
+            if (location.coordinates && !isValidCoordinates(location.coordinates, location.type || "Point")) {
             errors.push("Coordinates must be [longitude, latitude] for Point type");
+            }
         }
     }
 
@@ -109,7 +112,12 @@ export const validateCreateIncident = (req, res, next) => {
     } else {
         const date = new Date(incidentDate);
         const now = new Date();
-        if (date > now) {
+        
+        // Compare dates only (ignore time) - allow today's date, reject future dates
+        const incidentDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        if (incidentDateOnly > todayOnly) {
             errors.push("Incident date cannot be in the future");
         }
     }
@@ -133,8 +141,8 @@ export const validateCreateIncident = (req, res, next) => {
             errors.push("Notes must be a string");
         } else {
             const trimmedNotes = normalizeTrim(notes);
-            if (trimmedNotes.length > 1000) {
-                errors.push("Notes must not exceed 1000 characters");
+            if (trimmedNotes.length > 300) {
+                errors.push("Notes must not exceed 300 characters");
             }
         }
     }
@@ -151,10 +159,12 @@ export const validateCreateIncident = (req, res, next) => {
     req.body = {
         type: type.toUpperCase(),
         description: normalizeTrim(description),
+        ...(location && {
         location: {
             type: location.type,
             coordinates: location.coordinates
-        },
+            }
+        }),
         zoneId: normalizeTrim(zoneId),
         protectedAreaId: normalizeTrim(protectedAreaId),
         severity: severity ? severity.toUpperCase() : "MEDIUM",
@@ -166,9 +176,9 @@ export const validateCreateIncident = (req, res, next) => {
     next();
 };
 
-export const validateUpdateIncident = (req, res, next) => {
+export const validateUpdateIncident = async (req, res, next) => {
     const errors = [];
-    const { status, severity, zoneId, description, evidence, notes } = req.body || {};
+    const { type, incidentDate, status, severity, zoneId, protectedAreaId, description, evidence, notes } = req.body || {};
 
     if (!req.body || Object.keys(req.body).length === 0) {
         return res.status(400).json({
@@ -178,9 +188,54 @@ export const validateUpdateIncident = (req, res, next) => {
         });
     }
 
+    // Protected Area ID cannot be updated - check if it's being changed
+    if (protectedAreaId !== undefined && req.params.id) {
+        try {
+            const existingIncident = await Incident.findById(req.params.id);
+            if (existingIncident) {
+                const existingProtectedAreaId = existingIncident.protectedAreaId?.toString();
+                const newProtectedAreaId = protectedAreaId.toString();
+                if (existingProtectedAreaId !== newProtectedAreaId) {
+                    errors.push("Protected area id cannot be updated");
+                }
+            }
+        } catch (error) {
+            // If incident not found, let the service handle it
+        }
+    }
+
     const updates = {};
 
-    // Status validation
+    // Type validation in update
+    if (type !== undefined) {
+        if (!isNonEmptyString(type) || !VALID_TYPES.includes(type.toUpperCase())) {
+            errors.push(`Type must be one of: ${VALID_TYPES.join(", ")}`);
+        } else {
+            updates.type = type.toUpperCase();
+        }
+    }
+
+    // Incident Date validation 
+    if (incidentDate !== undefined) {
+        if (!isValidDate(incidentDate)) {
+            errors.push("Incident date must be a valid date");
+        } else {
+            const date = new Date(incidentDate);
+            const now = new Date();
+            
+            // Compare dates only (ignore time) - allow today's date, reject future dates
+            const incidentDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            if (incidentDateOnly > todayOnly) {
+                errors.push("Incident date cannot be in the future");
+            } else {
+                updates.incidentDate = date;
+            }
+        }
+    }
+
+    // Status validation 
     if (status !== undefined) {
         if (!isNonEmptyString(status) || !VALID_STATUS.includes(status.toUpperCase())) {
             errors.push(`Status must be one of: ${VALID_STATUS.join(", ")}`);
@@ -189,7 +244,7 @@ export const validateUpdateIncident = (req, res, next) => {
         }
     }
 
-    // Severity validation
+    // Severity validation 
     if (severity !== undefined) {
         if (!isNonEmptyString(severity) || !VALID_SEVERITY.includes(severity.toUpperCase())) {
             errors.push(`Severity must be one of: ${VALID_SEVERITY.join(", ")}`);
@@ -198,7 +253,7 @@ export const validateUpdateIncident = (req, res, next) => {
         }
     }
 
-    // Zone ID validation
+    // Zone ID validation 
     if (zoneId !== undefined) {
         if (!isNonEmptyString(zoneId) || !isValidObjectId(zoneId)) {
             errors.push("Zone ID must be a valid MongoDB ObjectId");
@@ -209,7 +264,7 @@ export const validateUpdateIncident = (req, res, next) => {
         }
     }
 
-    // Description validation
+    // Description validation 
     if (description !== undefined) {
         if (!isNonEmptyString(description)) {
             errors.push("Description must be a non-empty string");
@@ -217,8 +272,8 @@ export const validateUpdateIncident = (req, res, next) => {
             const trimmedDesc = normalizeTrim(description);
             if (trimmedDesc.length < 10) {
                 errors.push("Description must be at least 10 characters");
-            } else if (trimmedDesc.length > 5000) {
-                errors.push("Description must not exceed 5000 characters");
+            } else if (trimmedDesc.length > 300) {
+                errors.push("Description must not exceed 300 characters");
             } else {
                 updates.description = trimmedDesc;
             }
@@ -267,6 +322,179 @@ export const validateUpdateIncident = (req, res, next) => {
     }
 
     req.body = updates;
+    next();
+};
+
+export const validateFullUpdateIncident = async (req, res, next) => {
+    const errors = [];
+    const { type, description, location, zoneId, protectedAreaId, severity, incidentDate, status, evidence, notes } = req.body || {};
+
+    if (!req.body || Object.keys(req.body).length === 0) {
+        return res.status(400).json({
+            success: false,
+            error: "Validation failed",
+            details: ["All fields are required for full update"]
+        });
+    }
+
+    // Protected Area ID cannot be updated - check if it's being changed
+    if (protectedAreaId !== undefined && req.params.id) {
+        try {
+            const existingIncident = await Incident.findById(req.params.id);
+            if (existingIncident) {
+                const existingProtectedAreaId = existingIncident.protectedAreaId?.toString();
+                const newProtectedAreaId = protectedAreaId.toString();
+                if (existingProtectedAreaId !== newProtectedAreaId) {
+                    errors.push("Protected area id cannot be updated");
+                }
+            }
+        } catch (error) {
+            // If incident not found, let the service handle it
+        }
+    }
+
+    // Type validation (required) in UPDATE
+    if (!type || !isNonEmptyString(type)) {
+        errors.push("Type is required");
+    } else if (!VALID_TYPES.includes(type.toUpperCase())) {
+        errors.push(`Type must be one of: ${VALID_TYPES.join(", ")}`);
+    }
+
+    // Description validation (required) in UPDATE
+    if (!description || !isNonEmptyString(description)) {
+        errors.push("Description is required");
+    } else {
+        const trimmedDesc = normalizeTrim(description);
+        if (trimmedDesc.length < 10) {
+            errors.push("Description must be at least 10 characters");
+        } else if (trimmedDesc.length > 300) {
+            errors.push("Description must not exceed 300 characters");
+        }
+    }
+
+    // Location validation (optional) in UPDATE
+    let validatedLocation = undefined;
+    if (location !== undefined) {
+        if (typeof location !== "object" || location === null) {
+            errors.push("Location must be an object if provided");
+        } else {
+            if (location.type && location.type !== "Point") {
+                errors.push('Location type must be "Point"');
+            }
+            if (location.coordinates && !isValidCoordinates(location.coordinates, location.type || "Point")) {
+                errors.push("Coordinates must be [longitude, latitude] for Point type");
+            } else if (location.coordinates) {
+                validatedLocation = {
+                    type: location.type || "Point",
+                    coordinates: location.coordinates
+                };
+            }
+        }
+    }
+
+    // Zone ID validation (required) in UPDATE
+    if (!zoneId || !isNonEmptyString(zoneId)) {
+        errors.push("Zone ID is required");
+    } else if (!isValidObjectId(zoneId)) {
+        errors.push("Zone ID must be a valid MongoDB ObjectId");
+    } else if (zoneId.length !== 24) {
+        errors.push("Zone ID must be 24 characters");
+    }
+
+    // Protected Area ID validation (required, but cannot be changed) in UPDATE
+    if (!protectedAreaId || !isNonEmptyString(protectedAreaId)) {
+        errors.push("Protected Area ID is required");
+    } else if (!isValidObjectId(protectedAreaId)) {
+        errors.push("Protected Area ID must be a valid MongoDB ObjectId");
+    } else if (protectedAreaId.length !== 24) {
+        errors.push("Protected Area ID must be 24 characters");
+    }
+
+    // Severity validation (required) in UPDATE
+    if (!severity || !isNonEmptyString(severity)) {
+        errors.push("Severity is required");
+    } else if (!VALID_SEVERITY.includes(severity.toUpperCase())) {
+        errors.push(`Severity must be one of: ${VALID_SEVERITY.join(", ")}`);
+    }
+
+    // Status validation (optional) in UPDATE
+    let validatedStatus = undefined;
+    if (status !== undefined) {
+        if (!isNonEmptyString(status) || !VALID_STATUS.includes(status.toUpperCase())) {
+            errors.push(`Status must be one of: ${VALID_STATUS.join(", ")}`);
+        } else {
+            validatedStatus = status.toUpperCase();
+        }
+    }
+
+    // Incident Date validation (required) in UPDATE
+    if (!incidentDate) {
+        errors.push("Incident date is required");
+    } else if (!isValidDate(incidentDate)) {
+        errors.push("Incident date must be a valid date");
+    } else {
+        const date = new Date(incidentDate);
+        const now = new Date();
+        
+        // Compare dates only (ignore time) - allow today's date, reject future dates
+        const incidentDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        if (incidentDateOnly > todayOnly) {
+            errors.push("Incident date cannot be in the future");
+        }
+    }
+ 
+    // Evidence validation (required, can be empty array) in UPDATE
+    if (evidence === undefined) {
+        errors.push("Evidence is required (can be empty array)");
+    } else if (!Array.isArray(evidence)) {
+        errors.push("Evidence must be an array");
+    } else {
+        evidence.forEach((url, index) => {
+            if (!isNonEmptyString(url) || !isValidURL(url)) {
+                errors.push(`Evidence item at index ${index} must be a valid URL`);
+            }
+        });
+    }
+
+    // Notes validation (optional) in UPDATE
+    let validatedNotes = undefined;
+    if (notes !== undefined && notes !== null) {
+        if (typeof notes !== "string") {
+            errors.push("Notes must be a string");
+        } else {
+            const trimmedNotes = normalizeTrim(notes);
+            if (trimmedNotes.length > 300) {
+                errors.push("Notes must not exceed 300 characters");
+            } else {
+                validatedNotes = trimmedNotes;
+            }
+        }
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({
+            success: false,
+            error: "Validation failed",
+            details: errors
+        });
+    }
+
+    // Normalize and sanitize data
+    req.body = {
+        type: type.toUpperCase(),
+        description: normalizeTrim(description),
+        ...(validatedLocation && { location: validatedLocation }),
+        zoneId: normalizeTrim(zoneId),
+        protectedAreaId: normalizeTrim(protectedAreaId),
+        severity: severity.toUpperCase(),
+        ...(validatedStatus !== undefined && { status: validatedStatus }),
+        incidentDate: new Date(incidentDate),
+        evidence: evidence || [],
+        ...(validatedNotes !== undefined && { notes: validatedNotes })
+    };
+
     next();
 };
 

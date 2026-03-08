@@ -13,17 +13,6 @@ const incidentSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      required: true
-    },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
-      required: true
-    }
-  },
   zoneId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Zone',
@@ -102,5 +91,21 @@ incidentSchema.index({ incidentDate: -1, isDeleted: 1 });
 
 // Enable pagination
 incidentSchema.plugin(mongoosePaginate);
+
+// Alert trigger middleware
+incidentSchema.post('save', async function (doc) {
+  if (doc.type === 'POACHING' || doc.severity === 'CRITICAL' || doc.severity === 'HIGH') {
+    try {
+      const { triggerIncidentAlert } = await import('../services/alert.service.js');
+      // We need the zone name, but it's not in the doc. We can fetch it if needed or just use zoneId
+      // For now, let's fetch the zone to get the name for a meaningful message
+      const Zone = mongoose.model('Zone');
+      const zone = await Zone.findById(doc.zoneId);
+      await triggerIncidentAlert(doc, zone ? zone.name : 'Unknown Zone');
+    } catch (error) {
+      console.error('Failed to trigger incident alert from middleware:', error);
+    }
+  }
+});
 
 export default mongoose.model('Incident', incidentSchema);

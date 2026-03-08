@@ -12,10 +12,9 @@ import protectedAreaRoutes from "./routes/protectedAreas.route.js"
 import zoneRoutes from "./routes/zones.route.js"
 import movementRoutes from "./routes/movement.route.js"
 import userRoutes from "./routes/user.route.js"
-
-import dotenv from "dotenv"
 import { notFound, errorHandler } from "./middleware/error.middleware.js"
 
+import dotenv from "dotenv"
 
 dotenv.config()
 

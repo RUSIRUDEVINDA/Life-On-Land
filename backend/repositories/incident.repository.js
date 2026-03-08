@@ -4,23 +4,21 @@ import ProtectedArea from '../models/ProtectedArea.model.js';
 import User from '../models/User.js';
 
 // Zone & Protected Area lookups
-export const findZoneById = (zoneId) => Zone.findById(zoneId);
+const findZoneById = (zoneId) => Zone.findById(zoneId);
 
-export const findProtectedAreaById = (protectedAreaId) =>
+const findProtectedAreaById = (protectedAreaId) =>
   ProtectedArea.findById(protectedAreaId);
 
 // User helpers
-export const findAnonymousPublicUser = () =>
-  User.findOne({ username: 'anonymous_public', role: 'PUBLIC' });
+const findAnonymousPublicUser = () =>
+  User.findOne({ email: 'anonymous@public.local', role: 'RANGER' });
 
-export const createAnonymousPublicUser = async () => {
+const createAnonymousPublicUser = async () => {
   const anonymousUser = new User({
-    username: 'anonymous_public',
+    name: 'Anonymous Public User',
     email: 'anonymous@public.local',
     password: 'anonymous', // Will be hashed by the User model middleware
-    role: 'PUBLIC',
-    fullName: 'Anonymous Public User',
-    isActive: true
+    role: 'RANGER'
   });
 
   await anonymousUser.save();
@@ -28,27 +26,41 @@ export const createAnonymousPublicUser = async () => {
 };
 
 // Incident persistence helpers
-export const createIncident = async (incidentData) => {
+const createIncident = async (incidentData) => {
   const incident = new Incident(incidentData);
   await incident.save();
   return incident;
 };
 
-export const paginateIncidents = (query, options) =>
+const paginateIncidents = (query, options) =>
   Incident.paginate(query, options);
 
-export const findActiveIncidentById = (incidentId) =>
+const findActiveIncidentById = (incidentId) =>
   Incident.findOne({
     _id: incidentId,
     isDeleted: false
   });
 
-export const getIncidentWithRelationsById = (incidentId) =>
+const findById = (incidentId) =>
   Incident.findById(incidentId)
-    .populate('reportedBy', 'username email fullName role')
-    .populate('verifiedBy', 'username email fullName role')
+    .populate('reportedBy', 'name email role')
+    .populate('verifiedBy', 'name email role')
     .populate('zoneId', 'name')
     .populate('protectedAreaId', 'name');
 
-export const saveIncident = (incident) => incident.save();
+const saveIncident = (incident) => incident.save();
 
+// Default export — sinon can stub properties on this object
+const incidentRepo = {
+  findZoneById,
+  findProtectedAreaById,
+  findAnonymousPublicUser,
+  createAnonymousPublicUser,
+  createIncident,
+  paginateIncidents,
+  findActiveIncidentById,
+  findById,
+  saveIncident,
+};
+
+export default incidentRepo;

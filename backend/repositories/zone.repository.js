@@ -1,19 +1,19 @@
 import Zone from "../models/Zone.model.js";
 import ProtectedArea from "../models/ProtectedArea.model.js";
 
-// Check if protected area exists and is active
+// Check if protected area exists and is ACTIVE
 const ensureProtectedAreaActive = async (protectedAreaId) => {
   return await ProtectedArea.findOne({
     _id: protectedAreaId,
-    isDeleted: false,
+    status: "ACTIVE",
   });
 };
 
 // List zones by protected area
 const listZonesByProtectedAreaId = async (protectedAreaId) => {
   return await Zone.find({
-    protectedArea: protectedAreaId,
-    isDeleted: false,
+    protectedAreaId: protectedAreaId,
+    status: "ACTIVE",
   });
 };
 
@@ -21,14 +21,15 @@ const listZonesByProtectedAreaId = async (protectedAreaId) => {
 const createZone = async (protectedAreaId, data) => {
   return await Zone.create({
     ...data,
-    protectedArea: protectedAreaId,
+    protectedAreaId,
+    status: "ACTIVE",
   });
 };
 
 // Update zone
 const updateZone = async (zoneId, payload) => {
   return await Zone.findOneAndUpdate(
-    { _id: zoneId, isDeleted: false },
+    { _id: zoneId, status: "ACTIVE" },
     payload,
     { new: true }
   );
@@ -36,17 +37,37 @@ const updateZone = async (zoneId, payload) => {
 
 // Soft delete zone
 const softDeleteZone = async (zoneId) => {
-  return await Zone.findOneAndUpdate(
-    { _id: zoneId, isDeleted: false },
-    { isDeleted: true },
-    { new: true }
-  );
+  return await Zone.findOneAndDelete({ _id: zoneId, status: "ACTIVE" });
 };
 
-export {
+const findZoneByCoordinates = async (lng, lat) => {
+  return await Zone.findOne({
+    status: { $ne: "DELETED" },
+    geometry: {
+      $geoIntersects: {
+        $geometry: {
+          type: "Point",
+          coordinates: [lng, lat],
+        },
+      },
+    },
+  });
+};
+
+// findById used by zone service & mocking tests
+const findById = async (zoneId) => {
+  return await Zone.findOne({ _id: zoneId, isDeleted: false });
+};
+
+// Default export — sinon can stub properties on this object
+const zoneRepo = {
   ensureProtectedAreaActive,
   listZonesByProtectedAreaId,
   createZone,
   updateZone,
   softDeleteZone,
+  findZoneByCoordinates,
+  findById,
 };
+
+export default zoneRepo;
