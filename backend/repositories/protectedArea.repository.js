@@ -40,11 +40,11 @@ const softDeleteProtectedArea = async (id) => {
 
 // Default export — sinon can stub properties on this object
 const areaRepo = {
-  findAll,
-  create,
-  findById,
-  updateById,
-  softDelete,
+  findAll: listProtectedAreas,
+  create: createProtectedArea,
+  findById: getProtectedAreaById,
+  updateById: updateProtectedArea,
+  softDelete: softDeleteProtectedArea,
 };
 
 export default areaRepo;
