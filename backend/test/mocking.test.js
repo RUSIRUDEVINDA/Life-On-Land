@@ -8,7 +8,7 @@ import * as areaService from '../services/protectedArea.Service.js';
 import * as zoneService from '../services/zone.Service.js';
 import * as patrolService from '../services/patrol.service.js';
 
-// ✅ Default imports — sinon can stub properties on plain objects
+// Default imports — sinon can stub properties on plain objects
 import animalRepo from '../repositories/animal.repository.js';
 import movementRepo from '../repositories/movement.repository.js';
 import incidentRepo from '../repositories/incident.repository.js';
@@ -16,9 +16,9 @@ import areaRepo from '../repositories/protectedArea.repository.js';
 import zoneRepo from '../repositories/zone.repository.js';
 import patrolRepo from '../repositories/patrol.repository.js';
 
-describe('Member 3: Mocking & Service Layer Tests', () => {
+describe('IT23293526 - Vimasha J P O: Mocking & Service Layer Tests', () => {
 
-    // ─── DOMAIN 1: ANIMAL SERVICE ─────────────────────────────────────────────
+    // DOMAIN 1: ANIMAL SERVICE 
     describe('Domain: Animal Service Mocking', () => {
         let findStub;
 
@@ -43,7 +43,7 @@ describe('Member 3: Mocking & Service Layer Tests', () => {
         });
     });
 
-    // ─── DOMAIN 2: MOVEMENT SERVICE ───────────────────────────────────────────
+    // DOMAIN 2: MOVEMENT SERVICE 
     describe('Domain: Movement Service Mocking', () => {
         let createStub;
 
@@ -68,7 +68,7 @@ describe('Member 3: Mocking & Service Layer Tests', () => {
         });
     });
 
-    // ─── DOMAIN 3: INCIDENT SERVICE ───────────────────────────────────────────
+    // DOMAIN 3: INCIDENT SERVICE
     describe('Domain: Incident Service Mocking', () => {
         let findStub;
 
@@ -91,7 +91,7 @@ describe('Member 3: Mocking & Service Layer Tests', () => {
         });
     });
 
-    // ─── DOMAIN 4: PROTECTED AREA SERVICE ────────────────────────────────────
+    // DOMAIN 4: PROTECTED AREA SERVICE
     describe('Domain: Protected Area Service Mocking', () => {
         let findAllStub;
 
@@ -114,7 +114,7 @@ describe('Member 3: Mocking & Service Layer Tests', () => {
         });
     });
 
-    // ─── DOMAIN 5: ZONE SERVICE ───────────────────────────────────────────────
+    // DOMAIN 5: ZONE SERVICE 
     describe('Domain: Zone Service Mocking', () => {
         let findStub;
 
@@ -137,7 +137,7 @@ describe('Member 3: Mocking & Service Layer Tests', () => {
         });
     });
 
-    // ─── DOMAIN 6: PATROL SERVICE ─────────────────────────────────────────────
+    // DOMAIN 6: PATROL SERVICE 
     describe('Domain: Patrol Service Mocking', () => {
         let findStub;
         let updateStub;
