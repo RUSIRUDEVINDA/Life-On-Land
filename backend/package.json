@@ -8,7 +8,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "simulate": "node scripts/simulate_movement.js",
-    "test": "mocha \"test/**/*.test.js\" --reporter mochawesome --reporter-options reportDir=./test-reports,reportFilename=backend-test-report"
+    "test": "mocha \"test/**/*.test.js\" --require test/setup.cjs --reporter mochawesome --reporter-options reportDir=./test-reports,reportFilename=backend-test-report"
   },
   "keywords": [],
   "author": "",
