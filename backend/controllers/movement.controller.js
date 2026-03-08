@@ -10,14 +10,6 @@ export const ingestMovement = asyncHandler(async (req, res) => {
     res.status(201).json({ message: "Movement recorded", movement });
 });
 
-// @desc    Get all movements
-// @route   GET /api/movements
-// @access  Private
-export const searchMovements = asyncHandler(async (req, res) => {
-    const results = await movementService.searchMovements(req.query);
-    res.json(results);
-});
-
 // @desc    Get animal movements
 // @route   GET /api/movements/:tagId
 // @access  Private
@@ -25,6 +17,14 @@ export const getAnimalMovements = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
     const history = await movementService.getMovementHistory(tagId, req.query);
     res.json(history);
+});
+
+// @desc    Search movements
+// @route   GET /api/movements/search
+// @access  Private
+export const searchMovements = asyncHandler(async (req, res) => {
+    const results = await movementService.searchMovements(req.query);
+    res.json(results);
 });
 
 // @desc    Get movement summary

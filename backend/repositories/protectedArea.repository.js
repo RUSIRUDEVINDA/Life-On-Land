@@ -38,10 +38,13 @@ const softDeleteProtectedArea = async (id) => {
   return removed;
 };
 
-export {
-  listProtectedAreas,
-  createProtectedArea,
-  getProtectedAreaById,
-  updateProtectedArea,
-  softDeleteProtectedArea,
+// Default export — sinon can stub properties on this object
+const areaRepo = {
+  findAll,
+  create,
+  findById,
+  updateById,
+  softDelete,
 };
+
+export default areaRepo;

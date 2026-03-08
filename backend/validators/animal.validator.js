@@ -339,21 +339,7 @@ export const validatePatchAnimal = (req, res, next) => {
 
 export const validateAnimalQuery = (req, res, next) => {
     const errors = [];
-    const {
-        species,
-        status,
-        protectedAreaId,
-        zoneId,
-        zoneName,
-        protectedAreaName,
-        tagId,
-        sex,
-        ageClass,
-        endemicToSriLanka,
-        page,
-        limit,
-        sort
-    } = req.query || {};
+    const { species, status, protectedAreaId, page, limit, sort } = req.query || {};
 
     if (status) {
         const normalizedStatus = normalizeUpper(status);
@@ -372,68 +358,11 @@ export const validateAnimalQuery = (req, res, next) => {
         }
     }
 
-    if (tagId) {
-        if (!isNonEmptyString(tagId)) {
-            errors.push("tagId must be a non-empty string");
-        } else {
-            req.query.tagId = normalizeUpper(tagId);
-        }
-    }
-
-    if (sex) {
-        const normalizedSex = normalizeUpper(sex);
-        if (!VALID_SEX.includes(normalizedSex)) {
-            errors.push("sex must be MALE, FEMALE, or UNKNOWN");
-        } else {
-            req.query.sex = normalizedSex;
-        }
-    }
-
-    if (ageClass) {
-        const normalizedAgeClass = normalizeUpper(ageClass);
-        if (!VALID_AGE_CLASSES.includes(normalizedAgeClass)) {
-            errors.push("ageClass must be INFANT, JUVENILE, SUBADULT, ADULT, or UNKNOWN");
-        } else {
-            req.query.ageClass = normalizedAgeClass;
-        }
-    }
-
     if (protectedAreaId) {
         if (!isValidObjectId(protectedAreaId)) {
             errors.push("protectedAreaId must be a valid ObjectId");
         } else {
             req.query.protectedAreaId = normalizeTrim(protectedAreaId);
-        }
-    }
-
-    if (zoneId) {
-        if (!isValidObjectId(zoneId)) {
-            errors.push("zoneId must be a valid ObjectId");
-        } else {
-            req.query.zoneId = normalizeTrim(zoneId);
-        }
-    }
-
-    if (zoneName) {
-        if (!isNonEmptyString(zoneName)) {
-            errors.push("zoneName must be a non-empty string");
-        } else {
-            req.query.zoneName = normalizeTrim(zoneName);
-        }
-    }
-
-    if (protectedAreaName) {
-        if (!isNonEmptyString(protectedAreaName)) {
-            errors.push("protectedAreaName must be a non-empty string");
-        } else {
-            req.query.protectedAreaName = normalizeTrim(protectedAreaName);
-        }
-    }
-
-    if (endemicToSriLanka !== undefined) {
-        const parsed = parseBoolean(endemicToSriLanka);
-        if (parsed === undefined) {
-            errors.push("endemicToSriLanka must be true or false");
         }
     }
 

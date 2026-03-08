@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import * as service from "../services/animal.service.js";
 import * as repo from "../repositories/animal.repository.js";
 import { buildAnimalQuery } from "../utils/queryBuilder.js";
@@ -38,7 +39,7 @@ export const getAnimals = asyncHandler(async (req, res) => {
     }));
 
     res.json({
-        message: animalsWithDetails.length > 0 ? "Animals retrieved successfully" : "No animals found matching the criteria",
+        message: "Animals retrieved successfully",
         data: animalsWithDetails,
         pagination: { total, page, limit, pages: Math.ceil(total / limit) || 1 }
     });

@@ -6,9 +6,9 @@ import { validateTagIdParam } from "../validators/animal.validator.js";
 const router = express.Router();
 
 // Search all movements with filters
-router.get("/", protect, movementController.searchMovements); 
+router.get("/", protect, movementController.searchMovements);
 
-// Get movement summary
+// Get aggregated activity per zone
 router.get("/summary", protect, movementController.getMovementSummary);
 
 // Get detailed history for a specific animal

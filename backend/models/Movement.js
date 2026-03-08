@@ -29,7 +29,7 @@ const movementSchema = new mongoose.Schema(
         },
         sourceType: {
             type: String,
-            enum: ["GPS", "SIMULATED"],
+            enum: ["GPS", "SIMULATED", "MANUAL"],
             default: "GPS"
         },
         zoneId: {
