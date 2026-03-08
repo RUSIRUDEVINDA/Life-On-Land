@@ -41,7 +41,7 @@ export const findActiveIncidentById = (incidentId) =>
     isDeleted: false
   });
 
-export const getIncidentWithRelationsById = (incidentId) =>
+export const findById = (incidentId) =>
   Incident.findById(incidentId)
     .populate('reportedBy', 'name email role')
     .populate('verifiedBy', 'name email role')
@@ -49,3 +49,18 @@ export const getIncidentWithRelationsById = (incidentId) =>
     .populate('protectedAreaId', 'name');
 
 export const saveIncident = (incident) => incident.save();
+
+// Default export — sinon can stub properties on this object
+const incidentRepo = {
+  findZoneById,
+  findProtectedAreaById,
+  findAnonymousPublicUser,
+  createAnonymousPublicUser,
+  createIncident,
+  paginateIncidents,
+  findActiveIncidentById,
+  findById,
+  saveIncident,
+};
+
+export default incidentRepo;

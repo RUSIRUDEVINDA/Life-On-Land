@@ -20,5 +20,6 @@ export const buildAnimalQuery = (queryParams) => {
         query.zoneId = new mongoose.Types.ObjectId(String(zoneId));
     }
 
+
     return query;
 };

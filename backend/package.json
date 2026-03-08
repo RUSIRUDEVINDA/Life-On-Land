@@ -7,20 +7,23 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-<<<<<<< Updated upstream
     "simulate": "node scripts/simulate_movement.js"
-=======
     "simulate": "node scripts/simulate_movement.js",
     "test": "npx mocha --require test/setup.cjs \"test/**/*.test.js\" --reporter mochawesome --reporter-options reportDir=test-reports/mocha-html,reportFilename=index",
     "test:watch": "npx mocha --require test/setup.cjs \"test/**/*.test.js\" --reporter spec --watch",
     "test:verbose": "npx mocha --require test/setup.cjs \"test/**/*.test.js\" --reporter spec"
->>>>>>> Stashed changes
+    "simulate": "node scripts/simulate_movement.js",
+    "test": "mocha \"test/**/*.test.js\" --reporter mochawesome --reporter-options reportDir=./test-reports,reportFilename=backend-test-report"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "mochawesome": "^7.1.4",
+    "nodemon": "^3.1.11",
+    "sinon": "^21.0.2"
   },
   "dependencies": {
     "axios": "^1.13.5",

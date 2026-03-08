@@ -1,9 +1,11 @@
-import * as repo from "../repositories/patrol.repository.js";
+import repo from "../repositories/patrol.repository.js";
 
+// Create a new patrol record in the database
 export const createPatrol = async (data) => {
     return repo.create(data);
 };
 
+// Update an existing patrol's details or status
 export const updatePatrol = async (id, data) => {
     const currentPatrol = await repo.findById(id);
     if (!currentPatrol) {
@@ -22,6 +24,7 @@ export const updatePatrol = async (id, data) => {
     return updatedPatrol;
 };
 
+// Soft delete or permanently remove a patrol
 export const deletePatrol = async (id) => {
     const patrol = await repo.deleteById(id);
 
@@ -34,6 +37,7 @@ export const deletePatrol = async (id) => {
     return patrol;
 };
 
+// Append a new check-in log to a patrol
 export const addCheckIn = async (id, checkInData) => {
     const updatedPatrol = await repo.addCheckIn(id, checkInData);
     if (!updatedPatrol) {
@@ -44,6 +48,7 @@ export const addCheckIn = async (id, checkInData) => {
     return updatedPatrol;
 };
 
+// Update a specific check-in record within a patrol
 export const updateCheckIn = async (patrolId, checkInId, checkInData) => {
     const updatedPatrol = await repo.updateCheckIn(patrolId, checkInId, checkInData);
     if (!updatedPatrol) {
@@ -54,6 +59,7 @@ export const updateCheckIn = async (patrolId, checkInId, checkInData) => {
     return updatedPatrol;
 };
 
+// Remove a specific check-in log from a patrol
 export const deleteCheckIn = async (patrolId, checkInId) => {
     const updatedPatrol = await repo.deleteCheckIn(patrolId, checkInId);
     if (!updatedPatrol) {
