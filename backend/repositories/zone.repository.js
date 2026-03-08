@@ -2,7 +2,7 @@ import Zone from "../models/Zone.model.js";
 import ProtectedArea from "../models/ProtectedArea.model.js";
 
 // Check if protected area exists and is ACTIVE
-const ensureProtectedAreaActive = async (protectedAreaId) => {
+export const ensureProtectedAreaActive = async (protectedAreaId) => {
   return await ProtectedArea.findOne({
     _id: protectedAreaId,
     status: "ACTIVE",
@@ -10,7 +10,7 @@ const ensureProtectedAreaActive = async (protectedAreaId) => {
 };
 
 // List zones by protected area
-const listZonesByProtectedAreaId = async (protectedAreaId) => {
+export const listZonesByProtectedAreaId = async (protectedAreaId) => {
   return await Zone.find({
     protectedAreaId: protectedAreaId,
     status: "ACTIVE",
@@ -18,7 +18,7 @@ const listZonesByProtectedAreaId = async (protectedAreaId) => {
 };
 
 // Create zone
-const createZone = async (protectedAreaId, data) => {
+export const createZone = async (protectedAreaId, data) => {
   return await Zone.create({
     ...data,
     protectedAreaId,
@@ -27,7 +27,7 @@ const createZone = async (protectedAreaId, data) => {
 };
 
 // Update zone
-const updateZone = async (zoneId, payload) => {
+export const updateZone = async (zoneId, payload) => {
   return await Zone.findOneAndUpdate(
     { _id: zoneId, status: "ACTIVE" },
     payload,
@@ -36,11 +36,11 @@ const updateZone = async (zoneId, payload) => {
 };
 
 // Soft delete zone
-const softDeleteZone = async (zoneId) => {
+export const softDeleteZone = async (zoneId) => {
   return await Zone.findOneAndDelete({ _id: zoneId, status: "ACTIVE" });
 };
 
-const findZoneByCoordinates = async (lng, lat) => {
+export const findZoneByCoordinates = async (lng, lat) => {
   return await Zone.findOne({
     status: { $ne: "DELETED" },
     geometry: {
@@ -55,7 +55,7 @@ const findZoneByCoordinates = async (lng, lat) => {
 };
 
 // findById used by zone service & mocking tests
-const findById = async (zoneId) => {
+export const findById = async (zoneId) => {
   return await Zone.findOne({ _id: zoneId, isDeleted: false });
 };
 

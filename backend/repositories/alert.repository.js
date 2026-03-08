@@ -18,3 +18,12 @@ export const updateById = (id, update) =>
     Alert.findByIdAndUpdate(id, update, { new: true, runValidators: true });
 
 export const deleteById = (id) => Alert.findByIdAndDelete(id);
+
+export default {
+    create,
+    findById,
+    findWithPagination,
+    count,
+    updateById,
+    deleteById,
+};
