@@ -57,11 +57,20 @@ const findZoneByCoordinates = async (lng, lat) => {
   });
 };
 
-export {
+// findById used by zone service & mocking tests
+const findById = async (zoneId) => {
+  return await Zone.findOne({ _id: zoneId, isDeleted: false });
+};
+
+// Default export — sinon can stub properties on this object
+const zoneRepo = {
   ensureProtectedAreaActive,
   listZonesByProtectedAreaId,
   createZone,
   updateZone,
   softDeleteZone,
   findZoneByCoordinates,
+  findById,
 };
+
+export default zoneRepo;

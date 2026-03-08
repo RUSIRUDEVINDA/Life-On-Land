@@ -1,18 +1,18 @@
 import ProtectedArea from "../models/ProtectedArea.model.js";
 
-const listProtectedAreas = async () => {
+const findAll = async () => {
   return await ProtectedArea.find({ isDeleted: false });
 };
 
-const createProtectedArea = async (data) => {
+const create = async (data) => {
   return await ProtectedArea.create(data);
 };
 
-const getProtectedAreaById = async (id) => {
+const findById = async (id) => {
   return await ProtectedArea.findOne({ _id: id, isDeleted: false });
 };
 
-const updateProtectedArea = async (id, payload) => {
+const updateById = async (id, payload) => {
   return await ProtectedArea.findOneAndUpdate(
     { _id: id, isDeleted: false },
     payload,
@@ -20,7 +20,7 @@ const updateProtectedArea = async (id, payload) => {
   );
 };
 
-const softDeleteProtectedArea = async (id) => {
+const softDelete = async (id) => {
   return await ProtectedArea.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true },
@@ -28,10 +28,13 @@ const softDeleteProtectedArea = async (id) => {
   );
 };
 
-export {
-  listProtectedAreas,
-  createProtectedArea,
-  getProtectedAreaById,
-  updateProtectedArea,
-  softDeleteProtectedArea,
+// Default export — sinon can stub properties on this object
+const areaRepo = {
+  findAll,
+  create,
+  findById,
+  updateById,
+  softDelete,
 };
+
+export default areaRepo;
