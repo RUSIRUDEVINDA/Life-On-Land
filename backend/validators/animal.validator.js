@@ -5,6 +5,7 @@ const VALID_SEX = ["MALE", "FEMALE", "UNKNOWN"];
 const VALID_AGE_CLASSES = ["INFANT", "JUVENILE", "SUBADULT", "ADULT", "UNKNOWN"];
 const VALID_STATUS = ["ACTIVE", "INACTIVE", "DECEASED"];
 
+
 const isNonEmptyString = (value) =>
     typeof value === "string" && value.trim().length > 0;
 
@@ -106,6 +107,7 @@ export const validateCreateAnimal = (req, res, next) => {
     if (!isNonEmptyString(ageClass)) errors.push("ageClass is required");
     if (!isNonEmptyString(protectedAreaId)) errors.push("protectedAreaId is required");
     if (!isNonEmptyString(zoneId)) errors.push("zoneId is required");
+
     if (!isNonEmptyString(status)) errors.push("status is required");
 
     const normalizedSex = normalizeUpper(sex);
@@ -120,6 +122,7 @@ export const validateCreateAnimal = (req, res, next) => {
     }
     if (status && !VALID_STATUS.includes(normalizedStatus)) {
         errors.push("status must be ACTIVE, INACTIVE, or DECEASED");
+
     }
     if (protectedAreaId && !isValidObjectId(protectedAreaId)) {
         errors.push("protectedAreaId must be a valid ObjectId");
@@ -150,12 +153,14 @@ export const validateCreateAnimal = (req, res, next) => {
         }
     }
 
+
     if (errors.length > 0) {
         return res.status(400).json({ error: "Validation failed", details: errors });
     }
 
     req.body = {
         tagId: isNonEmptyString(tagId) ? normalizeUpper(tagId) : tagId,
+
         species: normalizeTrim(species),
         sex: normalizedSex,
         ageClass: normalizedAgeClass,
@@ -164,6 +169,7 @@ export const validateCreateAnimal = (req, res, next) => {
         status: normalizedStatus,
         description: description !== undefined && description !== null ? normalizeTrim(description) : null,
         endemicToSriLanka: finalEndemic
+
     };
 
     next();
@@ -241,6 +247,7 @@ export const validatePatchAnimal = (req, res, next) => {
     const errors = [];
     const { tagId, species, sex, ageClass, protectedAreaId, zoneId, status, description, endemicToSriLanka } = req.body || {};
 
+
     if (!req.body || Object.keys(req.body).length === 0) {
         return res.status(400).json({ error: "No fields provided to update" });
     }
@@ -265,6 +272,7 @@ export const validatePatchAnimal = (req, res, next) => {
         } else {
             updates.species = normalizeTrim(species);
         }
+
     }
 
     if (sex !== undefined) {
@@ -305,6 +313,7 @@ export const validatePatchAnimal = (req, res, next) => {
         const normalizedStatus = normalizeUpper(status);
         if (!VALID_STATUS.includes(normalizedStatus)) {
             errors.push("status must be ACTIVE, INACTIVE, or DECEASED");
+
         } else {
             updates.status = normalizedStatus;
         }
@@ -345,6 +354,7 @@ export const validateAnimalQuery = (req, res, next) => {
         const normalizedStatus = normalizeUpper(status);
         if (!VALID_STATUS.includes(normalizedStatus)) {
             errors.push("status must be ACTIVE, INACTIVE, or DECEASED");
+
         } else {
             req.query.status = normalizedStatus;
         }

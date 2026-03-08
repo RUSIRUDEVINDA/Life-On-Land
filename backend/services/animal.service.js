@@ -9,6 +9,7 @@ import Zone from "../models/Zone.model.js";
  */
 export const createAnimal = async (data) => {
     // Check if tagId is unique
+
     const existing = await repo.findByTagId(data.tagId);
     if (existing) {
         const error = new Error("Animal tagId already exists");
@@ -63,6 +64,7 @@ export const createAnimal = async (data) => {
  */
 export const updateAnimal = async (tagId, data) => {
     const currentAnimal = await repo.findByTagId(tagId);
+
     if (!currentAnimal) {
         const error = new Error("Animal not found");
         error.statusCode = 404;
@@ -70,6 +72,7 @@ export const updateAnimal = async (tagId, data) => {
     }
 
     // If tagId is being updated, ensure new one isn't taken
+
     if (data.tagId && data.tagId !== currentAnimal.tagId) {
         const existing = await repo.findByTagId(data.tagId);
         if (existing) {
@@ -78,7 +81,6 @@ export const updateAnimal = async (tagId, data) => {
             throw error;
         }
     }
-
     // Cross-validate Area/Zone if either is modified
     const targetPAId = data.protectedAreaId || currentAnimal.protectedAreaId.toString();
     const targetZoneId = data.zoneId || currentAnimal.zoneId.toString();
@@ -121,6 +123,8 @@ export const updateAnimal = async (tagId, data) => {
     }
 
     const updatedAnimal = await repo.updateByTagId(tagId, { $set: data });
+
+
     if (!updatedAnimal) {
         const error = new Error("Animal not found");
         error.statusCode = 404;
@@ -142,8 +146,10 @@ export const deleteAnimal = async (tagId) => {
 
     if (!animal) {
         console.log("Service: Animal not found for deletion");
+
         const error = new Error("Animal not found");
         error.statusCode = 404;
         throw error;
     }
 };
+
