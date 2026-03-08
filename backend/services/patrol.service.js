@@ -1,4 +1,4 @@
-import * as repo from "../repositories/patrol.repository.js";
+import repo from "../repositories/patrol.repository.js";
 
 // Create a new patrol record in the database
 export const createPatrol = async (data) => {

@@ -1,41 +1,67 @@
-import Zone from "../models/Zone.model.js";
-import ProtectedArea from "../models/ProtectedArea.model.js";
+import zoneRepo from "../repositories/zone.repository.js";
 
-const ensureProtectedAreaActive = async (protectedAreaId) => {
-  const area = await ProtectedArea.findOne({
-    _id: protectedAreaId,
-    status: "ACTIVE",
-  });
-  return area;
+/*
+ * @desc    Get a zone by ID
+ * @returns {Object} Zone document
+ */
+export const getZoneById = async (zoneId) => {
+  const zone = await zoneRepo.findById(zoneId);
+  if (!zone) {
+    const error = new Error("Zone not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return zone;
 };
 
-const listZonesByProtectedAreaId = async (protectedAreaId) => {
-  return Zone.find({
-    protectedAreaId,
-    status: "ACTIVE",
-  }).sort({ createdAt: -1 });
+/*
+ * @desc    List zones by protected area
+ */
+export const listZonesByProtectedArea = async (protectedAreaId) => {
+  const area = await zoneRepo.ensureProtectedAreaActive(protectedAreaId);
+  if (!area) {
+    const error = new Error("Protected area not found or inactive");
+    error.statusCode = 404;
+    throw error;
+  }
+  return zoneRepo.listZonesByProtectedAreaId(protectedAreaId);
 };
 
-const createZone = async (protectedAreaId, payload) => {
-  return Zone.create({ ...payload, protectedAreaId });
+/*
+ * @desc    Create a zone under a protected area
+ */
+export const createZone = async (protectedAreaId, payload) => {
+  const area = await zoneRepo.ensureProtectedAreaActive(protectedAreaId);
+  if (!area) {
+    const error = new Error("Protected area not found or inactive");
+    error.statusCode = 404;
+    throw error;
+  }
+  return zoneRepo.createZone(protectedAreaId, payload);
 };
 
-const updateZone = async (zoneId, payload) => {
-  return Zone.findOneAndUpdate(
-    { _id: zoneId, status: "ACTIVE" },
-    payload,
-    { new: true, runValidators: true }
-  );
+/*
+ * @desc    Update a zone
+ */
+export const updateZone = async (zoneId, payload) => {
+  const zone = await zoneRepo.updateZone(zoneId, payload);
+  if (!zone) {
+    const error = new Error("Zone not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return zone;
 };
 
-const softDeleteZone = async (zoneId) => {
-  return Zone.findOneAndDelete({ _id: zoneId, status: "ACTIVE" });
-};
-
-export {
-  ensureProtectedAreaActive,
-  listZonesByProtectedAreaId,
-  createZone,
-  updateZone,
-  softDeleteZone,
+/*
+ * @desc    Soft delete a zone
+ */
+export const deleteZone = async (zoneId) => {
+  const zone = await zoneRepo.softDeleteZone(zoneId);
+  if (!zone) {
+    const error = new Error("Zone not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return zone;
 };

@@ -1,10 +1,19 @@
-import * as movementRepo from "../repositories/movement.repository.js";
-import * as zoneRepo from "../repositories/zone.repository.js";
-import * as animalRepo from "../repositories/animal.repository.js";
+import movementRepo from "../repositories/movement.repository.js";
+import zoneRepo from "../repositories/zone.repository.js";
+import animalRepo from "../repositories/animal.repository.js";
 import * as alertService from "./alert.service.js";
 
 /*
  * @desc    Service to record a new animal movement
+ * @param   {Object} data - Movement coordinates and tag metadata
+ * @returns {Object} Saved movement document
+ */
+export const createMovement = async (data) => {
+    return movementRepo.create(data);
+};
+
+/*
+ * @desc    Service to ingest a movement with zone validation
  * @param   {Object} data - Movement coordinates and tag metadata
  * @returns {Object} Saved movement document
  */
@@ -21,25 +30,22 @@ export const ingestMovement = async (data) => {
         throw new Error("Missing lat/lng in movement data");
     }
 
-    // Strict boundary check: coordinates MUST map to an active zone for security/integrity
+    // Strict boundary check: coordinates MUST map to an active zone
     const zone = await zoneRepo.findZoneByCoordinates(lng, lat);
 
     if (!zone) {
-        // Enforce hard boundary constraints
         throw new Error(
             `Movement rejected: coordinates (${lat}, ${lng}) are not inside any active zone. ` +
             `Animals must remain within zone boundaries.`
         );
     }
 
-    // Enrichment: link movement to resolved geopolitical entities
     data.tagId = tagId;
     data.zoneId = zone._id;
     data.protectedAreaId = zone.protectedAreaId;
 
     const movement = await movementRepo.create(data);
 
-    // Alert system: evaluate zone risk levels for proactive notifications
     if (zone.zoneType === "CORE" || zone.name.toLowerCase().includes("risk")) {
         console.log(`ALERT: Animal ${tagId} entered high risk zone ${zone.name}`);
         await alertService.triggerMovementAlert(movement, zone);
@@ -55,7 +61,6 @@ export const ingestMovement = async (data) => {
  * @returns {Object} List of movements with metadata
  */
 export const getMovementHistory = async (tagId, query) => {
-    // Identity verification
     const animal = await animalRepo.findByTagId(tagId);
     if (!animal) {
         const error = new Error(`Animal with tagId ${tagId} not found`);
@@ -73,7 +78,6 @@ export const getMovementHistory = async (tagId, query) => {
     const skip = (page - 1) * limit;
     const sort = { timestamp: -1 };
 
-    // Concurrently fetch totals and paginated dataset
     const [total, movements] = await Promise.all([
         movementRepo.count({ tagId, ...filter }),
         movementRepo.findByAnimalIdWithPagination(tagId, filter, sort, skip, limit)
@@ -83,7 +87,7 @@ export const getMovementHistory = async (tagId, query) => {
 };
 
 export const searchMovements = async (query) => {
-    const { protectedAreaId, species, from, to, page = 1, limit = 50 } = query;
+    const { protectedAreaId, from, to, page = 1, limit = 50 } = query;
     const filter = {};
     if (protectedAreaId) filter.protectedAreaId = protectedAreaId;
     if (from || to) {
@@ -91,9 +95,6 @@ export const searchMovements = async (query) => {
         if (from) filter.timestamp.$gte = new Date(from);
         if (to) filter.timestamp.$lte = new Date(to);
     }
-
-    // species filter requires lookup or denormalization
-    // For now, let's just search by what we have in Movement
 
     const skip = (page - 1) * limit;
     const sort = { timestamp: -1 };
