@@ -31,3 +31,15 @@ export const updateById = (id, update) =>
 // Delete user by Mongo ID
 export const deleteById = (id) => User.findByIdAndDelete(id);
 
+export default {
+    create,
+    findByEmail,
+    findByEmailWithPassword,
+    findById,
+    findAll,
+    findWithPagination,
+    count,
+    updateById,
+    deleteById,
+};
+

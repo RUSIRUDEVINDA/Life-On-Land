@@ -2,22 +2,22 @@ import ProtectedArea from "../models/ProtectedArea.model.js";
 import Zone from "../models/Zone.model.js";
 
 // LIST
-const listProtectedAreas = async () => {
+export const listProtectedAreas = async () => {
   return await ProtectedArea.find({ status: "ACTIVE" }).sort({ createdAt: -1 });
 };
 
 // CREATE
-const createProtectedArea = async (data) => {
+export const createProtectedArea = async (data) => {
   return await ProtectedArea.create(data);
 };
 
 // GET BY ID
-const getProtectedAreaById = async (id) => {
+export const getProtectedAreaById = async (id) => {
   return await ProtectedArea.findOne({ _id: id, status: "ACTIVE" });
 };
 
 // UPDATE
-const updateProtectedArea = async (id, payload) => {
+export const updateProtectedArea = async (id, payload) => {
   return await ProtectedArea.findOneAndUpdate(
     { _id: id, status: "ACTIVE" },
     payload,
@@ -26,7 +26,7 @@ const updateProtectedArea = async (id, payload) => {
 };
 
 // SOFT DELETE
-const softDeleteProtectedArea = async (id) => {
+export const softDeleteProtectedArea = async (id) => {
   const removed = await ProtectedArea.findOneAndDelete({ _id: id, status: "ACTIVE" });
 
   if (!removed) {

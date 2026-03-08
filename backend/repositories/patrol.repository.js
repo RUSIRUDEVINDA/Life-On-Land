@@ -1,31 +1,32 @@
 import Patrol from "../models/Patrol.js";
 
 const create = (data) => Patrol.create(data);
+export { create };
 
-const findById = (id) =>
+export const findById = (id) =>
     Patrol.findById(id);
 
-const findWithPagination = (query, sort, skip, limit) =>
+export const findWithPagination = (query, sort, skip, limit) =>
     Patrol.find(query)
         .populate("assignedRangerIds", "name email")
         .sort(sort)
         .skip(skip)
         .limit(limit);
 
-const count = (query) =>
+export const count = (query) =>
     Patrol.countDocuments(query);
 
-const updateById = (id, update) =>
+export const updateById = (id, update) =>
     Patrol.findByIdAndUpdate(
         id,
         update,
         { new: true, runValidators: true }
     );
 
-const deleteById = (id) =>
+export const deleteById = (id) =>
     Patrol.findByIdAndDelete(id);
 
-const addCheckIn = async (id, checkInData) => {
+export const addCheckIn = async (id, checkInData) => {
     const patrol = await Patrol.findById(id);
     if (!patrol) return null;
 
@@ -37,7 +38,7 @@ const addCheckIn = async (id, checkInData) => {
     return patrol.save();
 };
 
-const getCheckIns = async (id, skip, limit) => {
+export const getCheckIns = async (id, skip, limit) => {
     const patrol = await Patrol.findById(id).select({
         checkIns: { $slice: [skip, limit] }
     });
@@ -50,7 +51,7 @@ const getCheckIns = async (id, skip, limit) => {
     return { checkIns: patrol.checkIns, total };
 };
 
-const updateCheckIn = async (patrolId, checkInId, checkInData) => {
+export const updateCheckIn = async (patrolId, checkInId, checkInData) => {
     const update = {};
     if (checkInData.location) update["checkIns.$.location"] = checkInData.location;
     if (checkInData.note !== undefined) update["checkIns.$.note"] = checkInData.note;
@@ -64,7 +65,7 @@ const updateCheckIn = async (patrolId, checkInId, checkInData) => {
     );
 };
 
-const deleteCheckIn = async (patrolId, checkInId) => {
+export const deleteCheckIn = async (patrolId, checkInId) => {
     return Patrol.findByIdAndUpdate(
         patrolId,
         { $pull: { checkIns: { _id: checkInId } } },
