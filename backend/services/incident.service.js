@@ -1,5 +1,6 @@
 import * as incidentRepository from '../repositories/incident.repository.js';
 import * as alertService from './alert.service.js';
+import Incident from '../models/Incident.model.js';
 
 /**
  * Create a new incident
@@ -200,28 +201,32 @@ export const updateIncident = async (incidentId, updateData, user) => {
   return await incidentRepository.getIncidentWithRelationsById(incident._id);
 };
 
-/**
- * Soft delete incident
- * @param {string} incidentId - Incident ID
- * @param {Object} user - User deleting the incident
- * @returns {Promise<Object>} Deleted incident
- */
+
 export const deleteIncident = async (incidentId, user) => {
-  const incident = await incidentRepository.findActiveIncidentById(incidentId);
-
-  if (!incident) {
-    throw new Error('Incident not found');
+  // Only Admin can delete incidents (case-insensitive check)
+  const userRole = user.role?.toUpperCase();
+  if (userRole !== 'ADMIN') {
+    throw new Error('Only Admin can delete incidents');
   }
 
-  // Only Admin and OFFICER can delete incidents
-  if (!['ADMIN', 'OFFICER'].includes(user.role)) {
-    throw new Error('Only Admin and OFFICER can delete incidents');
+  try {
+    // First verify the incident exists
+    const existingIncident = await Incident.findById(incidentId);
+
+    if (!existingIncident) {
+      throw new Error('Incident not found');
+    }
+
+    // Hard delete - actually remove the document from the database
+    const deleteResult = await Incident.findByIdAndDelete(incidentId);
+
+    if (!deleteResult) {
+      throw new Error('Failed to delete incident - document was not removed from database');
+    }
+
+    return deleteResult;
+  } catch (error) {
+    console.error('Error deleting incident:', error);
+    throw error;
   }
-
-  incident.isDeleted = true;
-  incident.deletedAt = new Date();
-  incident.deletedBy = user._id;
-
-  await incidentRepository.saveIncident(incident);
-  return incident;
 };
