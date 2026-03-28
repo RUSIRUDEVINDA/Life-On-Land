@@ -14,6 +14,7 @@ export const getUsers = asyncHandler(async (req, res) => {
     if (req.query.role) query.role = req.query.role.toUpperCase();
     if (req.query.name) query.name = { $regex: req.query.name, $options: "i" };
     if (req.query.email) query.email = { $regex: req.query.email, $options: "i" };
+    if (req.query.phone) query.phone = { $regex: req.query.phone, $options: "i" };
 
     const skip = (page - 1) * limit;
 
@@ -58,7 +59,7 @@ export const getUserById = asyncHandler(async (req, res) => {
 // @access  Private (Self or Admin)
 export const updateUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, email, role, password } = req.body;
+    const { name, email, phone, role, password } = req.body;
     const isSelf = req.user._id.toString() === id;
     const isAdmin = req.user.role === 'ADMIN';
 
@@ -79,6 +80,14 @@ export const updateUser = asyncHandler(async (req, res) => {
             return res.status(403).json({ error: "Access denied. Only you or an admin can change email." });
         }
         updateData.email = email;
+    }
+
+    // Only 'self' or an 'Admin' can change phone
+    if (phone !== undefined) {
+        if (!isSelf && !isAdmin) {
+            return res.status(403).json({ error: "Access denied. Only you or an admin can change phone." });
+        }
+        updateData.phone = phone;
     }
 
     // Only 'self' can change password (Admins cannot change others' passwords)
