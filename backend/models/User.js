@@ -1,8 +1,4 @@
 import mongoose from "mongoose";
-
-/**
- * @desc    System User Schema for RBAC
- */
 const userSchema = new mongoose.Schema(
     {
         name: {
@@ -14,6 +10,13 @@ const userSchema = new mongoose.Schema(
             required: true,
             unique: true,
             index: true // Faster lookups for login
+        },
+        phone: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
+            match: [/^\+94[1-9]\d{8}$/, "Phone must be a valid Sri Lankan number"]
         },
         password: {
             type: String,
