@@ -1,7 +1,9 @@
+import { normalizeSriLankanPhone } from "../utils/phone.js";
+
 const allowedRoles = ["ADMIN", "RANGER"]; // Must match your Mongoose schema
 
 export const validateRegister = (req, res, next) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, phone, password, role } = req.body;
     const errors = [];
 
     // Name validation
@@ -12,6 +14,14 @@ export const validateRegister = (req, res, next) => {
     // Email validation
     if (!email || typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email)) {
         errors.push("Valid email is required");
+    }
+
+    // Phone validation (Sri Lanka)
+    const normalizedPhone = normalizeSriLankanPhone(phone);
+    if (!normalizedPhone) {
+        errors.push("Valid Sri Lankan phone number is required");
+    } else {
+        req.body.phone = normalizedPhone;
     }
 
     // Password validation
