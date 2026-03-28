@@ -1,5 +1,7 @@
+import { normalizeSriLankanPhone } from "../utils/phone.js";
+
 export const validateUpdateUser = (isFullUpdate = false) => (req, res, next) => {
-    const { name, email, role, password } = req.body || {};
+    const { name, email, phone, role, password } = req.body || {};
     const errors = [];
     const isRanger = req.user && req.user.role === "RANGER";
 
@@ -10,6 +12,9 @@ export const validateUpdateUser = (isFullUpdate = false) => (req, res, next) => 
         }
         if (!email || typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email)) {
             errors.push("Valid email is required for full update");
+        }
+        if (!phone || !normalizeSriLankanPhone(phone)) {
+            errors.push("Valid Sri Lankan phone number is required for full update");
         }
         // Admin must provide role in PUT
         if (!isRanger && (!role || typeof role !== "string")) {
@@ -22,6 +27,9 @@ export const validateUpdateUser = (isFullUpdate = false) => (req, res, next) => 
         }
         if (email !== undefined && (typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email))) {
             errors.push("Email must be a valid format");
+        }
+        if (phone !== undefined && !normalizeSriLankanPhone(phone)) {
+            errors.push("Phone must be a valid Sri Lankan number");
         }
     }
 
@@ -42,6 +50,13 @@ export const validateUpdateUser = (isFullUpdate = false) => (req, res, next) => 
         }
     }
 
+    if (phone !== undefined) {
+        const normalizedPhone = normalizeSriLankanPhone(phone);
+        if (normalizedPhone) {
+            req.body.phone = normalizedPhone;
+        }
+    }
+
     if (errors.length > 0) {
         return res.status(400).json({ error: "Validation failed", details: errors });
     }
@@ -50,7 +65,7 @@ export const validateUpdateUser = (isFullUpdate = false) => (req, res, next) => 
 };
 
 export const validateUserQuery = (req, res, next) => {
-    const { role, page, limit, name, email } = req.query || {};
+    const { role, page, limit, name, email, phone } = req.query || {};
     const errors = [];
 
     if (role && !["ADMIN", "RANGER"].includes(role.toUpperCase())) {
@@ -63,6 +78,14 @@ export const validateUserQuery = (req, res, next) => {
 
     if (email !== undefined && (typeof email !== "string" || email.trim().length === 0)) {
         errors.push("email must be a non-empty string");
+    }
+    if (phone !== undefined) {
+        const normalizedPhone = normalizeSriLankanPhone(phone);
+        if (!normalizedPhone) {
+            errors.push("phone must be a valid Sri Lankan number");
+        } else {
+            req.query.phone = normalizedPhone;
+        }
     }
 
     if (page !== undefined) {
