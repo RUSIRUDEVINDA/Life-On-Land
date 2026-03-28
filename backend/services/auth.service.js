@@ -7,12 +7,19 @@ import { AppError } from "../utils/appError.js"; // custom error class
  * @param   {Object} data - User registration details
  * @returns {Object} Created user document
  */
-export const registerUser = async ({ name, email, password, role }) => {
+export const registerUser = async ({ name, email, phone, password, role }) => {
     // Check for existing user records
     const existingUser = await userRepo.findByEmail(email);
+    const existingPhone = await userRepo.findByPhone(phone);
 
     if (existingUser) {
         const error = new Error("User already exists. Please register with a different email.");
+        error.statusCode = 400; // Bad Request
+        throw error;
+    }
+
+    if (existingPhone) {
+        const error = new Error("Phone number already exists. Please use a different phone number.");
         error.statusCode = 400; // Bad Request
         throw error;
     }
@@ -24,6 +31,7 @@ export const registerUser = async ({ name, email, password, role }) => {
     const user = await userRepo.create({
         name,
         email,
+        phone,
         password: hashedPassword,
         role: role || "RANGER",
     });
