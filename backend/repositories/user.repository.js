@@ -6,6 +6,9 @@ export const create = (data) => User.create(data);
 // Find user by email
 export const findByEmail = (email) => User.findOne({ email });
 
+// Find user by phone
+export const findByPhone = (phone) => User.findOne({ phone });
+
 // Find user by email and include password (used for login)
 export const findByEmailWithPassword = (email) =>
     User.findOne({ email }).select("+password");
