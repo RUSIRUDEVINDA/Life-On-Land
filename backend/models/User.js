@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const userSchema = new mongoose.Schema(
     {
         name: {
@@ -10,12 +9,19 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
-            index: true // Add an index for faster queries on email
+            index: true // Faster lookups for login
+        },
+        phone: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
+            match: [/^\+94[1-9]\d{8}$/, "Phone must be a valid Sri Lankan number"]
         },
         password: {
             type: String,
             required: true,
-            select: false // Exclude password from query results by default
+            select: false // Protection: hidden by default
         },
         role: {
             type: String,

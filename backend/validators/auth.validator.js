@@ -1,7 +1,9 @@
+import { normalizeSriLankanPhone } from "../utils/phone.js";
+
 const allowedRoles = ["ADMIN", "RANGER"]; // Must match your Mongoose schema
 
 export const validateRegister = (req, res, next) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, phone, password, role } = req.body;
     const errors = [];
 
     // Name validation
@@ -14,6 +16,14 @@ export const validateRegister = (req, res, next) => {
         errors.push("Valid email is required");
     }
 
+    // Phone validation (Sri Lanka)
+    const normalizedPhone = normalizeSriLankanPhone(phone);
+    if (!normalizedPhone) {
+        errors.push("Valid Sri Lankan phone number is required");
+    } else {
+        req.body.phone = normalizedPhone;
+    }
+
     // Password validation
     if (!password || typeof password !== "string" || password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
         errors.push("Password must be at least 8 characters long and contain uppercase, lowercase, and a number");
@@ -22,7 +32,11 @@ export const validateRegister = (req, res, next) => {
     // Role validation
     if (!role || typeof role !== "string" || !allowedRoles.includes(role.toUpperCase())) {
         errors.push(`Role must be one of: ${allowedRoles.join(" or ")}`);
+    } else {
+        // Normalize role to uppercase early if valid
+        req.body.role = role.toUpperCase();
     }
+
 
     if (errors.length > 0) {
         return res.status(400).json({
