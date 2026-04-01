@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import axios from 'axios';
 import dotenv from 'dotenv';
 import Animal from '../models/Animal.js';
 import Zone from '../models/Zone.model.js';
@@ -113,35 +112,6 @@ async function computeStrictNextPos(state) {
 
     return { lat: candidateLat, lng: candidateLng, zone: verifiedZone };
 }
-
-// ─── Dynamic Risk Detection ────────────────────────────────────────────────────
-async function getDynamicRiskSeverity(zone) {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const name = zone.name.toLowerCase();
-    if (name.includes('critical')) return 'CRITICAL';
-    if (name.includes('high risk')) return 'HIGH';
-
-    const incidents = await Incident.find({
-        zoneId: zone._id,
-        isDeleted: false,
-        incidentDate: { $gte: thirtyDaysAgo }
-    }).select('severity');
-
-    if (incidents.length === 0) {
-        if (zone.zoneType === 'CORE') return 'HIGH';
-        if (zone.zoneType === 'BUFFER') return 'MEDIUM';
-        return 'LOW';
-    }
-
-    const hierarchy = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
-    let maxSeverity = 'LOW', maxVal = 0;
-    incidents.forEach(inc => {
-        const val = hierarchy[inc.severity] || 0;
-        if (val > maxVal) { maxVal = val; maxSeverity = inc.severity; }
-    });
-    return maxSeverity;
-}
-
 
 // ─── Save movement directly to MongoDB ────────────────────────────────────────
 async function logMovement(data) {

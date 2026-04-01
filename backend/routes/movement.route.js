@@ -11,6 +11,9 @@ router.get("/", protect, movementController.searchMovements);
 // Get aggregated activity per zone
 router.get("/summary", protect, movementController.getMovementSummary);
 
+// Get latest animal positions
+router.get("/live", protect, movementController.getLatestMovements);
+
 // Get detailed history for a specific animal
 router.get("/:tagId", protect, validateTagIdParam, movementController.getAnimalMovements);
 

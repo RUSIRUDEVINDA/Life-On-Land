@@ -27,7 +27,7 @@ export const getAnimals = asyncHandler(async (req, res) => {
     const query = buildAnimalQuery(req.query);
     const skip = (page - 1) * limit;
 
-    const [total, animals] = await Promise.all([
+    const [total, animals] = await Promise.all([ // pararelly fetch total count and paginated data
         repo.count(query),
         repo.findWithPagination(query, sort, skip, limit)
     ]);
