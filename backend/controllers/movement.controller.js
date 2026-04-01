@@ -34,3 +34,11 @@ export const getMovementSummary = asyncHandler(async (req, res) => {
     const summary = await movementService.getMovementSummary(req.query);
     res.json(summary);
 });
+
+// @desc    Get latest positions of animals
+// @route   GET /api/movements/live
+// @access  Private
+export const getLatestMovements = asyncHandler(async (req, res) => {
+    const latest = await movementService.getLatestMovements(req.query);
+    res.json(latest);
+});

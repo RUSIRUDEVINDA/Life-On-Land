@@ -36,16 +36,6 @@ async function main() {
         zonesByPA[paKey].push(z);
     }
 
-    // Prefer zones that have real geometry
-    function pickZone(zones) {
-        // Prefer CORE, then any
-        return (
-            zones.find(z => z.zoneType === 'CORE' && z.geometry?.coordinates?.length) ||
-            zones.find(z => z.geometry?.coordinates?.length) ||
-            null
-        );
-    }
-
     // Build ordered list of (pa, zone) pairs — one entry per zone, cycling all zones in each PA
     const assignments = [];
     for (const pa of pas) {
@@ -75,8 +65,8 @@ async function main() {
         animal.zoneId = zone._id;
 
         // Seed lat/lng on the animal doc if those fields exist
-        if ('lat' in animal.schema?.paths || animal.lat !== undefined) animal.lat = centroid.lat;
-        if ('lng' in animal.schema?.paths || animal.lng !== undefined) animal.lng = centroid.lng;
+        if ((animal.schema?.paths && 'lat' in animal.schema.paths) || animal.lat !== undefined) animal.lat = centroid.lat;
+        if ((animal.schema?.paths && 'lng' in animal.schema.paths) || animal.lng !== undefined) animal.lng = centroid.lng;
 
         await animal.save();
 

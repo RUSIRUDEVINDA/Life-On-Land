@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import movementRepo from "../repositories/movement.repository.js";
 import zoneRepo from "../repositories/zone.repository.js";
 import animalRepo from "../repositories/animal.repository.js";
@@ -110,7 +111,7 @@ export const searchMovements = async (query) => {
 export const getMovementSummary = async (query) => {
     const { protectedAreaId, from, to } = query;
     const match = {};
-    if (protectedAreaId) match.protectedAreaId = protectedAreaId;
+    if (protectedAreaId) match.protectedAreaId = new mongoose.Types.ObjectId(protectedAreaId);
     if (from || to) {
         match.timestamp = {};
         if (from) match.timestamp.$gte = new Date(from);
@@ -118,4 +119,12 @@ export const getMovementSummary = async (query) => {
     }
 
     return await movementRepo.aggregateSummary(match);
+};
+
+export const getLatestMovements = async (query = {}) => {
+    const { protectedAreaId } = query;
+    const match = {};
+    if (protectedAreaId) match.protectedAreaId = new mongoose.Types.ObjectId(protectedAreaId);
+
+    return await movementRepo.findLatestForAllAnimals(match);
 };

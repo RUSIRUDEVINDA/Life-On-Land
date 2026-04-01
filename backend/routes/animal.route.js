@@ -4,7 +4,7 @@ import { protect } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
 import { validateCreateAnimal, validatePutAnimal, validatePatchAnimal, validateAnimalQuery, validateTagIdParam } from "../validators/animal.validator.js";
 
-const router = express.Router();
+const router = express.Router(); 
 
 // Register a new animal (Admin only)
 router.post("/", protect, authorizeRoles("ADMIN"), validateCreateAnimal, createAnimal);

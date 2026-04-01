@@ -348,7 +348,16 @@ export const validatePatchAnimal = (req, res, next) => {
 
 export const validateAnimalQuery = (req, res, next) => {
     const errors = [];
-    const { species, status, protectedAreaId, page, limit, sort } = req.query || {};
+    const { search, species, status, protectedAreaId, page, limit, sort } = req.query || {};
+
+    // Allow free-text search — sanitize it
+    if (search !== undefined) {
+        if (typeof search !== "string") {
+            errors.push("search must be a string");
+        } else {
+            req.query.search = search.trim();
+        }
+    }
 
     if (status) {
         const normalizedStatus = normalizeUpper(status);

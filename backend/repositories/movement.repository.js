@@ -42,6 +42,29 @@ export const aggregateSummary = (match) =>
         { $unwind: { path: "$zoneDetails", preserveNullAndEmptyArrays: true } }
     ]);
 
+// Find the latest movement for all animals (optionally filtered by area)
+export const findLatestForAllAnimals = (match = {}) =>
+    Movement.aggregate([
+        // { $match: match },
+        { $sort: { timestamp: -1 } },
+        {
+            $group: {
+                _id: "$tagId",
+                latestValue: { $first: "$$ROOT" }
+            }
+        },
+        { $replaceRoot: { newRoot: "$latestValue" } },
+        {
+            $lookup: {
+                from: "animals",
+                localField: "tagId",
+                foreignField: "tagId",
+                as: "animalDetails"
+            }
+        },
+        { $unwind: { path: "$animalDetails", preserveNullAndEmptyArrays: true } }
+    ]);
+
 // Default export — sinon can stub properties on this object
 const movementRepo = {
     create,
@@ -50,6 +73,7 @@ const movementRepo = {
     findLatestByAnimalId,
     findByAnimalIdWithPagination,
     aggregateSummary,
+    findLatestForAllAnimals,
 };
 
 export default movementRepo;
