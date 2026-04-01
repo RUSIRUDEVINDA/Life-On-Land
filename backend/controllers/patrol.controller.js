@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import * as service from "../services/patrol.service.js";
 import * as repo from "../repositories/patrol.repository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { notifyRangerAssignment } from "../services/notification.service.js";
+import User from "../models/User.js";
 
 // Construct search filters based on query parameters
 const buildPatrolQuery = (queryParams) => {
@@ -85,6 +87,19 @@ export const createPatrol = asyncHandler(async (req, res) => {
     }
 
     res.status(201).json({ message: "Patrol created successfully", patrol });
+
+    // ── WhatsApp Notifications ──
+    try {
+        if (patrolData.assignedRangerIds?.length > 0) {
+            const rangers = await User.find({ _id: { $in: patrolData.assignedRangerIds } }).lean();
+            if (rangers?.length > 0) {
+                // This calls the unified service (Twilio if SID exists, always MQTT)
+                await notifyRangerAssignment(patrol, rangers);
+            }
+        }
+    } catch (notifError) {
+        console.error("Notification flow failed (non-blocking):", notifError);
+    }
 });
 
 // Fetch all patrols matching filters with pagination
