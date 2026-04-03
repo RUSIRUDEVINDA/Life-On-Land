@@ -16,7 +16,7 @@ router.get("/", authorizeRoles("ADMIN", "RANGER"), validateUserQuery, getUsers);
 router.get("/:id", getUserById);
 
 // Update user details (Full replace)
-router.put("/:id", validateUpdateUser(true), updateUser);
+router.put("/:id", validateUpdateUser(false), updateUser);
 
 // Update user details (Partial update)
 router.patch("/:id", validateUpdateUser(false), updateUser);

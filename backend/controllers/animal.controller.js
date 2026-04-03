@@ -27,7 +27,7 @@ export const getAnimals = asyncHandler(async (req, res) => {
     const query = buildAnimalQuery(req.query);
     const skip = (page - 1) * limit;
 
-    const [total, animals] = await Promise.all([
+    const [total, animals] = await Promise.all([ // pararelly fetch total count and paginated data
         repo.count(query),
         repo.findWithPagination(query, sort, skip, limit)
     ]);
@@ -79,10 +79,7 @@ export const updateAnimal = asyncHandler(async (req, res) => {
 // @access  Private (Admin)
 export const deleteAnimal = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
-    console.log("Controller: Received delete request for tagId:", tagId);
-
     const animal = await service.deleteAnimal(tagId);
-    console.log("Controller: Service returned deleted animal:", animal);
 
     res.json({
         message: "Animal deleted successfully",

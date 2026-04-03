@@ -29,6 +29,12 @@ jobs:
       - name: Run Mocha tests
         run: npm test
 
+      - name: Run Jest Integration tests
+        run: npm run test:integration
+        env:
+          JWT_SECRET: testing_secretkey123
+          NODE_ENV: test
+
       - name: Upload Mochawesome report artifacts
         if: always()
         uses: actions/upload-artifact@v4

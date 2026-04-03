@@ -12,10 +12,11 @@ export const registerUser = asyncHandler(async (req, res) => {
     const user = await authService.registerUser({ name, email, phone, password, role });
 
     // Issue JWT cookie for immediate authentication
-    generateToken(user._id, res);
+    const token = generateToken(user._id, res);
 
     res.status(201).json({
         message: "User registered successfully",
+        token,
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -34,10 +35,11 @@ export const loginUser = asyncHandler(async (req, res) => {
     const user = await authService.loginUser({ email, password });
 
     // Attach authentication session
-    generateToken(user._id, res);
+    const token = generateToken(user._id, res);
 
     res.json({
         message: "User logged in successfully",
+        token,
         _id: user._id,
         name: user.name,
         email: user.email,

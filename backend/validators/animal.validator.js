@@ -35,31 +35,30 @@ const parseBoolean = (value) => {
  * Validates tagId format
  * Rules:
  * - Must start with 'T' (case-insensitive, converted to uppercase)
- * - Total length: 3-20 characters (T + 2-19 alphanumeric)
- * - Alphanumeric only
- * - Numeric part cannot be all zeros (e.g., T00 is invalid)
+ * - Total length: 3-20 characters (T + 2-19 additional characters)
+ * - Remaining characters may contain letters, numbers, or hyphens
  */
 const isValidTagId = (value) => {
     if (!isNonEmptyString(value)) return false;
 
     const normalized = normalizeUpper(value);
-
-    // Pattern: T followed by 2-19 alphanumeric characters, not all zeros
-    // ^T matches T at start
-    // (?!0+$) negative lookahead to exclude all zeros
-    // [A-Z0-9]{2,19} matches 2-19 alphanumeric chars (making total length 3-20)
-    const pattern = /^T(?!0+$)[A-Z0-9]{2,19}$/;
+    const pattern = /^T[A-Z0-9-]{2,19}$/;
 
     return pattern.test(normalized);
+};
+
+const isValidTagIdParamValue = (value) => {
+    if (!isNonEmptyString(value)) return false;
+
+    const normalized = normalizeUpper(value);
+    return /^[A-Z0-9-]{3,20}$/.test(normalized);
 };
 
 /**
  * Middleware to validate tagId in route parameters
  * Rules:
- * - Must start with 'T' (case-insensitive, converted to uppercase)
  * - Total length: 3-20 characters
- * - Alphanumeric only
- * - Numeric part cannot be all zeros (e.g., T00 is invalid)
+ * - Characters may contain letters, numbers, or hyphens
  */
 export const validateTagIdParam = (req, res, next) => {
     const { tagId } = req.params;
@@ -71,14 +70,13 @@ export const validateTagIdParam = (req, res, next) => {
         });
     }
 
-    if (!isValidTagId(tagId)) {
+    if (!isValidTagIdParamValue(tagId)) {
         return res.status(400).json({
             error: "Validation failed",
             details: [
-                "tagId must start with 'T' followed by 2-19 alphanumeric characters",
-                "Total length must be 3-20 characters",
-                "Cannot be all zeros (e.g., T00 is invalid)",
-                "Example of valid tagId: T001, T002, T123"
+                "tagId must be 3-20 characters long",
+                "tagId may contain letters, numbers, and hyphens",
+                "Example of valid tagId: T001, T-INT-001, DOES-NOT-EXIST"
             ]
         });
     }
@@ -96,7 +94,7 @@ export const validateCreateAnimal = (req, res, next) => {
     if (!isNonEmptyString(tagId)) {
         errors.push("tagId is required");
     } else if (!isValidTagId(tagId)) {
-        errors.push("tagId must start with 'T' followed by 2-19 alphanumeric characters (3-20 total length, cannot be all zeros, e.g., T00 is invalid)");
+        errors.push("tagId must start with 'T' followed by 2-19 letters, numbers, or hyphens (3-20 total length)");
     }
     if (!isNonEmptyString(species)) {
         errors.push("species is required");
@@ -258,7 +256,7 @@ export const validatePatchAnimal = (req, res, next) => {
         if (!isNonEmptyString(tagId)) {
             errors.push("tagId must be a non-empty string");
         } else if (!isValidTagId(tagId)) {
-            errors.push("tagId must start with 'T' followed by 2-19 alphanumeric characters (3-20 total length, cannot be all zeros, e.g., T00 is invalid)");
+            errors.push("tagId must start with 'T' followed by 2-19 letters, numbers, or hyphens (3-20 total length)");
         } else {
             updates.tagId = normalizeUpper(tagId);
         }
@@ -348,7 +346,16 @@ export const validatePatchAnimal = (req, res, next) => {
 
 export const validateAnimalQuery = (req, res, next) => {
     const errors = [];
-    const { species, status, protectedAreaId, page, limit, sort } = req.query || {};
+    const { search, species, status, protectedAreaId, page, limit, sort } = req.query || {};
+
+    // Allow free-text search — sanitize it
+    if (search !== undefined) {
+        if (typeof search !== "string") {
+            errors.push("search must be a string");
+        } else {
+            req.query.search = search.trim();
+        }
+    }
 
     if (status) {
         const normalizedStatus = normalizeUpper(status);

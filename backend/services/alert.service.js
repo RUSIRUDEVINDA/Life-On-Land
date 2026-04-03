@@ -23,8 +23,8 @@ export const triggerMovementAlert = async (movement, zone) => {
     // Determine severity - CORE zones are CRITICAL, others are HIGH
     const severity = zone.zoneType === "CORE" ? "CRITICAL" : "HIGH";
 
-    // User requested format: [ID] (Species) has entered a [Severity] risk zone in [PA] [Zone]
-    const message = `[${movement.tagId}] (${animalSpecies}) has entered a ${severity.toLowerCase()} risk zone in ${paName} ${zone.name}`;
+    // User requested format: ID (Species) has entered a Severity risk zone in PA Zone
+    const message = `${movement.tagId} (${animalSpecies}) has entered a ${severity.toLowerCase()} risk zone in ${paName} ${zone.name}`;
 
     const alertData = {
         type: "MOVEMENT",
