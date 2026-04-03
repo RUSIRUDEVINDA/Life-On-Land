@@ -13,13 +13,17 @@ import zoneRoutes from "./routes/zones.route.js"
 import movementRoutes from "./routes/movement.route.js"
 import userRoutes from "./routes/user.route.js"
 import { notFound, errorHandler } from "./middleware/error.middleware.js"
-
 import dotenv from "dotenv"
 
 dotenv.config()
-
 const app = express()
-connectDB()
+
+const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined || process.env.npm_lifecycle_event === 'test';
+if (!isTestEnv) {
+    connectDB()
+}
+
+
 
 // Enable CORS for all routes
 app.use(cors())
@@ -56,7 +60,14 @@ app.use(notFound);
 app.use(errorHandler);
 
 
-const PORT = process.env.PORT || 5001
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-})
+const PORT = process.env.PORT || 5001;
+
+if (!isTestEnv) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+export default app;
+
+

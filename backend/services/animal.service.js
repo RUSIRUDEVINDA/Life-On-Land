@@ -153,16 +153,14 @@ export const updateAnimal = async (tagId, data) => {
  * @param   {string} tagId - Tag ID of the animal to delete
  */
 export const deleteAnimal = async (tagId) => {
-    console.log("Service: Deleting animal with tagId:", tagId);
     const animal = await repo.deleteByTagId(tagId);
-    console.log("Service: Result from repo.deleteByTagId:", animal);
 
     if (!animal) {
-        console.log("Service: Animal not found for deletion");
-
         const error = new Error("Animal not found");
         error.statusCode = 404;
         throw error;
     }
+
+    return animal;
 };
 
