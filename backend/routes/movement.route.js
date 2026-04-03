@@ -8,7 +8,11 @@ const router = express.Router();
 // Search all movements with filters
 router.get("/", protect, movementController.searchMovements);
 
+// Ingest telemetry data
+router.post("/", protect, movementController.ingestMovement);
+
 // Get aggregated activity per zone
+
 router.get("/summary", protect, movementController.getMovementSummary);
 
 // Get latest animal positions

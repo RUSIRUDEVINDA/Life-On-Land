@@ -4,7 +4,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { authorizeRoles } from "./role.middleware.js";
 
 export const authenticate = asyncHandler(async (req, res, next) => {
-    console.log("Auth middleware reached");
     let token;
 
     // 1. Check for token in Authorization header (Bearer token)

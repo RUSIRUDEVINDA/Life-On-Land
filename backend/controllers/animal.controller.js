@@ -79,10 +79,7 @@ export const updateAnimal = asyncHandler(async (req, res) => {
 // @access  Private (Admin)
 export const deleteAnimal = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
-    console.log("Controller: Received delete request for tagId:", tagId);
-
     const animal = await service.deleteAnimal(tagId);
-    console.log("Controller: Service returned deleted animal:", animal);
 
     res.json({
         message: "Animal deleted successfully",

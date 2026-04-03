@@ -1,6 +1,8 @@
 import express from "express";
 import { registerUser, loginUser, logoutUser } from "../controllers/auth.controller.js";
 import { validateRegister, validateLogin, } from "../validators/auth.validator.js";
+import { protect } from "../middleware/auth.middleware.js";
+
 
 const router = express.Router();
 
@@ -11,6 +13,7 @@ router.post("/register", validateRegister, registerUser);
 router.post("/login", validateLogin, loginUser);
 
 // Clear auth cookie
-router.post("/logout", logoutUser);
+router.post("/logout", protect, logoutUser);
+
 
 export default router;

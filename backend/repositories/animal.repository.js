@@ -33,10 +33,8 @@ export const updateByTagId = (tagId, update) =>
     );
 
 // Delete animal by tag ID
-export const deleteByTagId = (tagId) => {
-    console.log("Repo: Calling findOneAndDelete for tagId:", tagId);
-    return Animal.findOneAndDelete({ tagId });
-};
+export const deleteByTagId = (tagId) =>
+    Animal.findOneAndDelete({ tagId });
 
 // Delete animal by Mongo ID
 export const deleteById = (id) =>
