@@ -14,16 +14,10 @@ const mongoose = require('mongoose');
 const log = (message) => {
     process.stdout.write(message + '\n');
 };
-<<<<<<< Updated upstream
 
-// Export root hooks for Mocha (works with ES modules)
-exports.mochaHooks = {
-    beforeAll() {
-=======
 // Export root hooks for Mocha (works with ES modules when using --require flag)
 exports.mochaHooks = { // Global setup and teardown hooks
     beforeAll() { // Global setup
->>>>>>> Stashed changes
         log(' [SETUP] Global setup: Initializing test environment...');
         log(' [SETUP] Global setup completed');
     },
