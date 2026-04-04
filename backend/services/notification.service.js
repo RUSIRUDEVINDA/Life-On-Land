@@ -1,9 +1,9 @@
 import twilio from "twilio";
-import dotenv from "dotenv";
-
-dotenv.config();
-
 export const notifyRangerAssignment = async (patrol, rangers) => {
+    if (process.env.NODE_ENV === "test") {
+        return;
+    }
+
     const twilioSid = process.env.TWILIO_ACCOUNT_SID?.trim();
     const twilioToken = process.env.TWILIO_AUTH_TOKEN?.trim();
     const twilioFrom = process.env.TWILIO_WHATSAPP_NUMBER?.trim(); // e.g. 'whatsapp:+14155238886'
@@ -18,20 +18,20 @@ export const notifyRangerAssignment = async (patrol, rangers) => {
 
     for (const ranger of rangers) {
         if (!ranger.phone) {
-            console.warn(`[TWILIO DISPATCH ERROR] Ranger ${ranger.name || ranger.email} has NO phone number assigned in database! Skipping WhatsApp notification.`);
+            console.warn(`\[TWILIO DISPATCH ERROR] Ranger ${ranger.name || ranger.email} has NO phone number assigned in database! Skipping WhatsApp notification.`);
             continue;
         }
 
         const lat = patrol.exactLocation?.lat;
         const lng = patrol.exactLocation?.lng;
         const locationText = (lat && lng)
-            ? `${lat.toFixed(4)}, ${lng.toFixed(4)}\n*Map:* https://www.google.com/maps?q=${lat},${lng}`
+            ? `${lat.toFixed(4)}, ${lng.toFixed(4)}\\n\*Map:\* https://www.google.com/maps?q=${lat},${lng}`
             : "Not provided";
 
-        const messageBody = `🌿 *New Patrol Assigned*\n\n` +
-            `*Patrol:* ${patrol.title || "Wildlife Mission"}\n` +
-            `*Location:* ${locationText}\n` +
-            `*Start Time:* ${new Date(patrol.plannedStart).toLocaleString()}\n\n` +
+        const messageBody = `🌿 \*New Patrol Assigned\*\\n\\n` +
+            `\*Patrol:\* ${patrol.title || "Wildlife Mission"}\\n` +
+            `\*Location:\* ${locationText}\\n` +
+            `\*Start Time:\* ${new Date(patrol.plannedStart).toLocaleString()}\\n\\n` +
             `Please check your dashboard for details and report check-ins.`;
 
         // 1. Send via Twilio (Direct WhatsApp)
