@@ -5,7 +5,16 @@ import mongoose from "mongoose";
 // Retrieve alerts with filtering and pagination
 export const getAlerts = asyncHandler(async (req, res) => {
     const result = await alertService.getAlerts(req.query);
-    res.json(result);
+    res.json({
+        data: result.alerts,
+        alerts: result.alerts,
+        pagination: {
+            total: result.total,
+            page: result.page,
+            limit: result.limit,
+            pages: result.pages
+        }
+    });
 });
 
 // Update processing state of a specific alert
@@ -26,5 +35,11 @@ export const updateAlertStatus = asyncHandler(async (req, res) => {
         throw error;
     }
 
-    res.json({ message: `Alert status updated to ${status}`, alert });
+    res.json({
+        message: `Alert status updated to ${status}`,
+        data: alert,
+        alert
+    });
 });
+
+
