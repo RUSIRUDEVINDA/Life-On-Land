@@ -37,14 +37,20 @@ const buildPatrolQuery = (queryParams) => {
 // Create a new patrol mission, optionally inherited from an alert
 export const createPatrol = asyncHandler(async (req, res) => {
     const { alertId, ...patrolData } = req.body;
+    let resolvedAlertId = alertId;
 
     // If alertId is provided, inherit data
     if (alertId && mongoose.Types.ObjectId.isValid(alertId)) {
         try {
             const Alert = (await import("../models/Alert.js")).default;
-            const alert = await Alert.findById(alertId).lean();
+            const Incident = (await import("../models/Incident.model.js")).default;
+            const Zone = (await import("../models/Zone.model.js")).default;
+            const alert =
+                await Alert.findById(alertId).lean() ||
+                await Alert.findOne({ relatedId: alertId }).lean();
 
             if (alert) {
+                resolvedAlertId = alert._id.toString();
                 // Inherit basic details from Alert
                 patrolData.title = alert.description;
                 patrolData.protectedAreaId = alert.protectedAreaId;
@@ -68,6 +74,28 @@ export const createPatrol = asyncHandler(async (req, res) => {
                         console.error("Failed legacy location fallback:", err);
                     }
                 }
+            } else {
+                const incident = await Incident.findById(alertId).lean();
+
+                if (incident) {
+                    patrolData.title = incident.description;
+                    patrolData.protectedAreaId = incident.protectedAreaId;
+
+                    if (incident.zoneId && !patrolData.zoneIds?.includes(incident.zoneId)) {
+                        patrolData.zoneIds = [...(patrolData.zoneIds || []), incident.zoneId];
+                    }
+
+                    if (incident.location?.coordinates?.length === 2) {
+                        const [lng, lat] = incident.location.coordinates;
+                        patrolData.exactLocation = { lat, lng };
+                    } else if (incident.zoneId) {
+                        const zone = await Zone.findById(incident.zoneId).lean();
+                        if (zone?.geometry?.coordinates?.[0]?.[0]) {
+                            const [lng, lat] = zone.geometry.coordinates[0][0];
+                            patrolData.exactLocation = { lat, lng };
+                        }
+                    }
+                }
             }
         } catch (error) {
             console.error("Failed to automate patrol data inheritance:", error);
@@ -77,10 +105,10 @@ export const createPatrol = asyncHandler(async (req, res) => {
     const patrol = await service.createPatrol(patrolData);
 
     // If created from an alert, link them (existing logic)
-    if (alertId && mongoose.Types.ObjectId.isValid(alertId)) {
+    if (resolvedAlertId && mongoose.Types.ObjectId.isValid(resolvedAlertId)) {
         try {
             const { linkPatrolToAlert } = await import("../services/alert.service.js");
-            await linkPatrolToAlert(alertId, patrol._id);
+            await linkPatrolToAlert(resolvedAlertId, patrol._id);
         } catch (error) {
             console.error("Failed to link alert to patrol:", error);
         }
@@ -250,3 +278,4 @@ export const deleteCheckIn = asyncHandler(async (req, res) => {
     const patrol = await service.deleteCheckIn(id, checkInId);
     res.json({ message: "Check-in deleted successfully", patrol });
 });
+
