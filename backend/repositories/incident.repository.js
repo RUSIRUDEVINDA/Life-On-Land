@@ -10,6 +10,7 @@ export const findZoneById = (zoneId) => Zone.findById(zoneId);
 export const findProtectedAreaById = (protectedAreaId) =>
   ProtectedArea.findById(protectedAreaId);
 
+
 // User helpers
 export const findAnonymousPublicUser = () =>
   User.findOne({ email: 'anonymous@public.local', role: 'RANGER' });
