@@ -53,16 +53,39 @@ async function main() {
     const animals = await Animal.find({ status: 'ACTIVE' });
     console.log(`Found ${animals.length} active animals, ${assignments.length} PA-zone slots.\n`);
 
-    let idx = 0;
+    let cycleIdx = 0;
     for (const animal of animals) {
-        const { pa, zone } = assignments[idx % assignments.length];
-        idx++;
+        let targetPA, targetZone;
+
+        // If animal already has a registered PA, try to find a zone within it
+        if (animal.protectedAreaId) {
+            const paIdStr = animal.protectedAreaId.toString();
+            const localZones = (zonesByPA[paIdStr] || []).filter(z => z.geometry?.coordinates?.length);
+            
+            if (localZones.length > 0) {
+                targetPA = pas.find(p => p._id.toString() === paIdStr);
+                // Assign a random or next available zone in this PA (cycle within local list)
+                targetZone = localZones[cycleIdx % localZones.length];
+            }
+        }
+
+        // Fallback: Use the global cycle if no PA or no zones in that PA
+        if (!targetZone) {
+            const assignment = assignments[cycleIdx % assignments.length];
+            targetPA = assignment.pa;
+            targetZone = assignment.zone;
+        }
+
+        cycleIdx++;
+        const { pa, zone } = { pa: targetPA, zone: targetZone };
 
         const centroid = getCentroid(zone.geometry.coordinates);
 
         // Update the animal's PA and zone references
         animal.protectedAreaId = pa._id;
+        animal.protectedAreaName = pa.name; // Also update name for consistency
         animal.zoneId = zone._id;
+        animal.zoneName = zone.name;
 
         // Seed lat/lng on the animal doc if those fields exist
         if ((animal.schema?.paths && 'lat' in animal.schema.paths) || animal.lat !== undefined) animal.lat = centroid.lat;
