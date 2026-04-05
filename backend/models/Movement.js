@@ -50,8 +50,8 @@ const movementSchema = new mongoose.Schema(
 movementSchema.index({ lat: 1, lng: 1 }); // Geospatial proximity
 movementSchema.index({ timestamp: -1 }); // Fast chronological sorting
 
-// TTL Index: Automatically delete documents 24 hours (86400 seconds) after their 'timestamp'
-movementSchema.index({ timestamp: 1 }, { expireAfterSeconds: 86400 });
+// TTL Index: Automatically delete documents 72 hours (259200 seconds) after their 'timestamp'
+movementSchema.index({ timestamp: 1 }, { expireAfterSeconds: 259200 });
 
 // Alert trigger middleware
 movementSchema.post('save', async function (doc) {
