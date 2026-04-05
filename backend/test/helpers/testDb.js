@@ -13,7 +13,7 @@ export const connect = async () => {
 };
 
 /** Call in afterEach() to wipe data between tests */
-export const clearDatabase = async () => {
+export const clearDatabase = async () => {  
     if (!mongod) {
         console.error("🚨 DANGER: MongoMemoryServer is not running. Wiping aborted.");
         return;

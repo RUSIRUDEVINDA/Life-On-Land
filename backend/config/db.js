@@ -9,7 +9,6 @@ export const connectDB = async () => {
 
         await mongoose.connect(uri);
         console.log("MongoDB connected successfully");
-        console.log('MAIN DB CONNECTED TO:', process.env.MONGO_URI);
     } catch (error) {
         console.error("Error connecting to MongoDB:", error.message);
         // Don't exit immediately, maybe it's a temporary DNS issue
