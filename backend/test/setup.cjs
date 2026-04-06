@@ -1,29 +1,41 @@
 const mongoose = require('mongoose');
 
-// Helper logger
+/**
+ * Mocha Test Setup and Teardown Hooks
+ * This file manages the test lifecycle to ensure a clean environment for each test.
+ * 
+ * Using CommonJS format (.cjs) for compatibility with Mocha's --require flag
+ * in ES module projects. 
+ * 
+ * For ES modules, we use Mocha's root hooks plugin pattern by exporting mochaHooks.
+ */
+
+// Helper function to write to stdout directly (bypasses mochawesome console capture)
 const log = (message) => {
     process.stdout.write(message + '\n');
 };
+
 // Export root hooks for Mocha (works with ES modules when using --require flag)
-exports.mochaHooks = {
-    beforeAll() {
+exports.mochaHooks = { // Global setup and teardown hooks
+    beforeAll() { // Global setup
         log(' [SETUP] Global setup: Initializing test environment...');
         log(' [SETUP] Global setup completed');
     },
 
-    beforeEach() {
+    beforeEach() { // Per-test setup
         log(' [SETUP] Before each test: Preparing test environment...');
         log(' [SETUP] Test environment prepared');
     },
 
-    afterEach() {
+    afterEach() {  // Per-test teardown
         log(' [SETUP] After each test: Cleaning up test environment...');
         log(' [SETUP] Test environment cleaned up');
     },
 
-    async afterAll() {
+    async afterAll() {  // Global teardown
         log(' [SETUP] Global teardown: Closing connections and cleaning up...');
-
+        
+        // Close MongoDB connection if it's open
         try {
             if (mongoose.connection.readyState !== 0) {
                 await mongoose.connection.close();
@@ -34,9 +46,8 @@ exports.mochaHooks = {
         } catch (error) {
             log(' [SETUP] Error closing MongoDB connection: ' + error.message);
         }
-
+        
         log(' [SETUP] Global teardown completed');
     }
 };
-
 
