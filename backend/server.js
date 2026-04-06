@@ -1,3 +1,5 @@
+import dotenv from "dotenv"
+dotenv.config()
 import express from "express"
 import { connectDB } from "./config/db.js"
 import cookieParser from "cookie-parser"
@@ -13,17 +15,13 @@ import zoneRoutes from "./routes/zones.route.js"
 import movementRoutes from "./routes/movement.route.js"
 import userRoutes from "./routes/user.route.js"
 import { notFound, errorHandler } from "./middleware/error.middleware.js"
-import dotenv from "dotenv"
 
-dotenv.config()
 const app = express()
 
 const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined || process.env.npm_lifecycle_event === 'test';
 if (!isTestEnv) {
     connectDB()
 }
-
-
 
 // Enable CORS for all routes
 app.use(cors())
@@ -70,4 +68,4 @@ if (!isTestEnv) {
 
 export default app;
 
-
+

@@ -64,6 +64,14 @@ const animalSchema = new mongoose.Schema(
             default: "ACTIVE",
             index: true
         },
+        photo: {
+            type: String,
+            default: null
+        },
+        photoPublicId: {
+            type: String,
+            default: null
+        }
     },
     { timestamps: true }
 );

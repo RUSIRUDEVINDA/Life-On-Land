@@ -27,6 +27,14 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ["ADMIN", "RANGER"],
             default: "RANGER"
+        },
+        profilePhoto: {
+            type: String,
+            default: null
+        },
+        profilePhotoPublicId: {
+            type: String,
+            default: null
         }
     },
     { timestamps: true }

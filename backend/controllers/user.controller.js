@@ -1,6 +1,8 @@
 import * as userRepo from "../repositories/user.repository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import bcrypt from "bcryptjs";
+import { cloudinary } from "../config/cloudinary.js";
+
 
 // @desc    Get all users with filtering
 // @route   GET /api/users
@@ -113,7 +115,22 @@ export const updateUser = asyncHandler(async (req, res) => {
         updateData.role = normalizedRole;
     }
 
+    if (req.file) {
+        // Fetch existing user to get old photo ID
+        const existingUser = await userRepo.findById(id);
+        if (existingUser && existingUser.profilePhotoPublicId) {
+            try {
+                await cloudinary.uploader.destroy(existingUser.profilePhotoPublicId);
+            } catch (err) {
+                console.error("Failed to delete old profile photo from Cloudinary:", err);
+            }
+        }
+        updateData.profilePhoto = req.file.path;
+        updateData.profilePhotoPublicId = req.file.filename;
+    }
+
     const updatedUser = await userRepo.updateById(id, updateData);
+
     if (!updatedUser) {
         return res.status(404).json({ error: "User not found" });
     }
