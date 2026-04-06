@@ -7,9 +7,16 @@ import { generateToken } from "../utils/generateToken.js";
 // @access  Public
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, phone, password, role } = req.body;
+    const userData = { name, email, phone, password, role };
+
+    if (req.file) {
+        userData.profilePhoto = req.file.path;
+        userData.profilePhotoPublicId = req.file.filename;
+    }
 
     // Delegate creation to service layer
-    const user = await authService.registerUser({ name, email, phone, password, role });
+    const user = await authService.registerUser(userData);
+
 
     // Issue JWT cookie for immediate authentication
     const token = generateToken(user._id, res);
@@ -22,7 +29,9 @@ export const registerUser = asyncHandler(async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        profilePhoto: user.profilePhoto,
     });
+
 });
 
 // @desc    Login user & get token
@@ -45,7 +54,9 @@ export const loginUser = asyncHandler(async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        profilePhoto: user.profilePhoto,
     });
+
 });
 
 // @desc    Logout user & clear cookie

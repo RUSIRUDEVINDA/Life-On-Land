@@ -3,17 +3,22 @@ import * as service from "../services/animal.service.js";
 import * as repo from "../repositories/animal.repository.js";
 import { buildAnimalQuery } from "../utils/queryBuilder.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { cloudinary } from "../config/cloudinary.js";
 
 // @desc    Register a new animal
 // @route   POST /api/animals
 // @access  Private (Admin)
 export const createAnimal = asyncHandler(async (req, res) => {
-    const result = await service.createAnimal(req.body);
+    const animalData = { ...req.body };
+    if (req.file) {
+        animalData.photo = req.file.path;
+        animalData.photoPublicId = req.file.filename;
+    }
+    const result = await service.createAnimal(animalData);
     res.status(201).json({
         message: "Animal created successfully",
         animal: result.animal,
     });
-
 });
 
 // @desc    Get all animals with pagination and filters
@@ -69,8 +74,23 @@ export const getAnimalById = asyncHandler(async (req, res) => {
 // @access  Private (Admin)
 export const updateAnimal = asyncHandler(async (req, res) => {
     const { tagId } = req.params;
+    const updateData = { ...req.body };
 
-    const animal = await service.updateAnimal(tagId, req.body);
+    if (req.file) {
+        // Fetch existing animal to get old photo ID
+        const existingAnimal = await repo.findByTagId(tagId);
+        if (existingAnimal && existingAnimal.photoPublicId) {
+            try {
+                await cloudinary.uploader.destroy(existingAnimal.photoPublicId);
+            } catch (err) {
+                console.error("Failed to delete old animal photo from Cloudinary:", err);
+            }
+        }
+        updateData.photo = req.file.path;
+        updateData.photoPublicId = req.file.filename;
+    }
+
+    const animal = await service.updateAnimal(tagId, updateData);
     res.json({ message: "Animal updated successfully", animal });
 });
 

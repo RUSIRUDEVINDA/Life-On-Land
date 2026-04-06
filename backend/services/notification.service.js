@@ -1,13 +1,9 @@
 import twilio from "twilio";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 export const notifyRangerAssignment = async (patrol, rangers) => {
     const twilioSid = process.env.TWILIO_ACCOUNT_SID?.trim();
     const twilioToken = process.env.TWILIO_AUTH_TOKEN?.trim();
     const twilioFrom = process.env.TWILIO_WHATSAPP_NUMBER?.trim(); // e.g. 'whatsapp:+14155238886'
-
     let twilioClient = null;
     if (twilioSid && twilioToken) {
         console.log("Twilio WhatsApp Service Authenticated Dynamically");
