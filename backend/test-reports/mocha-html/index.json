@@ -5,9 +5,9 @@
     "passes": 3,
     "pending": 0,
     "failures": 0,
-    "start": "2026-03-06T08:31:30.455Z",
-    "end": "2026-03-06T08:31:30.462Z",
-    "duration": 7,
+    "start": "2026-03-08T08:34:10.093Z",
+    "end": "2026-03-08T08:34:10.105Z",
+    "duration": 12,
     "testsRegistered": 3,
     "passPercent": 100,
     "pendingPercent": 0,
@@ -18,18 +18,92 @@
   },
   "results": [
     {
-      "uuid": "a1f3a02e-97fb-4bf6-9b2b-2d0c3fa21062",
+      "uuid": "2e189c8f-8735-4524-8d45-d58553f5826a",
       "title": "",
       "fullFile": "",
       "file": "",
-      "beforeHooks": [],
-      "afterHooks": [],
+      "beforeHooks": [
+        {
+          "title": "\"before all\" hook: beforeAll in \"{root}\"",
+          "fullTitle": "\"before all\" hook: beforeAll in \"{root}\"",
+          "timedOut": false,
+          "duration": 1,
+          "state": null,
+          "speed": null,
+          "pass": false,
+          "fail": false,
+          "pending": false,
+          "context": null,
+          "code": "log(' [SETUP] Global setup: Initializing test environment...');\nlog(' [SETUP] Global setup completed');",
+          "err": {},
+          "uuid": "4cc168e5-a95d-47b2-8f1f-621b0befa0ee",
+          "parentUUID": "2e189c8f-8735-4524-8d45-d58553f5826a",
+          "isHook": true,
+          "skipped": false
+        },
+        {
+          "title": "\"before each\" hook: beforeEach in \"{root}\"",
+          "fullTitle": "\"before each\" hook: beforeEach in \"{root}\"",
+          "timedOut": false,
+          "duration": 0,
+          "state": null,
+          "speed": null,
+          "pass": false,
+          "fail": false,
+          "pending": false,
+          "context": null,
+          "code": "log(' [SETUP] Before each test: Preparing test environment...');\nlog(' [SETUP] Test environment prepared');",
+          "err": {},
+          "uuid": "eed1ea58-91a2-422d-be93-573ceec59a9b",
+          "parentUUID": "2e189c8f-8735-4524-8d45-d58553f5826a",
+          "isHook": true,
+          "skipped": false
+        }
+      ],
+      "afterHooks": [
+        {
+          "title": "\"after all\" hook: afterAll in \"{root}\"",
+          "fullTitle": "\"after all\" hook: afterAll in \"{root}\"",
+          "timedOut": false,
+          "duration": 1,
+          "state": null,
+          "speed": null,
+          "pass": false,
+          "fail": false,
+          "pending": false,
+          "context": null,
+          "code": "log(' [SETUP] Global teardown: Closing connections and cleaning up...');\n\n// Close MongoDB connection if it's open\ntry {\n    if (mongoose.connection.readyState !== 0) {\n        await mongoose.connection.close();\n        log(' [SETUP] MongoDB connection closed');\n    } else {\n        log(' [SETUP] No active MongoDB connection to close');\n    }\n} catch (error) {\n    log(' [SETUP] Error closing MongoDB connection: ' + error.message);\n}\n\nlog(' [SETUP] Global teardown completed');",
+          "err": {},
+          "uuid": "de010315-029d-49d4-922e-611e9bd11687",
+          "parentUUID": "2e189c8f-8735-4524-8d45-d58553f5826a",
+          "isHook": true,
+          "skipped": false
+        },
+        {
+          "title": "\"after each\" hook: afterEach in \"{root}\"",
+          "fullTitle": "\"after each\" hook: afterEach in \"{root}\"",
+          "timedOut": false,
+          "duration": 1,
+          "state": null,
+          "speed": null,
+          "pass": false,
+          "fail": false,
+          "pending": false,
+          "context": null,
+          "code": "log(' [SETUP] After each test: Cleaning up test environment...');\nlog(' [SETUP] Test environment cleaned up');",
+          "err": {},
+          "uuid": "8e80b8e7-9526-45c9-bc52-ace49b7e060e",
+          "parentUUID": "2e189c8f-8735-4524-8d45-d58553f5826a",
+          "isHook": true,
+          "skipped": false
+        }
+      ],
       "tests": [],
       "suites": [
         {
-          "uuid": "fd838295-5771-4c3d-a587-2815b933cc3e",
+          "uuid": "2dca19a4-4e9d-4e9e-b516-eef6e192fe8a",
           "title": "Sample Test",
-          "fullFile": "C:\\Users\\Sandali Dissanayake\\OneDrive\\Documents\\GitHub\\Life-On-Land\\backend\\test\\example.test.js",
+          "fullFile": "C:\\Users\\Ravindu Peiris\\Documents\\GitHub\\Life-On-Land\\backend\\test\\example.test.js",
           "file": "\\test\\example.test.js",
           "beforeHooks": [],
           "afterHooks": [],
@@ -47,15 +121,15 @@
               "context": null,
               "code": "expect(1 + 1).to.equal(2);",
               "err": {},
-              "uuid": "9b0be68b-c017-42ee-a432-4d8cb3927e6a",
-              "parentUUID": "fd838295-5771-4c3d-a587-2815b933cc3e",
+              "uuid": "6ae74346-9280-41aa-b90d-673f43a8fc76",
+              "parentUUID": "2dca19a4-4e9d-4e9e-b516-eef6e192fe8a",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "9b0be68b-c017-42ee-a432-4d8cb3927e6a"
+            "6ae74346-9280-41aa-b90d-673f43a8fc76"
           ],
           "failures": [],
           "pending": [],
@@ -66,9 +140,9 @@
           "_timeout": 2000
         },
         {
-          "uuid": "f87b87d7-754e-4da3-a85d-69dc26d7ba09",
+          "uuid": "324e0d31-7ff9-4e6b-9805-ec924830feb7",
           "title": "Sample Test Suite",
-          "fullFile": "C:\\Users\\Sandali Dissanayake\\OneDrive\\Documents\\GitHub\\Life-On-Land\\backend\\test\\sample.test.js",
+          "fullFile": "C:\\Users\\Ravindu Peiris\\Documents\\GitHub\\Life-On-Land\\backend\\test\\sample.test.js",
           "file": "\\test\\sample.test.js",
           "beforeHooks": [],
           "afterHooks": [],
@@ -77,7 +151,7 @@
               "title": "should verify that 1 + 1 equals 2",
               "fullTitle": "Sample Test Suite should verify that 1 + 1 equals 2",
               "timedOut": false,
-              "duration": 0,
+              "duration": 1,
               "state": "passed",
               "speed": "fast",
               "pass": true,
@@ -86,8 +160,8 @@
               "context": null,
               "code": "expect(1 + 1).to.equal(2);",
               "err": {},
-              "uuid": "3e7befa8-e39a-4882-85bf-c784073ec28b",
-              "parentUUID": "f87b87d7-754e-4da3-a85d-69dc26d7ba09",
+              "uuid": "b7cb7e34-9cd9-4f22-bad1-7818110e5d39",
+              "parentUUID": "324e0d31-7ff9-4e6b-9805-ec924830feb7",
               "isHook": false,
               "skipped": false
             },
@@ -104,21 +178,21 @@
               "context": null,
               "code": "const str = 'Life-On-Land';\nexpect(str).to.include('Life');",
               "err": {},
-              "uuid": "4d28a511-281a-4e21-bbd6-7df31ff3c0c5",
-              "parentUUID": "f87b87d7-754e-4da3-a85d-69dc26d7ba09",
+              "uuid": "fb27195e-325b-404b-8190-742dd9231978",
+              "parentUUID": "324e0d31-7ff9-4e6b-9805-ec924830feb7",
               "isHook": false,
               "skipped": false
             }
           ],
           "suites": [],
           "passes": [
-            "3e7befa8-e39a-4882-85bf-c784073ec28b",
-            "4d28a511-281a-4e21-bbd6-7df31ff3c0c5"
+            "b7cb7e34-9cd9-4f22-bad1-7818110e5d39",
+            "fb27195e-325b-404b-8190-742dd9231978"
           ],
           "failures": [],
           "pending": [],
           "skipped": [],
-          "duration": 1,
+          "duration": 2,
           "root": false,
           "rootEmpty": false,
           "_timeout": 2000
@@ -140,7 +214,7 @@
     },
     "mochawesome": {
       "options": {
-        "quiet": true,
+        "quiet": false,
         "reportFilename": "index",
         "saveHtml": true,
         "saveJson": true,
@@ -153,8 +227,7 @@
     "marge": {
       "options": {
         "reportDir": "test-reports/mocha-html",
-        "reportFilename": "index",
-        "quiet": "true"
+        "reportFilename": "index"
       },
       "version": "6.3.2"
     }

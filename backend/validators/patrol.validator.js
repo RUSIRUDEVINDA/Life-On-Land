@@ -34,8 +34,8 @@ export const validateCreatePatrol = (req, res, next) => {
     if (!plannedStart || !isValidDate(plannedStart)) errors.push("plannedStart must be a valid date");
     if (!plannedEnd || !isValidDate(plannedEnd)) errors.push("plannedEnd must be a valid date");
 
-    if (!Array.isArray(assignedRangerIds) || assignedRangerIds.length === 0) {
-        errors.push("assignedRangerIds must be a non-empty array");
+    if (!Array.isArray(assignedRangerIds)) {
+        errors.push("assignedRangerIds must be an array");
     } else {
         assignedRangerIds.forEach((id, index) => {
             if (!isValidObjectId(id)) errors.push(`assignedRangerIds[${index}] must be a valid ObjectId`);
@@ -112,7 +112,7 @@ export const validateUpdatePatrol = async (req, res, next) => {
             errors.push("assignedRangerIds must be an array");
         } else {
             assignedRangerIds.forEach((id, index) => {
-                if (!isValidObjectId(id)) errors.push(`assignedRangerIds[${index}] must be a valid ObjectId`);
+                if (!isValidObjectId(id)) errors.push(`assignedRangerIds\[${index}] must be a valid ObjectId`);
             });
             updates.assignedRangerIds = assignedRangerIds;
         }
@@ -123,11 +123,15 @@ export const validateUpdatePatrol = async (req, res, next) => {
             errors.push("zoneIds must be an array");
         } else {
             zoneIds.forEach((id, index) => {
-                if (!isValidObjectId(id)) errors.push(`zoneIds[${index}] must be a valid ObjectId`);
+                if (!isValidObjectId(id)) errors.push(`zoneIds\[${index}] must be a valid ObjectId`);
             });
 
-            if (errors.length === 0 && targetPAId) {
+            if (errors.length === 0) {
                 try {
+                    const existingPatrol = await Patrol.findById(req.params.id).select("protectedAreaId");
+                    if (!existingPatrol) return res.status(404).json({ error: "Patrol not found" });
+                    const targetPAId = existingPatrol.protectedAreaId;
+
                     const invalidZones = await Zone.find({
                         _id: { $in: zoneIds },
                         protectedAreaId: { $ne: targetPAId }

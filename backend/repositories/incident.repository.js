@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import Incident from '../models/Incident.model.js';
 import Zone from '../models/Zone.model.js';
 import ProtectedArea from '../models/ProtectedArea.model.js';
@@ -9,15 +10,19 @@ export const findZoneById = (zoneId) => Zone.findById(zoneId);
 export const findProtectedAreaById = (protectedAreaId) =>
   ProtectedArea.findById(protectedAreaId);
 
+
 // User helpers
 export const findAnonymousPublicUser = () =>
   User.findOne({ email: 'anonymous@public.local', role: 'RANGER' });
 
 export const createAnonymousPublicUser = async () => {
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash('anonymous-unused', salt);
   const anonymousUser = new User({
     name: 'Anonymous Public User',
     email: 'anonymous@public.local',
-    password: 'anonymous', // Will be hashed by the User model middleware
+    phone: '+94700000001',
+    password: hashedPassword,
     role: 'RANGER'
   });
 
