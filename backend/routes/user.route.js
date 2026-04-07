@@ -3,7 +3,7 @@ import { getUsers, getUserById, updateUser, deleteUser } from "../controllers/us
 import { protect } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
 import { validateUpdateUser, validateUserQuery } from "../validators/user.validator.js";
-import { upload } from "../config/cloudinary.js";
+import { upload } from "../utils/cloudinary.js";
 
 const router = express.Router();
 

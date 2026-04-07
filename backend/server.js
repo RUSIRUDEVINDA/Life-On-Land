@@ -1,5 +1,4 @@
-import dotenv from "dotenv"
-dotenv.config()
+import "dotenv/config"
 import express from "express"
 import { connectDB } from "./config/db.js"
 import cookieParser from "cookie-parser"

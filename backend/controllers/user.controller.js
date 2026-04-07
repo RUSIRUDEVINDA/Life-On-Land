@@ -1,7 +1,7 @@
 import * as userRepo from "../repositories/user.repository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import bcrypt from "bcryptjs";
-import { cloudinary } from "../config/cloudinary.js";
+import { cloudinary } from "../utils/cloudinary.js";
 
 
 // @desc    Get all users with filtering

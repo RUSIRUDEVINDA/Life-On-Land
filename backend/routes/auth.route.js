@@ -2,7 +2,7 @@ import express from "express";
 import { registerUser, loginUser, logoutUser } from "../controllers/auth.controller.js";
 import { validateRegister, validateLogin, } from "../validators/auth.validator.js";
 import { protect } from "../middleware/auth.middleware.js";
-import { upload } from "../config/cloudinary.js";
+import { upload } from "../utils/cloudinary.js";
 
 
 
