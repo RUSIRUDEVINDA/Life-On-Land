@@ -1,0 +1,198 @@
+config:
+  target: "http://localhost:5001"
+  phases:
+    - duration: 60
+      arrivalRate: 2
+      name: "Sustained load"
+    - duration: 60
+      arrivalRate: 2
+      rampTo: 10
+      name: "Ramp up phase"
+  payload:
+    path: "users.csv"
+    fields:
+      - "email"
+      - "password"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Full API Performance Flow"
+    flow:
+      # --- AUTH ---
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "token"
+            - json: "$._id"
+              as: "currentUserId"
+      
+      # --- ANIMALS ---
+      - get:
+          url: "/api/animals"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.data[0].tagId"
+              as: "animalTagId"
+      - post:
+          url: "/api/animals"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            tagId: "TEST-{{ $randomString() }}"
+            species: "Lion"
+            name: "PerfTest-{{ $randomString() }}"
+            gender: "Male"
+            status: "ACTIVE"
+      - get:
+          url: "/api/animals/{{ animalTagId }}"
+          ifTrue: "animalTagId"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - put:
+          url: "/api/animals/{{ animalTagId }}"
+          ifTrue: "animalTagId"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            species: "Lion"
+            name: "Updated-{{ $randomString() }}"
+            gender: "Male"
+      
+      # --- ALERTS ---
+      - get:
+          url: "/api/alerts"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.data[0]._id"
+              as: "alertId"
+      - patch:
+          url: "/api/alerts/{{ alertId }}"
+          ifTrue: "alertId"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            status: "ACKNOWLEDGED"
+
+      # --- PATROLS ---
+      - get:
+          url: "/api/patrols"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.data[0]._id"
+              as: "patrolId"
+      - post:
+          url: "/api/patrols"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            name: "Perf-Patrol-{{ $randomString() }}"
+            startDate: "{{ $now }}"
+            endDate: "{{ $now }}"
+            status: "SCHEDULED"
+      - get:
+          url: "/api/patrols/{{ patrolId }}"
+          ifTrue: "patrolId"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - post:
+          url: "/api/patrols/{{ patrolId }}/check-ins"
+          ifTrue: "patrolId"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            timestamp: "{{ $now }}"
+            latitude: 6.5
+            longitude: 80.5
+            status: "OK"
+
+      # --- INCIDENTS ---
+      - get:
+          url: "/api/incidents"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.data[0]._id"
+              as: "incidentId"
+      - post:
+          url: "/api/incidents"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            type: "BRACONNAGE"
+            description: "Perf Test Incident"
+            latitude: 6.6
+            longitude: 80.6
+            severity: "HIGH"
+      - get:
+          url: "/api/incidents/{{ incidentId }}"
+          ifTrue: "incidentId"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+      # --- RISK MAP ---
+      - get:
+          url: "/api/risk-map"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+      # --- MOVEMENTS ---
+      - get:
+          url: "/api/movements/live"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "/api/movements/summary"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "/api/movements?species=Lion"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+      # --- PROTECTED AREAS & ZONES ---
+      - get:
+          url: "/api/protected-areas"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.data[0]._id"
+              as: "paId"
+      - post:
+          url: "/api/protected-areas"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            name: "PA-{{ $randomString() }}"
+            type: "NATIONAL_PARK"
+            district: "South"
+            areaSize: 1000
+      - get:
+          url: "/api/protected-areas/{{ paId }}/zones"
+          ifTrue: "paId"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+      # --- USER MANAGEMENT ---
+      - get:
+          url: "/api/users"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "/api/users/{{ currentUserId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - patch:
+          url: "/api/users/{{ currentUserId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            name: "Tester-{{ $randomString() }}"
