@@ -3,7 +3,7 @@ import * as service from "../services/animal.service.js";
 import * as repo from "../repositories/animal.repository.js";
 import { buildAnimalQuery } from "../utils/queryBuilder.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { cloudinary } from "../config/cloudinary.js";
+import { cloudinary } from "../utils/cloudinary.js";
 
 // @desc    Register a new animal
 // @route   POST /api/animals

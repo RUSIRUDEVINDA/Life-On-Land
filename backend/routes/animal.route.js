@@ -3,7 +3,7 @@ import { createAnimal, getAnimals, getAnimalById, updateAnimal, deleteAnimal } f
 import { protect } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
 import { validateCreateAnimal, validatePutAnimal, validatePatchAnimal, validateAnimalQuery, validateTagIdParam } from "../validators/animal.validator.js";
-import { upload } from "../config/cloudinary.js";
+import { upload } from "../utils/cloudinary.js";
 
 
 const router = express.Router(); 
