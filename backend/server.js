@@ -22,8 +22,25 @@ if (!isTestEnv) {
     connectDB()
 }
 
-// Enable CORS for all routes
-app.use(cors())
+app.set("trust proxy", 1)
+
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+// Enable CORS for all routes (configure CORS_ORIGIN in production)
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            if (!origin) return callback(null, true)
+            if (allowedOrigins.length === 0) return callback(null, true)
+            if (allowedOrigins.includes(origin)) return callback(null, true)
+            return callback(null, false)
+        },
+        credentials: true,
+    })
+)
 // Middleware to parse JSON bodies
 app.use(express.json())
 // Middleware to parse cookies

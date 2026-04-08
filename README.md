@@ -11,6 +11,10 @@ Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracki
 
 ---
 
+## Deployment
+
+See `DEPLOYMENT.md` for a production-ready setup (Render backend + Vercel frontend) and a clean `develop` -> `main` CI/CD workflow.
+
 ## ✨ Key Features
 
 - 🛰️ **Real-time GPS Tracking**: High-throughput ingestion of animal movement data via IoT devices.
