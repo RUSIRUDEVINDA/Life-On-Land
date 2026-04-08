@@ -1,0 +1,20 @@
+name: Backend Tests (Alias)
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        type: string
+        required: false
+        default: "20"
+      run_integration:
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  backend-tests:
+    uses: ./.github/workflows/backend-tests.yml
+    with:
+      node_version: ${{ inputs.node_version }}
+      run_integration: ${{ inputs.run_integration }}
