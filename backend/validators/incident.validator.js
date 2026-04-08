@@ -60,8 +60,8 @@ export const validateCreateIncident = (req, res, next) => {
         const trimmedDesc = normalizeTrim(description);
         if (trimmedDesc.length < 10) {
             errors.push("Description must be at least 10 characters");
-        } else if (trimmedDesc.length > 300) {
-            errors.push("Description must not exceed 300 characters");
+        } else if (trimmedDesc.length > 200) {
+            errors.push("Description must not exceed 200 characters");
         }
     }
 
@@ -141,8 +141,8 @@ export const validateCreateIncident = (req, res, next) => {
             errors.push("Notes must be a string");
         } else {
             const trimmedNotes = normalizeTrim(notes);
-            if (trimmedNotes.length > 300) {
-                errors.push("Notes must not exceed 300 characters");
+            if (trimmedNotes.length > 100) {
+                errors.push("Notes must not exceed 100 characters");
             }
         }
     }
@@ -272,8 +272,8 @@ export const validateUpdateIncident = async (req, res, next) => {
             const trimmedDesc = normalizeTrim(description);
             if (trimmedDesc.length < 10) {
                 errors.push("Description must be at least 10 characters");
-            } else if (trimmedDesc.length > 300) {
-                errors.push("Description must not exceed 300 characters");
+            } else if (trimmedDesc.length > 200) {
+                errors.push("Description must not exceed 200 characters");
             } else {
                 updates.description = trimmedDesc;
             }
@@ -305,8 +305,8 @@ export const validateUpdateIncident = async (req, res, next) => {
             errors.push("Notes must be a string");
         } else {
             const trimmedNotes = normalizeTrim(notes);
-            if (trimmedNotes.length > 1000) {
-                errors.push("Notes must not exceed 1000 characters");
+            if (trimmedNotes.length > 100) {
+                errors.push("Notes must not exceed 100 characters");
             } else {
                 updates.notes = trimmedNotes;
             }
@@ -367,8 +367,8 @@ export const validateFullUpdateIncident = async (req, res, next) => {
         const trimmedDesc = normalizeTrim(description);
         if (trimmedDesc.length < 10) {
             errors.push("Description must be at least 10 characters");
-        } else if (trimmedDesc.length > 300) {
-            errors.push("Description must not exceed 300 characters");
+        } else if (trimmedDesc.length > 200) {
+            errors.push("Description must not exceed 200 characters");
         }
     }
 
@@ -465,8 +465,8 @@ export const validateFullUpdateIncident = async (req, res, next) => {
             errors.push("Notes must be a string");
         } else {
             const trimmedNotes = normalizeTrim(notes);
-            if (trimmedNotes.length > 300) {
-                errors.push("Notes must not exceed 300 characters");
+            if (trimmedNotes.length > 100) {
+                errors.push("Notes must not exceed 100 characters");
             } else {
                 validatedNotes = trimmedNotes;
             }
