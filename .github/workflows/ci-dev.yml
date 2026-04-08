@@ -1,0 +1,14 @@
+name: CI (develop)
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  backend-tests:
+    uses: ./.github/workflows/backend-tests.yml
+    with:
+      node_version: "20"
+      run_integration: true
