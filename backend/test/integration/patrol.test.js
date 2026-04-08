@@ -63,7 +63,7 @@ const createPatrol = (adminTok, rangerIds = []) =>
 // ─── CREATE PATROL ────────────────────────────────────────────────────────────
 describe('POST /api/patrols', () => {
     it('✅ ADMIN can schedule a new patrol (201)', async () => {
-        const res = await createPatrol(adminToken);
+        const res = await createPatrol(adminToken, [rangerId]);
 
         expect(res.statusCode).toBe(201);
         const patrol = res.body.patrol || res.body.data || res.body;
