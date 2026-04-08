@@ -1,20 +1,20 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import * as animalService from '../services/animal.service.js';
-import * as movementService from '../services/movement.service.js';
-import * as incidentService from '../services/incident.service.js';
-import * as areaService from '../services/protectedArea.Service.js';
-import * as zoneService from '../services/zone.Service.js';
-import * as patrolService from '../services/patrol.service.js';
+import * as animalService from '../../services/animal.service.js';
+import * as movementService from '../../services/movement.service.js';
+import * as incidentService from '../../services/incident.service.js';
+import * as areaService from '../../services/protectedArea.Service.js';
+import * as zoneService from '../../services/zone.Service.js';
+import * as patrolService from '../../services/patrol.service.js';
 
 // Default imports — sinon can stub properties on plain objects
-import animalRepo from '../repositories/animal.repository.js';
-import movementRepo from '../repositories/movement.repository.js';
-import incidentRepo from '../repositories/incident.repository.js';
-import areaRepo from '../repositories/protectedArea.repository.js';
-import zoneRepo from '../repositories/zone.repository.js';
-import patrolRepo from '../repositories/patrol.repository.js';
+import animalRepo from '../../repositories/animal.repository.js';
+import movementRepo from '../../repositories/movement.repository.js';
+import incidentRepo from '../../repositories/incident.repository.js';
+import areaRepo from '../../repositories/protectedArea.repository.js';
+import zoneRepo from '../../repositories/zone.repository.js';
+import patrolRepo from '../../repositories/patrol.repository.js';
 
 describe('IT23293526 - Vimasha J P O: Mocking & Service Layer Tests', () => {
 

@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import {
     validateCreateAnimal,
     validatePatchAnimal
-} from "../validators/animal.validator.js";
+} from "../../validators/animal.validator.js";
 
 const makeRes = () => {
     const res = {};

@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import { validateUpdateUser, validateUserQuery } from "../validators/user.validator.js";
+import { validateUpdateUser, validateUserQuery } from "../../validators/user.validator.js";
 
 const makeRes = () => {
     const res = {};
