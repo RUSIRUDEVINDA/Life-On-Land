@@ -2,10 +2,10 @@ import { expect } from "chai";
 import sinon from "sinon";
 import mongoose from "mongoose";
 
-import * as movementService from "../services/movement.service.js";
-import movementRepo from "../repositories/movement.repository.js";
-import zoneRepo from "../repositories/zone.repository.js";
-import animalRepo from "../repositories/animal.repository.js";
+import * as movementService from "../../services/movement.service.js";
+import movementRepo from "../../repositories/movement.repository.js";
+import zoneRepo from "../../repositories/zone.repository.js";
+import animalRepo from "../../repositories/animal.repository.js";
 
 describe("Movement Service", () => {
     afterEach(() => {

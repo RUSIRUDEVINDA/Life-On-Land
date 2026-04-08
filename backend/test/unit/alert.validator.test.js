@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import { validateUpdateAlert } from "../validators/alert.validator.js";
+import { validateUpdateAlert } from "../../validators/alert.validator.js";
 
 const makeRes = () => {
     const res = {};
