@@ -36,6 +36,8 @@ export const validateCreatePatrol = (req, res, next) => {
 
     if (!Array.isArray(assignedRangerIds)) {
         errors.push("assignedRangerIds must be an array");
+    } else if (assignedRangerIds.length === 0) {
+        errors.push("assignedRangerIds must be a non-empty array");
     } else {
         assignedRangerIds.forEach((id, index) => {
             if (!isValidObjectId(id)) errors.push(`assignedRangerIds[${index}] must be a valid ObjectId`);
