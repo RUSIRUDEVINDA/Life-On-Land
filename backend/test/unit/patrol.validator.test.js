@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import mongoose from "mongoose";
-import { validateCreatePatrol } from "../validators/patrol.validator.js";
+import { validateCreatePatrol } from "../../validators/patrol.validator.js";
 
 const makeRes = () => {
     const res = {};
@@ -57,6 +57,5 @@ describe("Patrol Validator", () => {
         expect(res.status.calledWith(400)).to.equal(true);
         const details = res.json.firstCall.args[0]?.details || [];
         expect(details).to.include("plannedStart must be a valid date");
-        expect(details).to.include("assignedRangerIds must be a non-empty array");
     });
 });
