@@ -46,6 +46,11 @@ app.use(express.json())
 // Middleware to parse cookies
 app.use(cookieParser());
 
+// Health check / root route
+app.get("/", (req, res) => {
+    res.send("Life-On-Land API is running 🚀");
+});
+
 // Auth routes
 app.use("/api/auth", authRoutes)
 // Protected area routes
