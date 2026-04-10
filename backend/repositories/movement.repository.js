@@ -45,7 +45,7 @@ export const aggregateSummary = (match) =>
 // Find the latest movement for all animals (optionally filtered by area)
 export const findLatestForAllAnimals = (match = {}) =>
     Movement.aggregate([
-        // { $match: match },
+        { $match: match },
         { $sort: { timestamp: -1 } },
         {
             $group: {
@@ -62,7 +62,7 @@ export const findLatestForAllAnimals = (match = {}) =>
                 as: "animalDetails"
             }
         },
-        { $unwind: { path: "$animalDetails", preserveNullAndEmptyArrays: true } }
+        { $unwind: "$animalDetails" }
     ]);
 
 // Default export — sinon can stub properties on this object
