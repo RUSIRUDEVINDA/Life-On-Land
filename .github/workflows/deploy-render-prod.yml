@@ -2,6 +2,9 @@ name: Deploy (Render production) [manual]
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   backend-tests:
