@@ -45,10 +45,26 @@ function getCentroid(polygonCoords) {
 }
 
 /**
- * Find the zone the given coordinates fall inside (within the animal's PA only).
+ * Find the assigned active zone and ensure it belongs to the animal's PA.
  */
-async function findZoneAt(lat, lng, protectedAreaId) {
+async function getAssignedZone(protectedAreaId, zoneId) {
+    if (!zoneId) {
+        return null;
+    }
+
     return await Zone.findOne({
+        _id: zoneId,
+        protectedAreaId,
+        status: 'ACTIVE'
+    });
+}
+
+/**
+ * Find whether the given coordinates are inside the animal's assigned zone.
+ */
+async function findAssignedZoneAt(lat, lng, protectedAreaId, zoneId) {
+    return await Zone.findOne({
+        _id: zoneId,
         protectedAreaId,
         status: 'ACTIVE',
         geometry: {
@@ -60,17 +76,10 @@ async function findZoneAt(lat, lng, protectedAreaId) {
 }
 
 /**
- * Find any active zone in the PA and return its centroid.
+ * Return the centroid of the animal's assigned active zone.
  */
-async function getZoneCentroidInPA(protectedAreaId, preferredZoneId) {
-    // Prefer the animal's assigned zone, otherwise take any active zone in the PA
-    let zone = preferredZoneId
-        ? await Zone.findOne({ _id: preferredZoneId, status: 'ACTIVE' })
-        : null;
-
-    if (!zone) {
-        zone = await Zone.findOne({ protectedAreaId, status: 'ACTIVE' });
-    }
+async function getAssignedZoneCentroid(protectedAreaId, zoneId) {
+    const zone = await getAssignedZone(protectedAreaId, zoneId);
     if (!zone) return null;
 
     return { centroid: getCentroid(zone.geometry.coordinates), zone };
@@ -94,17 +103,17 @@ async function computeStrictNextPos(state) {
     for (let attempt = 0; attempt < 8; attempt++) {
         const candidateLat = lat + jitter();
         const candidateLng = lng + jitter();
-        const zone = await findZoneAt(candidateLat, candidateLng, protectedAreaId);
+        const zone = await findAssignedZoneAt(candidateLat, candidateLng, protectedAreaId, animalDoc.zoneId);
         if (zone) {
             return { lat: candidateLat, lng: candidateLng, zone };
         }
     }
 
-    // All random steps were outside zones -> slide towards a zone centroid
-    const fallback = await getZoneCentroidInPA(protectedAreaId, animalDoc.zoneId);
+    // All random steps were outside the assigned zone -> slide toward that zone centroid
+    const fallback = await getAssignedZoneCentroid(protectedAreaId, animalDoc.zoneId);
     if (!fallback) {
-        // No zones at all in this PA -> stay put
-        const zone = await findZoneAt(lat, lng, protectedAreaId);
+        // Assigned zone is missing or inactive -> stay put
+        const zone = await findAssignedZoneAt(lat, lng, protectedAreaId, animalDoc.zoneId);
         return { lat, lng, zone };
     }
 
@@ -114,7 +123,7 @@ async function computeStrictNextPos(state) {
     const candidateLng = lng + (centroid.lng - lng) * 0.2;
 
     // Verify corrected position is inside a zone
-    const verifiedZone = await findZoneAt(candidateLat, candidateLng, protectedAreaId)
+    const verifiedZone = await findAssignedZoneAt(candidateLat, candidateLng, protectedAreaId, animalDoc.zoneId)
         || targetZone; // if centroid itself is inside, use it
 
     return { lat: candidateLat, lng: candidateLng, zone: verifiedZone };
@@ -149,7 +158,7 @@ async function buildStates() {
 
         if (lastMove && lastMove.lat && lastMove.lng) {
             // Validate that the last position is still inside a zone
-            const zoneCheck = await findZoneAt(lastMove.lat, lastMove.lng, animal.protectedAreaId);
+            const zoneCheck = await findAssignedZoneAt(lastMove.lat, lastMove.lng, animal.protectedAreaId, animal.zoneId);
             if (zoneCheck) {
                 initialLat = lastMove.lat;
                 initialLng = lastMove.lng;
@@ -159,13 +168,13 @@ async function buildStates() {
 
         if (!initialLat) {
             // Fall back to assigned zone centroid
-            const fallback = await getZoneCentroidInPA(animal.protectedAreaId, animal.zoneId);
+            const fallback = await getAssignedZoneCentroid(animal.protectedAreaId, animal.zoneId);
             if (fallback) {
                 initialLat = fallback.centroid.lat;
                 initialLng = fallback.centroid.lng;
                 initialZone = fallback.zone;
             } else {
-                console.warn(`[SKIP] ${animal.tagId}: no active zones found in PA.`);
+                console.warn(`[SKIP] ${animal.tagId}: assigned zone is missing or inactive for this protected area.`);
                 continue;
             }
         }
@@ -220,7 +229,7 @@ export async function runSimulationStep(states) {
             protectedAreaId: state.protectedAreaId,
         });
 
-        process.stdout.write(` ${tagId} OK`);
+        process.stdout.write(` ${tagId} ✓`);
     }
 
     process.stdout.write('\n');
