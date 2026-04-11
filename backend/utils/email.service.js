@@ -21,6 +21,11 @@ const getFrontendOrigin = () => {
         }
     }
 
+    // Keep tests hermetic: do not require FRONTEND_ORIGIN just to build a reset URL
+    if (isTestEnv) {
+        return "http://localhost:5173";
+    }
+
     if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
         return "http://localhost:5173";
     }
@@ -122,4 +127,3 @@ export const sendPasswordResetEmail = async ({ to, name, resetToken }) => {
 
     return { skipped: false, resetUrl };
 };
-
