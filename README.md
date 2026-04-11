@@ -13,7 +13,56 @@ Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracki
 
 ## Deployment
 
-See `DEPLOYMENT.md` for a production-ready setup (Render backend + Vercel frontend) and a clean `develop` -> `main` CI/CD workflow.
+### Backend deployment platform
+
+The backend is set up for deployment on **Render**.
+
+Live URL:
+- `https://life-on-land-aqau.onrender.com/`
+
+<img width="1760" height="990" alt="Screenshot (2068)" src="https://github.com/user-attachments/assets/f785d296-489e-4181-9bcc-5bc2e96b6f90" />
+
+
+### Backend deployment setup
+
+Use these steps to deploy the backend to Render:
+
+1. Create a new **Web Service** in Render and connect this repository.
+2. Set the **Root Directory** to `backend`.
+3. Set the **Build Command** to `npm ci`.
+4. Set the **Start Command** to `npm start`.
+5. Add the required environment variables in Render.
+6. Deploy from the `main` branch for production.
+
+### Environment variables used
+
+Set these variables in your deployment platform and local `.env` file as needed. Secret values should never be committed.
+
+```env
+PORT=5001
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_complex_secret
+JWT_EXPIRES_IN=7d
+NODE_ENV=production
+CORS_ORIGIN=https://your-frontend.vercel.app,https://yourdomain.com
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+OPENWEATHER_API_KEY=your_openweather_api_key
+FRONTEND_ORIGIN=https://your-frontend.vercel.app
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_password
+SMTP_FROM=EcoTrack <no-reply@yourdomain.com>
+SMTP_TIMEOUT_MS=15000
+```
+
+See `DEPLOYMENT.md` for the full Render + Vercel production workflow and branch strategy.
 
 ## ✨ Key Features
 
@@ -467,3 +516,87 @@ npm start
 ---
 
 **Life-On-Land** - _Empowering wildlife protection through engineering._
+
+---
+
+## Testing Instruction Report
+
+### How to run unit tests
+
+Run the backend unit suite from the `backend` directory:
+
+```bash
+cd backend
+npm run test:unit
+```
+
+Notes:
+- This runs Mocha unit tests only.
+- Reports are generated in `backend/test-reports/`.
+
+### Integration testing setup and execution
+
+Run integration tests from the `backend` directory:
+
+```bash
+cd backend
+npm run test:integration
+```
+
+Testing setup details:
+- The integration script runs Jest with `NODE_ENV=test`.
+- `JWT_SECRET` is set in the script for auth-related test cases.
+- Tests use `mongodb-memory-server`, so they do not depend on your local MongoDB instance.
+- The backend entry point used by tests is `backend/server.js`.
+
+### Performance testing setup and execution
+
+The performance test is configured in [`backend/test/performance/api-load-test.yaml`](backend/test/performance/api-load-test.yaml).
+
+Prerequisites:
+- Start the backend on `http://localhost:5001`.
+- Seed the performance admin user first:
+
+```bash
+cd backend
+npm run perf:seed
+```
+
+- Make sure the backend has a valid `MONGO_URI` and the seeded auth user can log in successfully.
+
+Run the test:
+
+```bash
+cd backend
+artillery run --output perf-report.json test/performance/api-load-test.yaml
+```
+
+Or use the wrapper that seeds the perf user and starts the backend if needed:
+
+```bash
+cd backend
+npm run perf:test
+```
+
+Optional checks:
+- Use `curl http://localhost:5001` to confirm the API is reachable before running Artillery.
+- Save the generated report file if you want to compare runs over time.
+
+### Testing environment configuration details
+
+Environment variables used by the backend and tests:
+
+```env
+PORT=5001
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_complex_secret
+JWT_EXPIRES_IN=7d
+NODE_ENV=development
+API_URL=http://localhost:5001/api
+```
+
+Additional notes:
+- Production Render deployments should use `NODE_ENV=production`.
+- CORS should be configured with `CORS_ORIGIN` in deployed environments.
+- Password reset email delivery requires the SMTP variables defined in `backend/.env`.
+- For local performance testing, the backend must be running before launching Artillery.
