@@ -8,6 +8,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "simulate": "node scripts/simulate_movement.js",
+    "simulate:once": "node scripts/simulate_movement.once.js",
     "test:unit": "mocha \"test/**/*.test.js\" --ignore \"test/integration/**/*.js\" --require test/setup.cjs --reporter mochawesome --reporter-options reportDir=./test-reports,reportFilename=backend-test-report",
     "test:integration": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=test/integration --runInBand --forceExit --verbose",
     "test": "npm run test:unit && npm run test:integration"
