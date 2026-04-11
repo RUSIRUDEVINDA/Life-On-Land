@@ -11,59 +11,6 @@ Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracki
 
 ---
 
-## Deployment
-
-### Backend deployment platform
-
-The backend is set up for deployment on **Render**.
-
-Live URL:
-- `https://life-on-land-aqau.onrender.com/`
-
-<img width="1760" height="990" alt="Screenshot (2068)" src="https://github.com/user-attachments/assets/f785d296-489e-4181-9bcc-5bc2e96b6f90" />
-
-
-### Backend deployment setup
-
-Use these steps to deploy the backend to Render:
-
-1. Create a new **Web Service** in Render and connect this repository.
-2. Set the **Root Directory** to `backend`.
-3. Set the **Build Command** to `npm ci`.
-4. Set the **Start Command** to `npm start`.
-5. Add the required environment variables in Render.
-6. Deploy from the `main` branch for production.
-
-### Environment variables used
-
-Set these variables in your deployment platform and local `.env` file as needed. Secret values should never be committed.
-
-```env
-PORT=5001
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_complex_secret
-JWT_EXPIRES_IN=7d
-NODE_ENV=production
-CORS_ORIGIN=https://your-frontend.vercel.app,https://yourdomain.com
-TWILIO_ACCOUNT_SID=your_twilio_account_sid
-TWILIO_AUTH_TOKEN=your_twilio_auth_token
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-OPENWEATHER_API_KEY=your_openweather_api_key
-FRONTEND_ORIGIN=https://your-frontend.vercel.app
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your_smtp_user
-SMTP_PASS=your_smtp_password
-SMTP_FROM=EcoTrack <no-reply@yourdomain.com>
-SMTP_TIMEOUT_MS=15000
-```
-
-See `DEPLOYMENT.md` for the full Render + Vercel production workflow and branch strategy.
-
 ## ✨ Key Features
 
 - 🛰️ **Real-time GPS Tracking**: High-throughput ingestion of animal movement data via IoT devices.
@@ -153,6 +100,64 @@ npm run dev
 # Production
 npm start
 ```
+
+---
+
+## Deployment
+
+### Backend deployment platform
+
+The backend is set up for deployment on **Render**.
+
+### Live URL
+
+| Resource | URL |
+| :-- | :-- |
+| **Deployed backend application** | [https://life-on-land-aqau.onrender.com/](https://life-on-land-aqau.onrender.com/) |
+
+<img width="1760" height="990" alt="Screenshot (2068)" src="https://github.com/user-attachments/assets/f785d296-489e-4181-9bcc-5bc2e96b6f90" />
+
+
+### Backend deployment setup
+
+Use these steps to deploy the backend to Render:
+
+1. Create a new **Web Service** in Render and connect this repository.
+2. Set the **Root Directory** to `backend`.
+3. Set the **Build Command** to `npm ci`.
+4. Set the **Start Command** to `npm start`.
+5. Add the required environment variables in Render.
+6. Deploy from the `main` branch for production.
+
+### Environment variables used
+
+Set these variables in your deployment platform and local `.env` file as needed. Secret values should never be committed.
+
+```env
+PORT=5001
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_complex_secret
+JWT_EXPIRES_IN=7d
+NODE_ENV=production
+CORS_ORIGIN=https://your-frontend.vercel.app,https://yourdomain.com
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+OPENWEATHER_API_KEY=your_openweather_api_key
+FRONTEND_ORIGIN=https://your-frontend.vercel.app
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_password
+SMTP_FROM=EcoTrack <no-reply@yourdomain.com>
+SMTP_TIMEOUT_MS=15000
+```
+
+See `DEPLOYMENT.md` for the full Render + Vercel production workflow and branch strategy.
 
 ---
 
