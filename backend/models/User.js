@@ -5,6 +5,14 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        profilePhoto: {
+            type: String,
+            default: ""
+        },
+        profilePhotoPublicId: {
+            type: String,
+            default: ""
+        },
         email: {
             type: String,
             required: true,
@@ -28,13 +36,15 @@ const userSchema = new mongoose.Schema(
             enum: ["ADMIN", "RANGER"],
             default: "RANGER"
         },
-        profilePhoto: {
+        passwordResetTokenHash: {
             type: String,
-            default: null
+            index: true,
+            select: false
         },
-        profilePhotoPublicId: {
-            type: String,
-            default: null
+        passwordResetExpiresAt: {
+            type: Date,
+            index: true,
+            select: false
         }
     },
     { timestamps: true }

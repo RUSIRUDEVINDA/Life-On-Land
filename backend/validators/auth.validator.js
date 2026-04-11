@@ -74,3 +74,52 @@ export const validateLogin = (req, res, next) => {
 
     next();
 };
+
+export const validateForgotPassword = (req, res, next) => {
+    const { email } = req.body;
+    const errors = [];
+
+    if (!email || typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email.trim())) {
+        errors.push("Valid email is required");
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({
+            error: "Validation failed",
+            details: errors,
+        });
+    }
+
+    req.body.email = email.trim();
+    next();
+};
+
+export const validateResetPassword = (req, res, next) => {
+    const { token, password } = req.body;
+    const errors = [];
+
+    if (!token || typeof token !== "string" || token.trim().length < 16 || token.trim().length > 512) {
+        errors.push("Valid reset token is required");
+    }
+
+    if (
+        !password ||
+        typeof password !== "string" ||
+        password.length < 8 ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/\d/.test(password)
+    ) {
+        errors.push("Password must be at least 8 characters long and contain uppercase, lowercase, and a number");
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({
+            error: "Validation failed",
+            details: errors,
+        });
+    }
+
+    req.body.token = token.trim();
+    next();
+};

@@ -1,17 +1,32 @@
 import User from "../models/User.js";
 
+const escapeRegExp = (value) => String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // Create a new user document
 export const create = (data) => User.create(data);
 
 // Find user by email
-export const findByEmail = (email) => User.findOne({ email });
+export const findByEmail = (email) => {
+    const em = String(email || "").trim();
+    if (!em) return Promise.resolve(null);
+    return User.findOne({ email: new RegExp(`^${escapeRegExp(em)}$`, "i") });
+};
 
 // Find user by phone
 export const findByPhone = (phone) => User.findOne({ phone });
 
 // Find user by email and include password (used for login)
-export const findByEmailWithPassword = (email) =>
-    User.findOne({ email }).select("+password");
+export const findByEmailWithPassword = (email) => {
+    const em = String(email || "").trim();
+    if (!em) return Promise.resolve(null);
+    return User.findOne({ email: new RegExp(`^${escapeRegExp(em)}$`, "i") }).select("+password");
+};
+
+export const findByPasswordResetTokenHash = (passwordResetTokenHash) =>
+    User.findOne({
+        passwordResetTokenHash,
+        passwordResetExpiresAt: { $gt: new Date() },
+    });
 
 // Find user by Mongo ID
 export const findById = (id) => User.findById(id);
@@ -38,6 +53,7 @@ export default {
     create,
     findByEmail,
     findByEmailWithPassword,
+    findByPasswordResetTokenHash,
     findById,
     findAll,
     findWithPagination,

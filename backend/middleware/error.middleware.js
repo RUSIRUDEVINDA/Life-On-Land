@@ -8,6 +8,12 @@ export const errorHandler = (err, req, res, next) => {
     let statusCode = err.statusCode || 500;
     let message = err.message || "Internal Server Error";
 
+    // Multer errors (file upload issues)
+    if (err.name === "MulterError") {
+        statusCode = 400;
+        message = err.message || "File upload failed";
+    }
+
     // Handle Mongoose CastError (e.g. invalid ObjectId)
     if (err.name === 'CastError') {
         statusCode = 400;
