@@ -1,7 +1,7 @@
 import * as authService from "../services/auth.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { generateToken } from "../utils/generateToken.js";
-import { sendPasswordResetEmail } from "../services/email.service.js";
+import { sendPasswordResetEmail } from "../utils/email.service.js";
 
 const isTestEnv =
     process.env.NODE_ENV === "test" ||
