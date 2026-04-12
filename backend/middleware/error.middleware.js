@@ -26,6 +26,14 @@ export const errorHandler = (err, req, res, next) => {
         message = Object.values(err.errors).map((val) => val.message).join(', ');
     }
 
+    // Handle duplicate key errors (e.g. unique email/phone collisions)
+    if (err?.code === 11000) {
+        statusCode = 409;
+        const fields = Object.keys(err.keyPattern || {});
+        const fieldList = fields.length > 0 ? fields.join(", ") : "unique field";
+        message = `Duplicate value for ${fieldList}`;
+    }
+
     res.status(statusCode).json({
         error: message,
         stack: process.env.NODE_ENV === 'production' ? null : err.stack,

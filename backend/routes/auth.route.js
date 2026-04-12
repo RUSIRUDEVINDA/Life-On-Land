@@ -2,12 +2,23 @@ import express from "express";
 import { registerUser, loginUser, logoutUser, forgotPassword, resetPassword } from "../controllers/auth.controller.js";
 import { validateRegister, validateLogin, validateForgotPassword, validateResetPassword } from "../validators/auth.validator.js";
 import { protect } from "../middleware/auth.middleware.js";
+import { upload } from "../utils/cloudinary.js";
 
 
 const router = express.Router();
 
+// Only run multer for multipart uploads. JSON registrations skip multer so req.body
+// from express.json() is preserved (multer + Express 5 can leave body unset otherwise).
+const registerUploadIfMultipart = (req, res, next) => {
+    const ct = String(req.headers["content-type"] || "").toLowerCase();
+    if (ct.includes("multipart/form-data")) {
+        return upload.single("profilePhoto")(req, res, next);
+    }
+    return next();
+};
+
 // Register a new user
-router.post("/register", validateRegister, registerUser);
+router.post("/register", registerUploadIfMultipart, validateRegister, registerUser);
 
 // Authenticate user & get token
 router.post("/login", validateLogin, loginUser);

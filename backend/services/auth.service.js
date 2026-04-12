@@ -8,7 +8,7 @@ import crypto from "crypto";
  * @param   {Object} data - User registration details
  * @returns {Object} Created user document
  */
-export const registerUser = async ({ name, email, phone, password, role }) => {
+export const registerUser = async ({ name, email, phone, password, role, profilePhoto, profilePhotoPublicId }) => {
     // Check for existing user records
     const existingUser = await userRepo.findByEmail(email);
     const existingPhone = await userRepo.findByPhone(phone);
@@ -35,6 +35,8 @@ export const registerUser = async ({ name, email, phone, password, role }) => {
         phone,
         password: hashedPassword,
         role: role || "RANGER",
+        profilePhoto: profilePhoto || "",
+        profilePhotoPublicId: profilePhotoPublicId || "",
     });
 
     return user;

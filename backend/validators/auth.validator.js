@@ -3,6 +3,9 @@ import { normalizeSriLankanPhone } from "../utils/phone.js";
 const allowedRoles = ["ADMIN", "RANGER"]; // Must match your Mongoose schema
 
 export const validateRegister = (req, res, next) => {
+    if (req.body == null || typeof req.body !== "object" || Array.isArray(req.body)) {
+        req.body = {};
+    }
     const { name, email, phone, password, role } = req.body;
     const errors = [];
 
@@ -30,11 +33,12 @@ export const validateRegister = (req, res, next) => {
     }
 
     // Role validation
-    if (!role || typeof role !== "string" || !allowedRoles.includes(role.toUpperCase())) {
+    const normalizedRole = typeof role === "string" ? role.toUpperCase() : null;
+    if (!normalizedRole || !allowedRoles.includes(normalizedRole)) {
         errors.push(`Role must be one of: ${allowedRoles.join(" or ")}`);
     } else {
         // Normalize role to uppercase early if valid
-        req.body.role = role.toUpperCase();
+        req.body.role = normalizedRole;
     }
 
 
@@ -46,12 +50,13 @@ export const validateRegister = (req, res, next) => {
     }
 
     // Normalize role before passing it forward
-    req.body.role = role.toUpperCase();
+    req.body.role = normalizedRole;
 
     next();
 };
 
 export const validateLogin = (req, res, next) => {
+    req.body = req.body || {};
     const { email, password } = req.body;
     const errors = [];
 
@@ -76,6 +81,7 @@ export const validateLogin = (req, res, next) => {
 };
 
 export const validateForgotPassword = (req, res, next) => {
+    req.body = req.body || {};
     const { email } = req.body;
     const errors = [];
 
@@ -95,6 +101,7 @@ export const validateForgotPassword = (req, res, next) => {
 };
 
 export const validateResetPassword = (req, res, next) => {
+    req.body = req.body || {};
     const { token, password } = req.body;
     const errors = [];
 
