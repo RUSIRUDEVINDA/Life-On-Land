@@ -10,7 +10,7 @@
 Life-On-Land is a state-of-the-art **Poaching Alert and Wildlife Movement Tracking** system designed to protect biodiversity. It provides a highly scalable backend for real-time wildlife monitoring, ranger coordination, and proactive threat detection.
 
 ---
-
+ 
 ## ✨ Key Features
 
 - 🛰️ **Real-time GPS Tracking**: High-throughput ingestion of animal movement data via IoT devices.
