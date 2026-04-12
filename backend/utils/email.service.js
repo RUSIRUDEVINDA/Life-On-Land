@@ -8,18 +8,21 @@ const isTestEnv =
 
 const stripTrailingSlashes = (value) => String(value || "").trim().replace(/\/+$/, "");
 
-const getFrontendOrigin = () => {
-    const configured = stripTrailingSlashes(process.env.FRONTEND_ORIGIN);
-    if (configured) {
-        try {
-            const parsed = new URL(configured);
-            return parsed.origin;
-        } catch {
-            // If someone accidentally provided a host without protocol (e.g. "localhost:5173"),
-            // fall back to the raw string (best-effort).
-            return configured;
-        }
+const originFromCandidate = (raw) => {
+    const configured = stripTrailingSlashes(raw);
+    if (!configured) return null;
+    try {
+        const parsed = new URL(configured);
+        return parsed.origin;
+    } catch {
+        // Host without protocol (e.g. "localhost:5173") — best-effort for reset links
+        return configured;
     }
+};
+
+const getFrontendOrigin = () => {
+    const fromFrontendEnv = originFromCandidate(process.env.FRONTEND_ORIGIN);
+    if (fromFrontendEnv) return fromFrontendEnv;
 
     // Keep tests hermetic: do not require FRONTEND_ORIGIN just to build a reset URL
     if (isTestEnv) {
@@ -30,7 +33,18 @@ const getFrontendOrigin = () => {
         return "http://localhost:5173";
     }
 
-    throw new AppError("Email service misconfigured: FRONTEND_ORIGIN is required", 500);
+    // Production: many deployments set CORS_ORIGIN but forget FRONTEND_ORIGIN
+    const corsFirst = (process.env.CORS_ORIGIN || "")
+        .split(",")
+        .map((s) => s.trim())
+        .find(Boolean);
+    const fromCors = originFromCandidate(corsFirst);
+    if (fromCors) return fromCors;
+
+    throw new AppError(
+        "Email service misconfigured: set FRONTEND_ORIGIN or CORS_ORIGIN to your frontend base URL",
+        500
+    );
 };
 
 const getSmtpConfig = () => {
@@ -72,7 +86,10 @@ const getTransporter = async () => {
             auth: { user, pass },
         });
 
-        await transporter.verify();
+        // verify() often fails on hosted platforms (timeouts, TLS) even when sendMail works
+        if (process.env.NODE_ENV !== "production") {
+            await transporter.verify();
+        }
         return transporter;
     })();
 
